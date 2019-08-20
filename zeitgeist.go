@@ -3,7 +3,6 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/blang/semver"
 	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
 	"gopkg.in/yaml.v3"
 )
 
@@ -40,41 +40,107 @@ type Upstream struct {
 	Constraints string                    `yaml:"constraints"`
 }
 
-func main() {
+// Initialise logging level based on LOG_LEVEL env var, or the --verbose flag.
+// Defaults to info
+func initLogging(verbose bool) {
 	logLevelStr, ok := os.LookupEnv("LOG_LEVEL")
 	if !ok {
-		// No LOG_LEVEL env var: default to info
-		logLevelStr = "info"
+		if verbose {
+			logLevelStr = "debug"
+		} else {
+			logLevelStr = "info"
+		}
 	}
 	logLevel, err := log.ParseLevel(logLevelStr)
 	if err != nil {
-		log.Fatal("Invalid LOG_LEVEL: " + logLevelStr)
+		log.Fatalf("Invalid LOG_LEVEL: %v", logLevelStr)
 	}
 	log.SetLevel(logLevel)
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp:          true,
+		DisableLevelTruncation: true,
+	})
+}
 
-	flag.Parse()
-	args := flag.Args()
-	if len(args) != 1 {
-		log.Fatalf("usage: dependency <file>")
+func main() {
+	var verbose bool
+	var config string
+	var githubAccessToken string
+
+	app := cli.NewApp()
+	app.Name = "zeitgeist"
+	app.Usage = "Manage your external dependencies"
+	app.Flags = []cli.Flag{
+		cli.BoolFlag{
+			Name:        "verbose",
+			Usage:       "Set log level to DEBUG",
+			Destination: &verbose,
+		},
+		cli.StringFlag{
+			Name:        "config, c",
+			Usage:       "Load configuration from `FILE`",
+			Value:       "dependencies.yaml",
+			Destination: &config,
+		},
+		cli.StringFlag{
+			Name:        "github-access-token",
+			Usage:       "Access token to use when querying the Github API",
+			EnvVar:      "GITHUB_ACCESS_TOKEN",
+			Destination: &githubAccessToken,
+		},
+	}
+	app.Commands = []cli.Command{
+		{
+			Name:    "local",
+			Aliases: []string{},
+			Usage:   "Check all local files against declared dependency version",
+			Action: func(c *cli.Context) error {
+				initLogging(verbose)
+				localCheck(config)
+				return nil
+			},
+		},
+		{
+			Name:    "validate",
+			Aliases: []string{},
+			Usage:   "Check dependencies locally and against upstream versions",
+			Action: func(c *cli.Context) error {
+				initLogging(verbose)
+				localCheck(config)
+				remoteCheck(config, githubAccessToken)
+				return nil
+			},
+		},
+	}
+	app.Action = func(c *cli.Context) error {
+		log.Info("Hello friend!")
+		return nil
 	}
 
-	depFileStr := args[0]
-	depFile, err := ioutil.ReadFile(depFileStr)
+	err := app.Run(os.Args)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func dependenciesFromFile(dependencyFilePath string) *Dependencies {
+	depFile, err := ioutil.ReadFile(dependencyFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	base := filepath.Dir(depFileStr)
-	mismatchErrorMessage := "ERROR: %v indicates that %v should be at version %v, but the following files didn't match:\n\n" +
-		"%v\n\nif you are changing the version of %v, make sure all of the following files are updated with the newest version including %v\n" +
-		"then run ./hack/verify-external-dependencies-version.sh\n\n"
-	externalDeps := &Dependencies{}
-	var pathsToUpdate []string
-	err = yaml.Unmarshal(depFile, externalDeps)
+	dependencies := &Dependencies{}
+	err = yaml.Unmarshal(depFile, dependencies)
 	if err != nil {
 		log.Fatal(err)
 	}
+	return dependencies
+}
 
+func localCheck(dependencyFilePath string) {
+	base := filepath.Dir(dependencyFilePath)
+	externalDeps := dependenciesFromFile(dependencyFilePath)
+	var nonMatchingPaths []string
 	for _, dep := range externalDeps.Dependencies {
 		log.Debugf("Examining dependency: %v", dep.Name)
 		for _, refPath := range dep.RefPaths {
@@ -95,44 +161,55 @@ func main() {
 				line := scanner.Text()
 				if matcher.MatchString(line) {
 					if strings.Contains(line, dep.Version) {
-						log.Debugf("Line %v matches expected regexp (%v) and version (%v): %v", lineNumber, match, dep.Version, line)
+						log.Debugf("Line %v matches expected regexp '%v' and version '%v':\n%v", lineNumber, match, dep.Version, line)
 						found = true
 						break
 					} else {
-						log.Warnf("Line %v matches expected regexp (%v), but not version (%v): %v", lineNumber, match, dep.Version, line)
+						log.Warnf("Line %v matches expected regexp '%v', but not version '%v':\n%v", lineNumber, match, dep.Version, line)
 					}
 				}
 			}
 			if !found {
 				log.Debugf("Finished reading file %v, no match found.", filePath)
-				pathsToUpdate = append(pathsToUpdate, refPath.Path)
+				nonMatchingPaths = append(nonMatchingPaths, refPath.Path)
 			}
 		}
-		if len(pathsToUpdate) > 0 {
-			log.Fatalf(mismatchErrorMessage, depFileStr, dep.Name, dep.Version, strings.Join(pathsToUpdate, "\n"), dep.Name, depFileStr)
-		}
 
+		if len(nonMatchingPaths) > 0 {
+			log.Fatalf("%v indicates that %v should be at version %v, but the following files didn't match:\n\n"+
+				"%v\n", dependencyFilePath, dep.Name, dep.Version, strings.Join(nonMatchingPaths, "\n"))
+		}
+	}
+}
+
+func remoteCheck(dependencyFilePath string, githubAccessToken string) {
+	externalDeps := dependenciesFromFile(dependencyFilePath)
+	for _, dep := range externalDeps.Dependencies {
 		if dep.Upstream == nil {
 			continue
 		}
 
-		var latestVersionString string = dep.Version
-		var versionString string = dep.Version
+		log.Debugf("Examining dependency: %v", dep.Name)
 
-		if dep.Upstream.Flavour == upstreams.GitHub {
+		var latestVersion string = dep.Version
+		var currentVersion string = dep.Version
+
+		switch dep.Upstream.Flavour {
+		case upstreams.GitHub:
 			gh := upstreams.Github{
+				AccessToken: githubAccessToken,
 				URL:         dep.Upstream.URL,
 				Constraints: dep.Upstream.Constraints,
 			}
-			latestVersionString = gh.LatestVersion()
+			latestVersion = gh.LatestVersion()
+		default:
+			log.Fatalf("Unknown upstream type '%v' for dependency %v", dep.Upstream.Flavour, dep.Name)
 		}
 
-		latestV := Version(latestVersionString)
-		versionV := Version(versionString)
-		if latestV.MoreRecentThan(versionV) {
-			log.Infof("Update available for dependency %v: %v (current: %v)\n", dep.Name, latestV, versionV)
+		if Version(latestVersion).MoreRecentThan(Version(currentVersion)) {
+			log.Infof("Update available for dependency %v: %v (current: %v)\n", dep.Name, latestVersion, currentVersion)
 		} else {
-			log.Infof("No update available for dependency %v: %v (latest: %v)\n", dep.Name, versionV, latestV)
+			log.Infof("No update available for dependency %v: %v (latest: %v)\n", dep.Name, currentVersion, latestVersion)
 		}
 	}
 }

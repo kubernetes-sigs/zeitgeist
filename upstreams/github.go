@@ -2,7 +2,6 @@ package upstreams
 
 import (
 	"context"
-	"os"
 	"strings"
 
 	"github.com/blang/semver"
@@ -12,12 +11,17 @@ import (
 )
 
 type Github struct {
+	AccessToken string
 	URL         string
 	Constraints string
 }
 
 func (upstream Github) LatestVersion() string {
 	log.Debugf("Using GitHub flavour")
+
+	if !strings.Contains(upstream.URL, "/") {
+		log.Fatalf("Invalid github repo: %v\nGithub repo should be in the form owner/repo, e.g. kubernetes/kubernetes\n", upstream.URL)
+	}
 
 	semverConstraints := upstream.Constraints
 	if semverConstraints == "" {
@@ -30,10 +34,9 @@ func (upstream Github) LatestVersion() string {
 	}
 
 	var client *github.Client
-	githubAccessToken, tokenProvided := os.LookupEnv("GITHUB_ACCESS_TOKEN")
-	if tokenProvided && githubAccessToken != "" {
-		log.Debugf("GitHub Access Token provided through GITHUB_ACCESS_TOKEN")
-		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: githubAccessToken})
+	if upstream.AccessToken != "" {
+		log.Debugf("GitHub Access Token provided")
+		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: upstream.AccessToken})
 		tc := oauth2.NewClient(oauth2.NoContext, ts)
 		client = github.NewClient(tc)
 	} else {
@@ -41,9 +44,6 @@ func (upstream Github) LatestVersion() string {
 		client = github.NewClient(nil)
 	}
 
-	if !strings.Contains(upstream.URL, "/") {
-		log.Fatalf("Invalid github repo: %v\nGithub repo should be in the form owner/repo, e.g. kubernetes/kubernetes\n", upstream.URL)
-	}
 	splitUrl := strings.Split(upstream.URL, "/")
 	owner := splitUrl[0]
 	repo := splitUrl[1]
