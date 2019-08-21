@@ -1,9 +1,60 @@
 Zeitgeist
 =========
 
-You have external dependencies. You need to track them.
+External dependencies. We need to track them.
 
-This (heavily IN PROGRESS) folder contains code inspired by [Kubernetes' script to manage dependencies](https://groups.google.com/forum/?pli=1#!topic/kubernetes-dev/cTaYyb1a18I) and extended to include checking with upstream sources to ensure dependencies are up-to-date.
+Zeitgeist is a language-agnostic dependency checker that can be used to keep track of external dependencies and ensure they're up-to-date.
+
+/!\ Under active development, currently alpha-quality software /!\
+
+What is Zeitgeist
+=================
+
+Zeitgeist is a tool that takes a configuration file with a list of dependencies, and ensures that:
+
+- These dependencies versions are consistent within your project
+- These dependencies are up-to-date
+
+A Zeitgeist configuration file (usually `dependencies.yaml`) is a list of _dependencies_, referenced in files, which may or may not have an _upstream_:
+
+```yaml
+dependencies:
+- name: terraform
+  version: 0.12.3
+  upstream:
+    flavour: github
+    url: hashicorp/terraform
+  refPaths:
+  - path: helper-image/Dockerfile
+    match: TERRAFORM_VERSION
+- name: helm
+  version: 2.12.2
+  upstream:
+    flavour: github
+    url: helm/helm
+    constraints: <3.0.0
+  refPaths:
+  - path: bootstrap/tiller.yaml
+    match: gcr.io/kubernetes-helm/tiller
+  - path: helper-image/Dockerfile
+    match: HELM_LATEST_VERSION
+```
+
+Use `zeitgeist local` to verify that the dependency version is correct in all files referenced in _`refPaths`_.
+
+Use `zeitgeist validate` to also check with defined `upstreams` whether a new version is available for the given dependencies.
+
+When is Zeitgeist _not_ suggested
+=================================
+
+While Zeitgeist aims to be a great cross-language solution for tracking external dependencies, it won't be as well integrated as native package managers.
+
+If your project is mainly written in one single language with a well-known and supported package manager (e.g. [`npm`](https://www.npmjs.com/), [`maven`](https://maven.apache.org/), [`rubygems`](https://rubygems.org/), [`pip`](https://pypi.org/project/pip/), [`cargo`](https://crates.io/)...), you definitely should use your package manager rather than Zeitgeist.
+
+Credit
+======
+
+Zeitgeist is inspired by [Kubernetes' script to manage external dependencies](https://groups.google.com/forum/?pli=1#!topic/kubernetes-dev/cTaYyb1a18I) and extended to include checking with upstream sources to ensure dependencies are up-to-date.
 
 To do
 =====
@@ -16,4 +67,6 @@ To do
 - [ ] Implement non-semver support (e.g. for AMI, but also for classic releases)
 - [ ] Write good docs :)
 - [ ] Write good tests!
-- [ ] Externalise the project into its own repo & generate releases. Test self.
+- [x] Externalise the project into its own repo
+- [ ] Generate releases
+- [ ] Test self
