@@ -1,6 +1,3 @@
-Zeitgeist
-=========
-
 **Zeitgeist** ([/ˈzaɪtɡaɪst/](https://en.wikipedia.org/wiki/Help:IPA/English)) is a language-agnostic dependency checker that keeps track of external dependencies across your project and ensure they're up-to-date.
 
 ⚠️ Under active development ⚠️
