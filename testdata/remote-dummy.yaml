@@ -1,0 +1,9 @@
+dependencies:
+- name: example
+  version: 1.0.0
+  upstream:
+    flavour: dummy
+    url: example/example
+  refPaths:
+  - path: Dockerfile
+    match: TERRAFORM_VERSION

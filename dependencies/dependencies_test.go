@@ -19,6 +19,20 @@ func TestRemote(t *testing.T) {
 	}
 }
 
+func TestDummyRemote(t *testing.T) {
+	err := RemoteCheck("../testdata/remote-dummy.yaml", "")
+	if err != nil {
+		t.Errorf("Happy path local test returned: %v", err)
+	}
+}
+
+func TestRemoteConstraint(t *testing.T) {
+	err := RemoteCheck("../testdata/remote-constraint.yaml", "")
+	if err != nil {
+		t.Errorf("Happy path local test returned: %v", err)
+	}
+}
+
 func TestBrokenFile(t *testing.T) {
 	err := LocalCheck("../testdata/does-not-exist")
 	if err == nil {

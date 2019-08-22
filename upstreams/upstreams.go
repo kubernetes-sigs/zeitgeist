@@ -8,4 +8,5 @@ type UpstreamFlavour string
 
 const (
 	GitHub UpstreamFlavour = "github"
+	Dummy  UpstreamFlavour = "dummy"
 )

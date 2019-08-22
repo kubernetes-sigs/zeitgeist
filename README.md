@@ -1,11 +1,18 @@
 Zeitgeist
 =========
 
-External dependencies. We need to track them.
+**Zeitgeist** ([/ˈzaɪtɡaɪst/](https://en.wikipedia.org/wiki/Help:IPA/English)) is a language-agnostic dependency checker that keeps track of external dependencies across your project and ensure they're up-to-date.
 
-Zeitgeist is a language-agnostic dependency checker that can be used to keep track of external dependencies and ensure they're up-to-date.
+⚠️ Under active development ⚠️
 
-/!\ Under active development, currently alpha-quality software /!\
+Rationale
+=========
+
+More and more projects nowadays have external dependencies, and the best way to ensure stability and reproducibility is to pin these dependencies to a specific version.
+
+However, a new problem then arises... The world changes around us, and new versions of these dependencies are released all the time. For a simple project with a couple of dependencies, a team can usually keep up to speed by following mailing lists or Slack channels, but for larger projects it becomes a daunting task.
+
+This problem is pretty much solved by package managers in specific programming languages (see _[When is Zeitgeist _not_ suggested]()_, but it remains a big issue when your project relies on packages outside your programming language of choice, or even more so when declaring infrastructure-as-code, where the "build step" is usually bespoke and dependencies are managed manually.
 
 What is Zeitgeist
 =================
@@ -64,9 +71,9 @@ To do
 - [ ] Support `eks` upstream
 - [ ] Support `ami` upstream
 - [x] Cleanly separate various upstreams to make it easy to add new upstreams
-- [ ] Implement non-semver support (e.g. for AMI, but also for classic releases)
+- [x] Implement non-semver support (e.g. for AMI, but also for classic releases)
 - [ ] Write good docs :)
-- [ ] Write good tests!
+- [x] Write good tests!
 - [x] Externalise the project into its own repo
 - [ ] Generate releases
 - [ ] Test self

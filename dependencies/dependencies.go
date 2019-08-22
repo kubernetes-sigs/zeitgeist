@@ -119,6 +119,9 @@ func RemoteCheck(dependencyFilePath string, githubAccessToken string) error {
 		var currentVersion string = dep.Version
 
 		switch dep.Upstream.Flavour {
+		case upstreams.Dummy:
+			u := upstreams.DummyUpstream{}
+			latestVersion = u.LatestVersion()
 		case upstreams.GitHub:
 			gh := upstreams.Github{
 				AccessToken: githubAccessToken,
