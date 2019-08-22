@@ -7,7 +7,9 @@ Rationale
 
 More and more projects nowadays have external dependencies, and the best way to ensure stability and reproducibility is to pin these dependencies to a specific version.
 
-However, a new problem then arises... The world changes around us, and new versions of these dependencies are released all the time. For a simple project with a couple of dependencies, a team can usually keep up to speed by following mailing lists or Slack channels, but for larger projects it becomes a daunting task.
+However, this leads to a new problem: the world changes around us, and new versions of these dependencies are released _all the time_.
+
+For a simple project with a couple of dependencies, a team can usually keep up to speed by following mailing lists or Slack channels, but for larger projects this becomes a daunting task.
 
 This problem is pretty much solved by package managers in specific programming languages (see _[When is Zeitgeist _not_ suggested]()_, but it remains a big issue when your project relies on packages outside your programming language of choice, or even more so when declaring infrastructure-as-code, where the "build step" is usually bespoke and dependencies are managed manually.
 
