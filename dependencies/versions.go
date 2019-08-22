@@ -1,8 +1,6 @@
 package dependencies
 
 import (
-	"strings"
-
 	"github.com/blang/semver"
 )
 
@@ -23,6 +21,6 @@ func (a Version) MoreRecentThan(b Version) bool {
 		return aSemver.GT(bSemver)
 	} else {
 		// Failed semver: fallback to standard string comparison (lexicographic)
-		return strings.Compare(string(a), string(b)) > 0
+		return a > b
 	}
 }
