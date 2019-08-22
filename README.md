@@ -11,7 +11,7 @@ However, this leads to a new problem: the world changes around us, and new versi
 
 For a simple project with a couple of dependencies, a team can usually keep up to speed by following mailing lists or Slack channels, but for larger projects this becomes a daunting task.
 
-This problem is pretty much solved by package managers in specific programming languages (see _[When is Zeitgeist _not_ suggested]()_, but it remains a big issue when your project relies on packages outside your programming language of choice, or even more so when declaring infrastructure-as-code, where the "build step" is usually bespoke and dependencies are managed manually.
+This problem is pretty much solved by package managers in specific programming languages (see _When is Zeitgeist _not_ suggested_, but it remains a big issue when your project relies on packages outside your programming language of choice, or even more so when declaring infrastructure-as-code, where the "build step" is usually bespoke and dependencies are managed manually.
 
 What is Zeitgeist
 =================
