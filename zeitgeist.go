@@ -40,6 +40,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "zeitgeist"
 	app.Usage = "Manage your external dependencies"
+	app.Version = "0.1.0"
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
 			Name:        "verbose",
@@ -61,30 +62,32 @@ func main() {
 	}
 	app.Commands = []cli.Command{
 		{
-			Name:    "local",
-			Aliases: []string{},
-			Usage:   "Check all local files against declared dependency version",
-			Action: func(c *cli.Context) error {
-				initLogging(verbose)
-				dependencies.LocalCheck(config)
-				return nil
-			},
-		},
-		{
 			Name:    "validate",
 			Aliases: []string{},
 			Usage:   "Check dependencies locally and against upstream versions",
 			Action: func(c *cli.Context) error {
 				initLogging(verbose)
-				dependencies.LocalCheck(config)
-				dependencies.RemoteCheck(config, githubAccessToken)
-				return nil
+				err := dependencies.LocalCheck(config)
+				if err != nil {
+					return err
+				}
+				return dependencies.RemoteCheck(config, githubAccessToken)
+			},
+		},
+		{
+			Name:    "local",
+			Aliases: []string{},
+			Usage:   "Only check dependency consistency locally",
+			Action: func(c *cli.Context) error {
+				initLogging(verbose)
+				return dependencies.LocalCheck(config)
 			},
 		},
 	}
+
+	// Default action when no action is passed: display the help
 	app.Action = func(c *cli.Context) error {
-		log.Info("Hello friend!")
-		return nil
+		return cli.ShowAppHelp(c)
 	}
 
 	err := app.Run(os.Args)

@@ -2,6 +2,7 @@ package dependencies
 
 import (
 	"bufio"
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -37,23 +38,26 @@ type Upstream struct {
 	Constraints string                    `yaml:"constraints"`
 }
 
-func fromFile(dependencyFilePath string) *Dependencies {
+func fromFile(dependencyFilePath string) (*Dependencies, error) {
 	depFile, err := ioutil.ReadFile(dependencyFilePath)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
 	dependencies := &Dependencies{}
 	err = yaml.Unmarshal(depFile, dependencies)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return dependencies
+	return dependencies, nil
 }
 
-func LocalCheck(dependencyFilePath string) {
+func LocalCheck(dependencyFilePath string) error {
 	base := filepath.Dir(dependencyFilePath)
-	externalDeps := fromFile(dependencyFilePath)
+	externalDeps, err := fromFile(dependencyFilePath)
+	if err != nil {
+		return err
+	}
 	var nonMatchingPaths []string
 	for _, dep := range externalDeps.Dependencies {
 		log.Debugf("Examining dependency: %v", dep.Name)
@@ -61,7 +65,8 @@ func LocalCheck(dependencyFilePath string) {
 			filePath := filepath.Join(base, refPath.Path)
 			file, err := os.Open(filePath)
 			if err != nil {
-				log.Fatalf("Error opening %v: %v", filePath, err)
+				log.Errorf("Error opening %v: %v", filePath, err)
+				return err
 			}
 			log.Debugf("Examining file: %v", filePath)
 			match := refPath.Match
@@ -90,14 +95,19 @@ func LocalCheck(dependencyFilePath string) {
 		}
 
 		if len(nonMatchingPaths) > 0 {
-			log.Fatalf("%v indicates that %v should be at version %v, but the following files didn't match:\n\n"+
+			log.Errorf("%v indicates that %v should be at version %v, but the following files didn't match:\n"+
 				"%v\n", dependencyFilePath, dep.Name, dep.Version, strings.Join(nonMatchingPaths, "\n"))
+			return errors.New("Dependencies are not in sync")
 		}
 	}
+	return nil
 }
 
-func RemoteCheck(dependencyFilePath string, githubAccessToken string) {
-	externalDeps := fromFile(dependencyFilePath)
+func RemoteCheck(dependencyFilePath string, githubAccessToken string) error {
+	externalDeps, err := fromFile(dependencyFilePath)
+	if err != nil {
+		return err
+	}
 	for _, dep := range externalDeps.Dependencies {
 		if dep.Upstream == nil {
 			continue
@@ -117,7 +127,8 @@ func RemoteCheck(dependencyFilePath string, githubAccessToken string) {
 			}
 			latestVersion = gh.LatestVersion()
 		default:
-			log.Fatalf("Unknown upstream type '%v' for dependency %v", dep.Upstream.Flavour, dep.Name)
+			log.Errorf("Unknown upstream type '%v' for dependency %v", dep.Upstream.Flavour, dep.Name)
+			return errors.New("Unknown upstream type")
 		}
 
 		if Version(latestVersion).MoreRecentThan(Version(currentVersion)) {
@@ -126,4 +137,5 @@ func RemoteCheck(dependencyFilePath string, githubAccessToken string) {
 			log.Infof("No update available for dependency %v: %v (latest: %v)\n", dep.Name, currentVersion, latestVersion)
 		}
 	}
+	return nil
 }

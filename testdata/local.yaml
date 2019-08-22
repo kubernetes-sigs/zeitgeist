@@ -1,0 +1,11 @@
+dependencies:
+- name: terraform
+  version: 0.12.3
+  refPaths:
+  - path: Dockerfile
+    match: TERRAFORM_VERSION
+- name: helm
+  version: 2.12.2
+  refPaths:
+  - path: Dockerfile
+    match: gcr.io/kubernetes-helm/tiller

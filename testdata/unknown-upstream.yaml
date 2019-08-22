@@ -1,0 +1,10 @@
+dependencies:
+- name: terraform
+  version: 0.12.3
+  upstream:
+    flavour: not-github
+    url: hashicorp/terraform
+  refPaths:
+  - path: Dockerfile
+    match: TERRAFORM_VERSION
+
