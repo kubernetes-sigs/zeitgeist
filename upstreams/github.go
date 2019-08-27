@@ -2,6 +2,8 @@ package upstreams
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"strings"
 
 	"github.com/blang/semver"
@@ -11,16 +13,33 @@ import (
 )
 
 type Github struct {
-	AccessToken string
-	URL         string
-	Constraints string
+	UpstreamBase
 }
 
-func (upstream Github) LatestVersion() string {
-	log.Debugf("Using GitHub flavour")
+func getClient() *github.Client {
+	var client *github.Client
+	accessToken := os.Getenv("GITHUB_ACCESS_TOKEN")
+	if accessToken != "" {
+		log.Debugf("GitHub Access Token provided")
+		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken})
+		tc := oauth2.NewClient(oauth2.NoContext, ts)
+		client = github.NewClient(tc)
+	} else {
+		log.Warnf("No GitHub Access Token provided, might run into API limits. Set an access token with the GITHUB_ACCESS_TOKEN env var.")
+		client = github.NewClient(nil)
+	}
+	return client
+}
 
+func (upstream Github) LatestVersion() (string, error) {
+	log.Debugf("Using GitHub flavour")
+	return latestVersion(upstream, getClient)
+}
+
+func latestVersion(upstream Github, getClient func() *github.Client) (string, error) {
+	client := getClient()
 	if !strings.Contains(upstream.URL, "/") {
-		log.Fatalf("Invalid github repo: %v\nGithub repo should be in the form owner/repo, e.g. kubernetes/kubernetes\n", upstream.URL)
+		return "", fmt.Errorf("Invalid github repo: %v\nGithub repo should be in the form owner/repo, e.g. kubernetes/kubernetes\n", upstream.URL)
 	}
 
 	semverConstraints := upstream.Constraints
@@ -30,18 +49,7 @@ func (upstream Github) LatestVersion() string {
 	}
 	expectedRange, err := semver.ParseRange(semverConstraints)
 	if err != nil {
-		log.Fatalf("Invalid semver constraints range: %v\n", upstream.Constraints)
-	}
-
-	var client *github.Client
-	if upstream.AccessToken != "" {
-		log.Debugf("GitHub Access Token provided")
-		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: upstream.AccessToken})
-		tc := oauth2.NewClient(oauth2.NoContext, ts)
-		client = github.NewClient(tc)
-	} else {
-		log.Warnf("No GitHub Access Token provided, might run into API limits. Set an access token with the GITHUB_ACCESS_TOKEN env var.")
-		client = github.NewClient(nil)
+		return "", fmt.Errorf("Invalid semver constraints range: %v\n", upstream.Constraints)
 	}
 
 	splitUrl := strings.Split(upstream.URL, "/")
@@ -51,7 +59,7 @@ func (upstream Github) LatestVersion() string {
 	releases, _, err := client.Repositories.ListReleases(context.Background(), owner, repo, opt)
 
 	if err != nil {
-		log.Fatalf("Cannot list releases for repository %v/%v, error: %v\n", owner, repo, err)
+		return "", fmt.Errorf("Cannot list releases for repository %v/%v, error: %v\n", owner, repo, err)
 	}
 
 	for _, release := range releases {
@@ -80,10 +88,9 @@ func (upstream Github) LatestVersion() string {
 		}
 
 		log.Debugf("Found latest matching release: %v\n", version)
-		return version.String()
+		return version.String(), nil
 	}
 
 	// No latest version found – no versions? Only prereleases?
-	// TODO Handle this case better
-	return ""
+	return "", fmt.Errorf("No potential version found")
 }

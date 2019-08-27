@@ -35,7 +35,6 @@ func initLogging(verbose bool) {
 func main() {
 	var verbose bool
 	var config string
-	var githubAccessToken string
 
 	app := cli.NewApp()
 	app.Name = "zeitgeist"
@@ -53,12 +52,6 @@ func main() {
 			Value:       "dependencies.yaml",
 			Destination: &config,
 		},
-		cli.StringFlag{
-			Name:        "github-access-token",
-			Usage:       "Access token to use when querying the Github API",
-			EnvVar:      "GITHUB_ACCESS_TOKEN",
-			Destination: &githubAccessToken,
-		},
 	}
 	app.Commands = []cli.Command{
 		{
@@ -71,7 +64,7 @@ func main() {
 				if err != nil {
 					return err
 				}
-				return dependencies.RemoteCheck(config, githubAccessToken)
+				return dependencies.RemoteCheck(config)
 			},
 		},
 		{

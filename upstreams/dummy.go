@@ -1,11 +1,9 @@
 package upstreams
 
-type DummyUpstream struct {
-	AccessToken string
-	URL         string
-	Constraints string
+type Dummy struct {
+	UpstreamBase
 }
 
-func (upstream DummyUpstream) LatestVersion() string {
-	return "1.0.0"
+func (upstream Dummy) LatestVersion() (string, error) {
+	return "1.0.0", nil
 }
