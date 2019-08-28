@@ -42,7 +42,7 @@ func TestInvalidValues(t *testing.T) {
 	var err error
 	invalidUrl := "test"
 	gh := Github{
-		UpstreamBase{URL: invalidUrl},
+		URL: invalidUrl,
 	}
 	_, err = gh.LatestVersion()
 	if err == nil {
@@ -51,10 +51,8 @@ func TestInvalidValues(t *testing.T) {
 
 	invalidConstraint := "invalid-constraint"
 	gh2 := Github{
-		UpstreamBase{
-			URL:         "test/test",
-			Constraints: invalidConstraint,
-		},
+		URL:         "test/test",
+		Constraints: invalidConstraint,
 	}
 	_, err = gh2.LatestVersion()
 	if err == nil {

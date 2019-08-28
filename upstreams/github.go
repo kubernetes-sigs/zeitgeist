@@ -14,6 +14,8 @@ import (
 
 type Github struct {
 	UpstreamBase `mapstructure:",squash"`
+	URL          string
+	Constraints  string
 }
 
 func getClient() *github.Client {

@@ -5,7 +5,7 @@ dependencies:
   upstream:
     flavour: ami
     owner: amazon
-    match: "amazon-eks-node-1.13-*"
+    name: "amazon-eks-node-1.13-*"
   refPaths:
   - path: ../../clusters.yaml
     match: workers_ami

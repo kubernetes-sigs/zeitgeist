@@ -12,12 +12,13 @@ import (
 
 type AMI struct {
 	UpstreamBase `mapstructure:",squash"`
-	Match        string
 	Owner        string
+	Name         string
 }
 
 func (upstream AMI) LatestVersion() (string, error) {
 	log.Debugf("Using AMI upstream")
+
 	// Create a new session based on shared / env credentials
 	s := session.Must(session.NewSessionWithOptions(session.Options{
 		SharedConfigState: session.SharedConfigEnable,
@@ -26,10 +27,12 @@ func (upstream AMI) LatestVersion() (string, error) {
 
 	// Generate filters based on configuration
 	var filters []*ec2.Filter
-	filters = append(filters, &ec2.Filter{
-		Name:   aws.String("name"),
-		Values: []*string{aws.String(upstream.Match)},
-	})
+	if upstream.Name != "" {
+		filters = append(filters, &ec2.Filter{
+			Name:   aws.String("name"),
+			Values: []*string{aws.String(upstream.Name)},
+		})
+	}
 
 	input := &ec2.DescribeImagesInput{
 		Owners:  []*string{aws.String(upstream.Owner)},

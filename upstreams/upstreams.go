@@ -5,9 +5,7 @@ import (
 )
 
 type UpstreamBase struct {
-	Flavour     UpstreamFlavour `yaml:"flavour"`
-	URL         string          `yaml:"url"`
-	Constraints string          `yaml:"constraints"`
+	Flavour UpstreamFlavour `yaml:"flavour"`
 }
 
 func (u *UpstreamBase) LatestVersion() (string, error) {
