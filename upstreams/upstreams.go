@@ -21,6 +21,7 @@ type UpstreamFlavour string
 
 const (
 	GithubFlavour UpstreamFlavour = "github"
+	AMIFlavour    UpstreamFlavour = "ami"
 	DummyFlavour  UpstreamFlavour = "dummy"
 )
 
@@ -32,12 +33,13 @@ func (decoded *UpstreamBase) UnmarshalYAML(unmarshal func(interface{}) error) er
 	if err := unmarshal(&u); err != nil {
 		return err
 	}
+
 	if u.Flavour == "" {
 		return fmt.Errorf("Upstream has no `flavour`: %v", u)
 	}
 	// Validate flavours and return
 	switch u.Flavour {
-	case DummyFlavour, GithubFlavour:
+	case DummyFlavour, GithubFlavour, AMIFlavour:
 		log.Debugf("Deserialised Upstream: %v", u)
 		return nil
 	default:

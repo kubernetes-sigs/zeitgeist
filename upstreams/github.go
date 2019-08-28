@@ -13,7 +13,7 @@ import (
 )
 
 type Github struct {
-	UpstreamBase
+	UpstreamBase `mapstructure:",squash"`
 }
 
 func getClient() *github.Client {

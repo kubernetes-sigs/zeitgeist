@@ -68,7 +68,7 @@ To do
 - [x] Find a good name for the project
 - [ ] Support `helm` upstream
 - [ ] Support `eks` upstream
-- [ ] Support `ami` upstream
+- [x] Support `ami` upstream
 - [x] Cleanly separate various upstreams to make it easy to add new upstreams
 - [x] Implement non-semver support (e.g. for AMI, but also for classic releases)
 - [ ] Write good docs :)

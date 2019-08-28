@@ -12,6 +12,7 @@ import (
 
 	"github.com/pluies/zeitgeist/upstreams"
 
+	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
@@ -21,11 +22,12 @@ type Dependencies struct {
 }
 
 type Dependency struct {
-	Name     string                  `yaml:"name"`
-	Version  string                  `yaml:"version"`
-	Upstream *upstreams.UpstreamBase `yaml:"upstream"`
-	Semver   bool                    `yaml:"semver"`
-	RefPaths []*RefPath              `yaml:"refPaths"`
+	Name     string            `yaml:"name"`
+	Version  string            `yaml:"version"`
+	Scheme   VersionScheme     `yaml:"scheme"`
+	Upstream map[string]string `yaml:"upstream"`
+	Semver   bool              `yaml:"semver"`
+	RefPaths []*RefPath        `yaml:"refPaths"`
 }
 
 type RefPath struct {
@@ -47,6 +49,17 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 	}
 	if d.Version == "" {
 		return fmt.Errorf("Dependency has no `version`: %v", d)
+	}
+	// Default scheme to Semver if unset
+	if d.Scheme == "" {
+		d.Scheme = Semver
+	}
+	// Validate Scheme and return
+	switch d.Scheme {
+	case Semver, Alpha, Random:
+		// All good!
+	default:
+		return fmt.Errorf("Unknown version scheme: %s", d.Scheme)
 	}
 	log.Debugf("Deserialised Dependency %v: %v", d.Name, d)
 	return nil
@@ -123,35 +136,57 @@ func RemoteCheck(dependencyFilePath string) error {
 		return err
 	}
 	for _, dep := range externalDeps.Dependencies {
+		log.Debugf("Examining dependency: %v", dep.Name)
+
 		if dep.Upstream == nil {
 			continue
 		}
+		upstream := dep.Upstream
 
-		log.Debugf("Examining dependency: %v", dep.Name)
-
-		var latestVersion string = dep.Version
-		var currentVersion string = dep.Version
+		latestVersion := Version{dep.Version, dep.Scheme}
+		currentVersion := Version{dep.Version, dep.Scheme}
 		var err error
 
-		switch dep.Upstream.Flavour {
+		// Cast the flavour from the currently unknown upstream type
+		flavour := upstreams.UpstreamFlavour(upstream["flavour"])
+		switch flavour {
 		case upstreams.DummyFlavour:
-			u := upstreams.Dummy{*dep.Upstream}
-			latestVersion, err = u.LatestVersion()
+			var d upstreams.Dummy
+			decodeErr := mapstructure.Decode(upstream, &d)
+			if decodeErr != nil {
+				return decodeErr
+			}
+			latestVersion.Version, err = d.LatestVersion()
 		case upstreams.GithubFlavour:
-			gh := upstreams.Github{*dep.Upstream}
-			latestVersion, err = gh.LatestVersion()
+			var gh upstreams.Github
+			decodeErr := mapstructure.Decode(upstream, &gh)
+			if decodeErr != nil {
+				return decodeErr
+			}
+			latestVersion.Version, err = gh.LatestVersion()
+		case upstreams.AMIFlavour:
+			var ami upstreams.AMI
+			decodeErr := mapstructure.Decode(upstream, &ami)
+			if decodeErr != nil {
+				return decodeErr
+			}
+			latestVersion.Version, err = ami.LatestVersion()
 		default:
-			log.Errorf("Unknown upstream type '%v' for dependency %v", dep.Upstream.Flavour, dep.Name)
-			return errors.New("Unknown upstream type")
+			return fmt.Errorf("Unknown upstream flavour '%v' for dependency %v", flavour, dep.Name)
 		}
 		if err != nil {
 			return err
 		}
 
-		if Version(latestVersion).MoreRecentThan(Version(currentVersion)) {
-			log.Infof("Update available for dependency %v: %v (current: %v)\n", dep.Name, latestVersion, currentVersion)
+		updateAvailable, err := latestVersion.MoreRecentThan(currentVersion)
+		if err != nil {
+			return err
+		}
+
+		if updateAvailable {
+			log.Infof("Update available for dependency %v: %v (current: %v)\n", dep.Name, latestVersion.Version, currentVersion.Version)
 		} else {
-			log.Infof("No update available for dependency %v: %v (latest: %v)\n", dep.Name, currentVersion, latestVersion)
+			log.Infof("No update available for dependency %v: %v (latest: %v)\n", dep.Name, currentVersion.Version, latestVersion.Version)
 		}
 	}
 	return nil

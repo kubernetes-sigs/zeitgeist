@@ -1,0 +1,11 @@
+dependencies:
+- name: eks-ami
+  version: ami-09bbefc07310f7914
+  scheme: random
+  upstream:
+    flavour: ami
+    owner: amazon
+    match: "amazon-eks-node-1.13-*"
+  refPaths:
+  - path: ../../clusters.yaml
+    match: workers_ami
