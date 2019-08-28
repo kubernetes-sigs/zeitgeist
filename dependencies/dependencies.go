@@ -22,16 +22,24 @@ type Dependencies struct {
 }
 
 type Dependency struct {
-	Name     string            `yaml:"name"`
-	Version  string            `yaml:"version"`
+	Name string `yaml:"name"`
+	// Version of the dependency that should be present throughout your code
+	Version string `yaml:"version"`
+	// Scheme for versioning.
+	// Supported values:
+	// - `semver`: [Semantic versioning](https://semver.org/), default
+	// - `alpha`: alphanumeric, will use standard string sorting
+	// - `random`: e.g. when releases are hashes and do not support sorting
 	Scheme   VersionScheme     `yaml:"scheme"`
 	Upstream map[string]string `yaml:"upstream"`
-	Semver   bool              `yaml:"semver"`
-	RefPaths []*RefPath        `yaml:"refPaths"`
+	// List of references to this dependency in local files
+	RefPaths []*RefPath `yaml:"refPaths"`
 }
 
 type RefPath struct {
-	Path  string `yaml:"path"`
+	// Path of the file to test
+	Path string `yaml:"path"`
+	// Match expression for the line that should contain the dependency's version. Regexp is supported.
 	Match string `yaml:"match"`
 }
 
