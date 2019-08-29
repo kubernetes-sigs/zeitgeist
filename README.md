@@ -67,6 +67,11 @@ While Zeitgeist aims to be a great cross-language solution for tracking external
 
 If your project is mainly written in one single language with a well-known and supported package manager (e.g. [`npm`](https://www.npmjs.com/), [`maven`](https://maven.apache.org/), [`rubygems`](https://rubygems.org/), [`pip`](https://pypi.org/project/pip/), [`cargo`](https://crates.io/)...), you definitely should use your package manager rather than Zeitgeist.
 
+Naming
+======
+
+[Zeitgeist](https://en.wikipedia.org/wiki/Zeitgeist), a German compound word, can be translated as "spirit of the times" and refers to _a schema of fashions or fads which prescribes what is considered to be acceptable or tasteful for an era_.
+
 Credit
 ======
 
