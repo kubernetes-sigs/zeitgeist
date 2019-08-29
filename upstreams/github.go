@@ -12,10 +12,11 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// A Github upstream representation
 type Github struct {
 	UpstreamBase `mapstructure:",squash"`
-	URL          string
-	Constraints  string
+	URL          string // Github URL, e.g. hashicorp/terraform or helm/helm
+	Constraints  string // optional: semver constraints, e.g. < 2.0.0
 }
 
 func getClient() *github.Client {

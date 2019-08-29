@@ -44,6 +44,16 @@ dependencies:
     match: gcr.io/kubernetes-helm/tiller
   - path: helper-image/Dockerfile
     match: HELM_LATEST_VERSION
+- name: aws-eks-ami
+  version: ami-09bbefc07310f7914
+  scheme: random
+  upstream:
+    flavour: ami
+    owner: amazon
+    name: "amazon-eks-node-1.13-*"
+  refPaths:
+  - path: clusters.yaml
+    match: workers_ami
 ```
 
 Use `zeitgeist local` to verify that the dependency version is correct in all files referenced in _`refPaths`_.
