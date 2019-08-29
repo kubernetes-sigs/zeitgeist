@@ -44,6 +44,15 @@ dependencies:
     match: gcr.io/kubernetes-helm/tiller
   - path: helper-image/Dockerfile
     match: HELM_LATEST_VERSION
+- name: fluentd-chart
+  version: 2.1.1
+  upstream:
+    flavour: helm
+    repo: stable
+    name: fluentd
+  refPaths:
+  - path: helm/fluentbit/requirements.yaml
+    match: version
 - name: aws-eks-ami
   version: ami-09bbefc07310f7914
   scheme: random
@@ -81,12 +90,12 @@ To do
 =====
 
 - [x] Find a good name for the project
-- [ ] Support `helm` upstream
+- [x] Support `helm` upstream
 - [ ] Support `eks` upstream
 - [x] Support `ami` upstream
 - [x] Cleanly separate various upstreams to make it easy to add new upstreams
 - [x] Implement non-semver support (e.g. for AMI, but also for classic releases)
-- [ ] Write good docs :)
+- [x] Write good docs :)
 - [x] Write good tests!
 - [x] Externalise the project into its own repo
 - [ ] Generate releases

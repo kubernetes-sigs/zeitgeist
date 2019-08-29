@@ -1,4 +1,8 @@
 dependencies:
+- name: dummy
+  version: 1.0.0
+  upstream:
+    flavour: dummy
 - name: terraform
   version: 0.12.3
   upstream:
@@ -12,3 +16,15 @@ dependencies:
   refPaths:
   - path: Dockerfile
     match: gcr.io/kubernetes-helm/tiller
+- name: eks-ami
+  version: ami-09bbefc07310f7914
+  scheme: random
+  upstream:
+    flavour: ami
+    owner: amazon
+    name: "amazon-eks-node-1.13-*"
+- name: fluentd-chart
+  version: 1.0.0
+  upstream:
+    flavour: helm
+    name: fluentd

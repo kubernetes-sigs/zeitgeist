@@ -29,5 +29,6 @@ type UpstreamFlavour string
 const (
 	GithubFlavour UpstreamFlavour = "github"
 	AMIFlavour    UpstreamFlavour = "ami"
+	HelmFlavour   UpstreamFlavour = "helm"
 	DummyFlavour  UpstreamFlavour = "dummy"
 )

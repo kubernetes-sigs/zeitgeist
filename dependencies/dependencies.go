@@ -187,6 +187,13 @@ func RemoteCheck(dependencyFilePath string) error {
 				return decodeErr
 			}
 			latestVersion.Version, err = ami.LatestVersion()
+		case upstreams.HelmFlavour:
+			var helm upstreams.Helm
+			decodeErr := mapstructure.Decode(upstream, &helm)
+			if decodeErr != nil {
+				return decodeErr
+			}
+			latestVersion.Version, err = helm.LatestVersion()
 		default:
 			return fmt.Errorf("Unknown upstream flavour '%v' for dependency %v", flavour, dep.Name)
 		}

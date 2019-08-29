@@ -1,0 +1,13 @@
+dependencies:
+- name: fluentd-chart
+  version: 1.0.0
+  upstream:
+    flavour: helm
+    name: fluentd
+- name: fluentd-1-chart
+  version: 1.0.0
+  upstream:
+    flavour: helm
+    repo: stable
+    name: fluentd
+    constraints: < 2.0.0
