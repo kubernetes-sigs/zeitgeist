@@ -1,3 +1,7 @@
+[![CircleCI](https://circleci.com/gh/Pluies/zeitgeist.svg?style=shield)](https://circleci.com/gh/Pluies/zeitgeist)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Pluies/zeitgeist)](https://goreportcard.com/report/github.com/Pluies/zeitgeist)
+[![GoDoc](https://godoc.org/github.com/Pluies/zeitgeist?status.svg)](https://godoc.org/github.com/Pluies/zeitgeist)
+
 **Zeitgeist** ([/ˈzaɪtɡaɪst/](https://en.wikipedia.org/wiki/Help:IPA/English)) is a language-agnostic dependency checker that keeps track of external dependencies across your project and ensure they're up-to-date.
 
 ⚠️ Under active development ⚠️
