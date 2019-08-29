@@ -10,24 +10,29 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// The AMI upstream embeds predicates that will be used for filtering
+// Amazon Machine Image upstream
+//
+// See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html
 type AMI struct {
 	UpstreamBase `mapstructure:",squash"`
-	Owner        string // Either owner alias (e.g. "amazon") or owner id
-	Name         string // Name predicate, as used in --filter
+	// Either owner alias (e.g. "amazon") or owner id
+	Owner string
+	// Name predicate, as used in --filter
+	// Supports wilcards
+	Name string
 }
 
 // Get the latest version of an AMI.
 //
-// Returns the latest ami id (e.g. `ami-1234567`) from all AMIs matching
-// the predicates, sorted by CreationDate.
-// AWS credentials use the standard `~/.aws/config` and `~/.aws/credentials`
-// files, and support environment variables. See AWS documentation for more
-// details:
-// https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
+// Returns the latest ami id (e.g. `ami-1234567`) from all AMIs matching the predicates, sorted by CreationDate.
 //
-// If images cannot be listed, or if no image matches the predicates, it will
-// return an error instead.
+// If images cannot be listed, or if no image matches the predicates, it will return an error instead.
+//
+// Authentication
+//
+// Authentication is provided by the standard AWS credentials use the standard `~/.aws/config` and `~/.aws/credentials` files, and support environment variables.
+// See AWS documentation for more details:
+// https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
 func (upstream AMI) LatestVersion() (string, error) {
 	log.Debugf("Using AMI upstream")
 

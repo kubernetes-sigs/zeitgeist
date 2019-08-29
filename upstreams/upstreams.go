@@ -1,3 +1,11 @@
+// Defines how to check version info in upstream repositories.
+//
+// Upstream types are identified by their _flavour_, represented as a string (see UpstreamFlavour).
+//
+// Different Upstream types can have their own parameters, but they must:
+//
+//	- Include the BaseUpstream type
+//	- Define a LatestVersion() function that returns the latest available version as a string
 package upstreams
 
 import (

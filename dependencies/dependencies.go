@@ -1,3 +1,4 @@
+// Checks dependencies, locally or remotely
 package dependencies
 
 import (
@@ -17,20 +18,19 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Structure to deserialise the configuration file
 type Dependencies struct {
 	Dependencies []*Dependency `yaml:"dependencies"`
 }
 
+// Representation of a dependency
 type Dependency struct {
 	Name string `yaml:"name"`
 	// Version of the dependency that should be present throughout your code
 	Version string `yaml:"version"`
-	// Scheme for versioning.
-	// Supported values:
-	// - `semver`: [Semantic versioning](https://semver.org/), default
-	// - `alpha`: alphanumeric, will use standard string sorting
-	// - `random`: e.g. when releases are hashes and do not support sorting
-	Scheme   VersionScheme     `yaml:"scheme"`
+	// Scheme for versioning this dependency
+	Scheme VersionScheme `yaml:"scheme"`
+	// Optional: upstream
 	Upstream map[string]string `yaml:"upstream"`
 	// List of references to this dependency in local files
 	RefPaths []*RefPath `yaml:"refPaths"`
@@ -43,7 +43,7 @@ type RefPath struct {
 	Match string `yaml:"match"`
 }
 
-// Custom unmarshalling of Dependency to add extra validation
+// Custom unmarshalling of Dependency that adds validation
 func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	// Use a different type to prevent infinite loop in unmarshalling
 	type DependencyYAML Dependency
@@ -87,6 +87,9 @@ func fromFile(dependencyFilePath string) (*Dependencies, error) {
 	return dependencies, nil
 }
 
+// Checks whether dependencies are in-sync locally
+//
+// Will return an error if the dependency cannot be found in the files it has defined, or if the version does not match
 func LocalCheck(dependencyFilePath string) error {
 	base := filepath.Dir(dependencyFilePath)
 	externalDeps, err := fromFile(dependencyFilePath)
@@ -138,6 +141,11 @@ func LocalCheck(dependencyFilePath string) error {
 	return nil
 }
 
+// Checks whether dependencies are up to date with upstream
+//
+// Will return an error if checking the versions upstream fails.
+//
+// Out-of-date dependencies will be printed out on stdout at the INFO level.
 func RemoteCheck(dependencyFilePath string) error {
 	externalDeps, err := fromFile(dependencyFilePath)
 	if err != nil {

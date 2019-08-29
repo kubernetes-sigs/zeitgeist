@@ -1,4 +1,6 @@
-// verify that dependencies are up-to-date across different files
+// Zeitgeist is a is a language-agnostic dependency checker
+//
+// https://github.com/Pluies/zeitgeist
 package main
 
 import (

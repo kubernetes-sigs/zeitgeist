@@ -15,8 +15,11 @@ import (
 // A Github upstream representation
 type Github struct {
 	UpstreamBase `mapstructure:",squash"`
-	URL          string // Github URL, e.g. hashicorp/terraform or helm/helm
-	Constraints  string // optional: semver constraints, e.g. < 2.0.0
+	// Github URL, e.g. hashicorp/terraform or helm/helm
+	URL string
+	// Optional: semver constraints, e.g. < 2.0.0
+	// Will have no effect if the dependency does not follow Semver
+	Constraints string
 }
 
 func getClient() *github.Client {
@@ -34,6 +37,13 @@ func getClient() *github.Client {
 	return client
 }
 
+// Returns the latest non-draft, non-prerelease Github Release for the given repository (depending on the Constraints if set).
+//
+// Authentication
+//
+// The Github API allows unauthenticated requests, but the API limits are very strict: https://developer.github.com/v3/#rate-limiting
+//
+// To authenticate your requests, use the GITHUB_ACCESS_TOKEN environment variable.
 func (upstream Github) LatestVersion() (string, error) {
 	log.Debugf("Using GitHub flavour")
 	return latestVersion(upstream, getClient)
@@ -82,7 +92,7 @@ func latestVersion(upstream Github, getClient func() *github.Client) (string, er
 		// Try to match semver and range
 		version, err := semver.Parse(strings.Trim(tag, "v"))
 		if err != nil {
-			log.Debugf("Version %v is non-semver, cannot validate constraints", tag)
+			log.Debugf("Error parsing version %v (%v)as semver, cannot validate semver constraints", tag, err)
 		} else {
 			if !expectedRange(version) {
 				log.Debugf("Skipping release not matching range constraints (%v): %v\n", upstream.Constraints, tag)

@@ -59,3 +59,26 @@ func TestInvalidValues(t *testing.T) {
 		t.Errorf("Should fail on invalid Constraint:\n%s", invalidConstraint)
 	}
 }
+
+func TestWrongRepository(t *testing.T) {
+	gh := Github{
+		URL: "Pluies/doesnotexist",
+	}
+	_, err := gh.LatestVersion()
+	if err == nil {
+		t.Errorf("Should fail on repository that does not exist")
+	}
+}
+
+func TestHappyPath(t *testing.T) {
+	gh := Github{
+		URL: "helm/helm",
+	}
+	latestVersion, err := gh.LatestVersion()
+	if err != nil {
+		t.Errorf("Failed Github happy path test: %v", err)
+	}
+	if latestVersion == "" {
+		t.Errorf("Got an empty latestVersion")
+	}
+}
