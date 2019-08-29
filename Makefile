@@ -1,3 +1,6 @@
+build:
+	go build
+
 test:
 	go test ./... -covermode=count -coverprofile=coverage.out
 
