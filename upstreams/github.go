@@ -12,7 +12,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// A Github upstream representation
+// Github upstream representation
 type Github struct {
 	UpstreamBase `mapstructure:",squash"`
 	// Github URL, e.g. hashicorp/terraform or helm/helm
@@ -37,7 +37,7 @@ func getClient() *github.Client {
 	return client
 }
 
-// Returns the latest non-draft, non-prerelease Github Release for the given repository (depending on the Constraints if set).
+// LatestVersion returns the latest non-draft, non-prerelease Github Release for the given repository (depending on the Constraints if set).
 //
 // Authentication
 //
@@ -52,7 +52,7 @@ func (upstream Github) LatestVersion() (string, error) {
 func latestVersion(upstream Github, getClient func() *github.Client) (string, error) {
 	client := getClient()
 	if !strings.Contains(upstream.URL, "/") {
-		return "", fmt.Errorf("Invalid github repo: %v\nGithub repo should be in the form owner/repo, e.g. kubernetes/kubernetes\n", upstream.URL)
+		return "", fmt.Errorf("Invalid github repo: %v\nGithub repo should be in the form owner/repo, e.g. kubernetes/kubernetes", upstream.URL)
 	}
 
 	semverConstraints := upstream.Constraints
@@ -62,17 +62,17 @@ func latestVersion(upstream Github, getClient func() *github.Client) (string, er
 	}
 	expectedRange, err := semver.ParseRange(semverConstraints)
 	if err != nil {
-		return "", fmt.Errorf("Invalid semver constraints range: %v\n", upstream.Constraints)
+		return "", fmt.Errorf("Invalid semver constraints range: %v", upstream.Constraints)
 	}
 
-	splitUrl := strings.Split(upstream.URL, "/")
-	owner := splitUrl[0]
-	repo := splitUrl[1]
+	splitURL := strings.Split(upstream.URL, "/")
+	owner := splitURL[0]
+	repo := splitURL[1]
 	opt := &github.ListOptions{Page: 1, PerPage: 20}
 	releases, _, err := client.Repositories.ListReleases(context.Background(), owner, repo, opt)
 
 	if err != nil {
-		return "", fmt.Errorf("Cannot list releases for repository %v/%v, error: %v\n", owner, repo, err)
+		return "", fmt.Errorf("Cannot list releases for repository %v/%v, error: %v", owner, repo, err)
 	}
 
 	for _, release := range releases {

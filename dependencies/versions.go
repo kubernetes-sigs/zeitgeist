@@ -6,25 +6,25 @@ import (
 	"github.com/blang/semver"
 )
 
-// Internal representation of a Version as a string and a scheme
+// Version is the internal representation of a Version as a string and a scheme
 type Version struct {
 	Version string
 	Scheme  VersionScheme
 }
 
-// The VersionScheme informs us on how to compare whether a version is more recent than another
+// VersionScheme informs us on how to compare whether a version is more recent than another
 type VersionScheme string
 
 const (
-	// [Semantic versioning](https://semver.org/), default
+	// Semver [Semantic versioning](https://semver.org/), default
 	Semver VersionScheme = "semver"
-	// Alphanumeric, will use standard string sorting
+	// Alpha Alphanumeric, will use standard string sorting
 	Alpha VersionScheme = "alpha"
-	// "Random": when releases do not support sorting (e.g. hashes)
+	// Random when releases do not support sorting (e.g. hashes)
 	Random VersionScheme = "random"
 )
 
-// Checks whether a given version is more recent than another one.
+// MoreRecentThan checks whether a given version is more recent than another one.
 //
 // If the VersionScheme is "random", then it will return true if a != b.
 func (a Version) MoreRecentThan(b Version) (bool, error) {

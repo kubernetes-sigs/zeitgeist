@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Amazon Machine Image upstream
+// AMI is the Amazon Machine Image upstream
 //
 // See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html
 type AMI struct {
@@ -22,7 +22,7 @@ type AMI struct {
 	Name string
 }
 
-// Get the latest version of an AMI.
+// LatestVersion returns the latest version of an AMI.
 //
 // Returns the latest ami id (e.g. `ami-1234567`) from all AMIs matching the predicates, sorted by CreationDate.
 //

@@ -30,7 +30,7 @@ type Helm struct {
 	CAFile   string
 }
 
-// Get the latest version of a Helm chart.
+// LatestVersion returns the latest version of a Helm chart.
 //
 // Returns the latest chart version in the given repository.
 //
@@ -40,9 +40,9 @@ type Helm struct {
 func (upstream Helm) LatestVersion() (string, error) {
 	log.Debugf("Using Helm upstream")
 
-	repoUrl := upstream.Repo
-	if repoUrl == "" || repoUrl == "stable" {
-		repoUrl = "https://kubernetes-charts.storage.googleapis.com/"
+	repoURL := upstream.Repo
+	if repoURL == "" || repoURL == "stable" {
+		repoURL = "https://kubernetes-charts.storage.googleapis.com/"
 	}
 
 	// Download and write the index file to a temporary location
@@ -54,7 +54,7 @@ func (upstream Helm) LatestVersion() (string, error) {
 	defer os.Remove(tempIndexFile.Name())
 
 	c := repo.Entry{
-		URL:      repoUrl,
+		URL:      repoURL,
 		Username: upstream.Username,
 		Password: upstream.Password,
 		CertFile: upstream.CertFile,
@@ -66,7 +66,7 @@ func (upstream Helm) LatestVersion() (string, error) {
 		return "", err
 	}
 	if err := r.DownloadIndexFile(tempIndexFile.Name()); err != nil {
-		return "", fmt.Errorf("Looks like %q is not a valid chart repository or cannot be reached: %s", repoUrl, err)
+		return "", fmt.Errorf("Looks like %q is not a valid chart repository or cannot be reached: %s", repoURL, err)
 	}
 
 	// Read the index file for the repository to get chart information and return chart URL
@@ -77,11 +77,10 @@ func (upstream Helm) LatestVersion() (string, error) {
 
 	cv, err := repo.Get(upstream.Name, upstream.Constraints)
 	if err != nil {
-		if upstream.Constraints == "" {
-			return "", fmt.Errorf("%s not found in %s repository", upstream.Name, repoUrl)
-		} else {
-			return "", fmt.Errorf("%s not found in %s repository (with constraints: %s)", upstream.Name, repoUrl, upstream.Constraints)
+		if upstream.Constraints != "" {
+			return "", fmt.Errorf("%s not found in %s repository (with constraints: %s)", upstream.Name, repoURL, upstream.Constraints)
 		}
+		return "", fmt.Errorf("%s not found in %s repository", upstream.Name, repoURL)
 	}
 
 	return cv.Version, nil

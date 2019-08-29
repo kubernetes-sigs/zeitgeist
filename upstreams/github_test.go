@@ -40,13 +40,13 @@ func TestUnserialiseGithub(t *testing.T) {
 
 func TestInvalidValues(t *testing.T) {
 	var err error
-	invalidUrl := "test"
+	invalidURL := "test"
 	gh := Github{
-		URL: invalidUrl,
+		URL: invalidURL,
 	}
 	_, err = gh.LatestVersion()
 	if err == nil {
-		t.Errorf("Should fail on invalid URL:\n%s", invalidUrl)
+		t.Errorf("Should fail on invalid URL:\n%s", invalidURL)
 	}
 
 	invalidConstraint := "invalid-constraint"

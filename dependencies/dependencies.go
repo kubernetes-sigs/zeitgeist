@@ -1,4 +1,4 @@
-// Checks dependencies, locally or remotely
+// Package dependencies checks dependencies, locally or remotely
 package dependencies
 
 import (
@@ -18,12 +18,12 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Structure to deserialise the configuration file
+// Dependencies is used to deserialise the configuration file
 type Dependencies struct {
 	Dependencies []*Dependency `yaml:"dependencies"`
 }
 
-// Representation of a dependency
+// Dependency is the internal representation of a dependency
 type Dependency struct {
 	Name string `yaml:"name"`
 	// Version of the dependency that should be present throughout your code
@@ -36,6 +36,7 @@ type Dependency struct {
 	RefPaths []*RefPath `yaml:"refPaths"`
 }
 
+// RefPath represents a file to check for a reference to the version
 type RefPath struct {
 	// Path of the file to test
 	Path string `yaml:"path"`
@@ -43,7 +44,7 @@ type RefPath struct {
 	Match string `yaml:"match"`
 }
 
-// Custom unmarshalling of Dependency that adds validation
+// UnmarshalYAML implements custom unmarshalling of Dependency with validation
 func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	// Use a different type to prevent infinite loop in unmarshalling
 	type DependencyYAML Dependency
@@ -87,7 +88,7 @@ func fromFile(dependencyFilePath string) (*Dependencies, error) {
 	return dependencies, nil
 }
 
-// Checks whether dependencies are in-sync locally
+// LocalCheck checks whether dependencies are in-sync locally
 //
 // Will return an error if the dependency cannot be found in the files it has defined, or if the version does not match
 func LocalCheck(dependencyFilePath string) error {
@@ -114,7 +115,7 @@ func LocalCheck(dependencyFilePath string) error {
 			var found bool
 			var lineNumber int
 			for scanner.Scan() {
-				lineNumber += 1
+				lineNumber++
 				line := scanner.Text()
 				if matcher.MatchString(line) {
 					if strings.Contains(line, dep.Version) {
@@ -141,7 +142,7 @@ func LocalCheck(dependencyFilePath string) error {
 	return nil
 }
 
-// Checks whether dependencies are up to date with upstream
+// RemoteCheck checks whether dependencies are up to date with upstream
 //
 // Will return an error if checking the versions upstream fails.
 //

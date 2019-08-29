@@ -1,4 +1,4 @@
-// Defines how to check version info in upstream repositories.
+// Package upstreams defines how to check version info in upstream repositories.
 //
 // Upstream types are identified by their _flavour_, represented as a string (see UpstreamFlavour).
 //
@@ -12,23 +12,27 @@ import (
 	"errors"
 )
 
-// The base Upstream struct only contains a flavour. "Concrete" upstreams each implement their own fields.
+// UpstreamBase only contains a flavour. "Concrete" upstreams each implement their own fields.
 type UpstreamBase struct {
 	Flavour UpstreamFlavour `yaml:"flavour"`
 }
 
-// This function will always return an error.
+// LatestVersion will always return an error.
 // UpstreamBase is only used to determine which actual upstream needs to be called, so it cannot return a sensible value
 func (u *UpstreamBase) LatestVersion() (string, error) {
 	return "", errors.New("Cannot determine latest version for UpstreamBase")
 }
 
-// All supported upstreams and their string representation
+// UpstreamFlavour is an enum of all supported upstreams and their string representation
 type UpstreamFlavour string
 
 const (
+	// GithubFlavour is for Github releases
 	GithubFlavour UpstreamFlavour = "github"
-	AMIFlavour    UpstreamFlavour = "ami"
-	HelmFlavour   UpstreamFlavour = "helm"
-	DummyFlavour  UpstreamFlavour = "dummy"
+	// AMIFlavour is for Amazon Machine Images
+	AMIFlavour UpstreamFlavour = "ami"
+	// HelmFlavour is for Helm charts
+	HelmFlavour UpstreamFlavour = "helm"
+	// DummyFlavour is for testing
+	DummyFlavour UpstreamFlavour = "dummy"
 )
