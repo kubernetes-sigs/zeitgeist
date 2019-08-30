@@ -210,7 +210,7 @@ func RemoteCheck(dependencyFilePath string) error {
 		if updateAvailable {
 			log.Infof("Update available for dependency %v: %v (current: %v)\n", dep.Name, latestVersion.Version, currentVersion.Version)
 		} else {
-			log.Infof("No update available for dependency %v: %v (latest: %v)\n", dep.Name, currentVersion.Version, latestVersion.Version)
+			log.Debugf("No update available for dependency %v: %v (latest: %v)\n", dep.Name, currentVersion.Version, latestVersion.Version)
 		}
 	}
 	return nil

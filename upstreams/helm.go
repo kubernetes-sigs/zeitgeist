@@ -30,6 +30,47 @@ type Helm struct {
 	CAFile   string
 }
 
+// Cache remote repositories locally to prevent unnecessary network round-trips
+var cache map[string]*repo.IndexFile
+
+// getIndex returns the index for the given repository, and caches it for subsequent calls
+func getIndex(c repo.Entry) (*repo.IndexFile, error) {
+	// Check cache first
+	if cache == nil {
+		// No cache: initialise it
+		cache = make(map[string]*repo.IndexFile)
+	} else {
+		index, cacheHit := cache[c.URL]
+		if cacheHit {
+			log.Debugf("Using cached index for %s", c.URL)
+			return index, nil
+		}
+	}
+
+	// Download and write the index file to a temporary location
+	tempIndexFile, err := ioutil.TempFile("", "tmp-repo-file")
+	if err != nil {
+		return nil, fmt.Errorf("cannot write index file for repository requested")
+	}
+	defer os.Remove(tempIndexFile.Name())
+
+	r, err := repo.NewChartRepository(&c, getter.All(environment.EnvSettings{}))
+	if err != nil {
+		return nil, err
+	}
+	if err := r.DownloadIndexFile(tempIndexFile.Name()); err != nil {
+		return nil, fmt.Errorf("Looks like %q is not a valid chart repository or cannot be reached: %s", c.URL, err)
+	}
+	index, err := repo.LoadIndexFile(tempIndexFile.Name())
+	if err != nil {
+		return nil, err
+	}
+
+	// Found: add to cache
+	cache[c.URL] = index
+	return index, nil
+}
+
 // LatestVersion returns the latest version of a Helm chart.
 //
 // Returns the latest chart version in the given repository.
@@ -45,15 +86,7 @@ func (upstream Helm) LatestVersion() (string, error) {
 		repoURL = "https://kubernetes-charts.storage.googleapis.com/"
 	}
 
-	// Download and write the index file to a temporary location
-	// TODO: cache this file to prevent unnecessary network round-trips during a single invocation
-	tempIndexFile, err := ioutil.TempFile("", "tmp-repo-file")
-	if err != nil {
-		return "", fmt.Errorf("cannot write index file for repository requested")
-	}
-	defer os.Remove(tempIndexFile.Name())
-
-	c := repo.Entry{
+	entry := repo.Entry{
 		URL:      repoURL,
 		Username: upstream.Username,
 		Password: upstream.Password,
@@ -61,21 +94,14 @@ func (upstream Helm) LatestVersion() (string, error) {
 		KeyFile:  upstream.KeyFile,
 		CAFile:   upstream.CAFile,
 	}
-	r, err := repo.NewChartRepository(&c, getter.All(environment.EnvSettings{}))
-	if err != nil {
-		return "", err
-	}
-	if err := r.DownloadIndexFile(tempIndexFile.Name()); err != nil {
-		return "", fmt.Errorf("Looks like %q is not a valid chart repository or cannot be reached: %s", repoURL, err)
-	}
 
-	// Read the index file for the repository to get chart information and return chart URL
-	repo, err := repo.LoadIndexFile(tempIndexFile.Name())
+	// Get the index
+	index, err := getIndex(entry)
 	if err != nil {
 		return "", err
 	}
 
-	cv, err := repo.Get(upstream.Name, upstream.Constraints)
+	cv, err := index.Get(upstream.Name, upstream.Constraints)
 	if err != nil {
 		if upstream.Constraints != "" {
 			return "", fmt.Errorf("%s not found in %s repository (with constraints: %s)", upstream.Name, repoURL, upstream.Constraints)
