@@ -41,7 +41,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "zeitgeist"
 	app.Usage = "Manage your external dependencies"
-	app.Version = "0.0.2"
+	app.Version = "0.0.3"
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
 			Name:        "verbose",
