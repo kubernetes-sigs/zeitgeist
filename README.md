@@ -85,6 +85,22 @@ Naming
 
 [Zeitgeist](https://en.wikipedia.org/wiki/Zeitgeist), a German compound word, can be translated as "spirit of the times" and refers to _a schema of fashions or fads which prescribes what is considered to be acceptable or tasteful for an era_.
 
+Releasing
+=========
+
+Releases are generated with [goreleaser]().
+
+Step 1: edit `zeitgeist.go` to make sure the current version is the one about to be released.
+
+Step 2: run:
+
+```bash
+git tag v0.0.0 # Use the correct version here
+git push --tags
+export GPG_TTY=$(tty)
+goreleaser release --rm-dist
+```
+
 Credit
 ======
 
@@ -102,5 +118,5 @@ To do
 - [x] Write good docs :)
 - [x] Write good tests!
 - [x] Externalise the project into its own repo
-- [ ] Generate releases
+- [x] Generate releases
 - [ ] Test self
