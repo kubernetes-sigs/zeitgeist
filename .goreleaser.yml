@@ -27,13 +27,13 @@ release:
     owner: pluies
     name: zeitgeist
   prerelease: auto
-dockers:
-- image_templates:
-  - "pluies/zeitgeist:latest"
-  - "pluies/zeitgeist:{{ .Tag }}"
-  dockerfile: Dockerfile-goreleaser
-  binaries:
-  - zeitgeist
+#dockers:
+#- image_templates:
+#  - "pluies/zeitgeist:latest"
+#  - "pluies/zeitgeist:{{ .Tag }}"
+#  dockerfile: Dockerfile-goreleaser
+#  binaries:
+#  - zeitgeist
 changelog:
   sort: asc
   filters:
