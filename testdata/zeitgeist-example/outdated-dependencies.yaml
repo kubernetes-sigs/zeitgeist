@@ -1,0 +1,17 @@
+dependencies:
+- name: helm
+  version: 2.9.0
+  upstream:
+    flavour: github
+    url: helm/helm
+  refPaths:
+  - path: Dockerfile
+    match: HELM_VERSION
+- name: terraform
+  version: 0.9.0
+  upstream:
+    flavour: github
+    url: hashicorp/terraform
+  refPaths:
+  - path: Dockerfile
+    match: TERRAFORM_VERSION

@@ -4,8 +4,6 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/Pluies/zeitgeist)](https://goreportcard.com/report/github.com/Pluies/zeitgeist)
 [![GoDoc](https://godoc.org/github.com/Pluies/zeitgeist?status.svg)](https://godoc.org/github.com/Pluies/zeitgeist)
 
-⚠️ Under active development ⚠️
-
 Rationale
 =========
 
@@ -15,7 +13,11 @@ However, this leads to a new problem: the world changes around us, and new versi
 
 For a simple project with a couple of dependencies, a team can usually keep up to speed by following mailing lists or Slack channels, but for larger projects this becomes a daunting task.
 
-This problem is pretty much solved by package managers in specific programming languages (see _When is Zeitgeist _not_ suggested_, but it remains a big issue when your project relies on packages outside your programming language of choice, or even more so when declaring infrastructure-as-code, where the "build step" is usually bespoke and dependencies are managed manually.
+This problem is pretty much solved by package managers in specific programming languages (see _When is Zeitgeist _not_ suggested_ below), but it remains a big issue when:
+
+- Your project relies on packages outside your programming language of choice
+- You declare infrastructure-as-code, where the "build step" is usually bespoke and dependencies are managed manually
+- Dependencies do not belong in a classical "package manager" (e.g. AMI images)
 
 What is Zeitgeist
 =================
@@ -69,9 +71,13 @@ dependencies:
     match: workers_ami
 ```
 
-Use `zeitgeist local` to verify that the dependency version is correct in all files referenced in _`refPaths`_.
+Use `zeitgeist local` to verify that the dependency version is correct in all files referenced in _`refPaths`_:
 
-Use `zeitgeist validate` to also check with defined `upstreams` whether a new version is available for the given dependencies.
+![zeigeist local](/docs/local.png)
+
+Use `zeitgeist validate` to also check with defined `upstreams` whether a new version is available for the given dependencies:
+
+![zeigeist validate](/docs/validate.png)
 
 When is Zeitgeist _not_ suggested
 =================================
