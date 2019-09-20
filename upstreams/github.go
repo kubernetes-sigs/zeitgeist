@@ -68,11 +68,25 @@ func latestVersion(upstream Github, getClient func() *github.Client) (string, er
 	splitURL := strings.Split(upstream.URL, "/")
 	owner := splitURL[0]
 	repo := splitURL[1]
-	opt := &github.ListOptions{Page: 1, PerPage: 20}
-	releases, _, err := client.Repositories.ListReleases(context.Background(), owner, repo, opt)
+	opt := &github.ListOptions{PerPage: 30}
 
-	if err != nil {
-		return "", fmt.Errorf("Cannot list releases for repository %v/%v, error: %v", owner, repo, err)
+	// We'll need to fetch all releases, as Github doesn't provide sorting options.
+	// If we don't do that, we risk running into the case where for example:
+	// - Version 1.0.0 and 2.0.0 exist
+	// - A bugfix 1.0.1 gets released
+	// - Now the "latest" (date-wise) release is not the highest semver, and not necessarily the one we want
+	var releases []*github.RepositoryRelease
+	for {
+		releasesInPage, resp, err := client.Repositories.ListReleases(context.Background(), owner, repo, opt)
+		if err != nil {
+			return "", fmt.Errorf("Cannot list releases for repository %v/%v, error: %v", owner, repo, err)
+		}
+		releases = append(releases, releasesInPage...)
+		// Pagination handling: if there's a next page, try it too
+		if resp.NextPage == 0 {
+			break
+		}
+		opt.Page = resp.NextPage
 	}
 
 	for _, release := range releases {

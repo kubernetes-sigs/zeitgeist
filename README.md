@@ -125,4 +125,5 @@ To do
 - [x] Write good tests!
 - [x] Externalise the project into its own repo
 - [x] Generate releases
+- [ ] Automate release generation from a tag
 - [ ] Test self
