@@ -4,12 +4,20 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/pluies/zeitgeist/dependencies"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
+)
+
+// Variables set by GoReleaser on release
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
 )
 
 // Initialise logging level based on LOG_LEVEL env var, or the --verbose flag.
@@ -41,7 +49,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "zeitgeist"
 	app.Usage = "Manage your external dependencies"
-	app.Version = "0.0.4"
+	app.Version = fmt.Sprintf("%v", version)
 	app.Flags = []cli.Flag{
 		cli.BoolFlag{
 			Name:        "verbose",

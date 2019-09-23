@@ -3,7 +3,6 @@ jobs:
   build:
     docker:
     - image: circleci/golang:1.12
-
     environment:
       TEST_RESULTS: /tmp/test-results
 
@@ -29,7 +28,7 @@ jobs:
         paths:
         - "/go/pkg"
     - store_artifacts:
-        path: /tmp/test-results
+        path: ${TEST_RESULTS}
         destination: raw-test-output
     - store_test_results:
-        path: /tmp/test-results
+        path: ${TEST_RESULTS}
