@@ -94,11 +94,7 @@ Naming
 Releasing
 =========
 
-Releases are generated with [goreleaser]().
-
-Step 1: edit `zeitgeist.go` to make sure the current version is the one about to be released.
-
-Step 2: run:
+Releases are generated with [goreleaser](https://goreleaser.com/).
 
 ```bash
 git tag v0.0.0 # Use the correct version here
