@@ -47,10 +47,7 @@ jobs:
 
 workflows:
   version: 2
-  build:
-    jobs:
-    - build
-  release:
+  build-and-release:
     jobs:
     - build
     - release:
