@@ -52,6 +52,7 @@ workflows:
     - build
   release:
     jobs:
+    - build
     - release:
         requires:
         - build
