@@ -11,7 +11,8 @@ jobs:
     - run: mkdir -p $TEST_RESULTS
     - restore_cache:
         keys:
-        - v1-pkg-cache
+        - pkg-cache-{{ checksum "go.sum" }}
+        - pkg-cache-
     - run:
         name: Linting
         command: make lint
@@ -24,7 +25,7 @@ jobs:
           make test | tee ${TEST_RESULTS}/go-test.out
           cp coverage.out ${TEST_RESULTS}/coverage.out
     - save_cache:
-        key: v1-pkg-cache
+        key: pkg-cache-{{ checksum "go.sum" }}
         paths:
         - "/go/pkg"
     - store_artifacts:
