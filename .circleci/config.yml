@@ -32,12 +32,18 @@ jobs:
         destination: raw-test-output
     - store_test_results:
         path: ${TEST_RESULTS}
+
   release:
     docker:
       - image: circleci/golang:1.12
     steps:
       - checkout
-      - run: curl -sL https://git.io/goreleaser | bash
+      - run:
+          name: Import GPG key
+          command: echo -e "$GPG_KEY" | gpg --import
+      - run:
+          name: Release with GoReleaser
+          command: curl -sL https://git.io/goreleaser | bash
 
 workflows:
   version: 2
@@ -46,7 +52,10 @@ workflows:
     - build
   release:
     jobs:
+    - build
     - release:
+        requires:
+        - build
         filters:
           branches:
             ignore: /.*/
