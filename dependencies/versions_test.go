@@ -53,6 +53,47 @@ func TestSemverVersions(t *testing.T) {
 	}
 }
 
+func TestSemverSensitiveVersions(t *testing.T) {
+	a := Version{"1.0.0", Semver}
+	b := Version{"1.1.0", Semver}
+	shouldBeFalse, _ := b.MoreSensitivelyRecentThan(a, Major)
+	if shouldBeFalse == true {
+		t.Errorf("Version %v should not be more recent that version %v with sensitivity %v", b, a, Major)
+	}
+
+	shouldBeTrue, _ := b.MoreSensitivelyRecentThan(a, Minor)
+	if shouldBeTrue != true {
+		t.Errorf("Version %v should be more recent that version %v with sensitivity %v", b, a, Minor)
+	}
+
+	shouldBeTrue, _ = b.MoreSensitivelyRecentThan(a, Patch)
+	if shouldBeTrue != true {
+		t.Errorf("Version %v should be more recent that version %v with sensitivity %v", b, a, Patch)
+	}
+
+	a = Version{"1.0.0", Semver}
+	b = Version{"1.0.1", Semver}
+	shouldBeFalse, _ = b.MoreSensitivelyRecentThan(a, Major)
+	if shouldBeFalse == true {
+		t.Errorf("Version %v should not be more recent that version %v with sensitivity %v", b, a, Major)
+	}
+
+	shouldBeFalse, _ = b.MoreSensitivelyRecentThan(a, Minor)
+	if shouldBeFalse == true {
+		t.Errorf("Version %v should not be more recent that version %v with sensitivity %v", b, a, Minor)
+	}
+
+	shouldBeTrue, _ = b.MoreSensitivelyRecentThan(a, Patch)
+	if shouldBeTrue != true {
+		t.Errorf("Version %v should be more recent that version %v with sensitivity %v", b, a, Patch)
+	}
+
+	_, shouldError := b.MoreSensitivelyRecentThan(a, "foo")
+	if shouldError == nil {
+		t.Errorf("Should error on sensitivity %v", "foo")
+	}
+}
+
 func TestAlphaVersions(t *testing.T) {
 	a := Version{"20180101-commitid", Alpha}
 	b := Version{"20180505-commitid", Alpha}
