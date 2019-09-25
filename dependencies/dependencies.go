@@ -30,6 +30,8 @@ type Dependency struct {
 	Version string `yaml:"version"`
 	// Scheme for versioning this dependency
 	Scheme VersionScheme `yaml:"scheme"`
+	// Optional: sensitivity, to alert e.g. on new major versions
+	Sensitivity VersionSensitivity `yaml:"sensitivity"`
 	// Optional: upstream
 	Upstream map[string]string `yaml:"upstream"`
 	// List of references to this dependency in local files
@@ -202,7 +204,7 @@ func RemoteCheck(dependencyFilePath string) error {
 			return err
 		}
 
-		updateAvailable, err := latestVersion.MoreRecentThan(currentVersion)
+		updateAvailable, err := latestVersion.MoreSensitivelyRecentThan(currentVersion, dep.Sensitivity)
 		if err != nil {
 			return err
 		}
