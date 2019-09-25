@@ -52,6 +52,7 @@ dependencies:
     match: HELM_LATEST_VERSION
 - name: fluentd-chart
   version: 2.1.1
+  sensitivity: major
   upstream:
     flavour: helm
     repo: stable
@@ -78,6 +79,8 @@ Use `zeitgeist local` to verify that the dependency version is correct in all fi
 Use `zeitgeist validate` to also check with defined `upstreams` whether a new version is available for the given dependencies:
 
 ![zeigeist validate](/docs/validate.png)
+
+See the [full documentation](https://godoc.org/github.com/Pluies/zeitgeist/dependencies#Dependency) to see configuration options.
 
 When is Zeitgeist _not_ suggested
 =================================
