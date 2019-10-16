@@ -118,6 +118,7 @@ To do
 - [x] Support `helm` upstream
 - [ ] Support `eks` upstream
 - [x] Support `ami` upstream
+- [ ] support `docker` upstream
 - [x] Cleanly separate various upstreams to make it easy to add new upstreams
 - [x] Implement non-semver support (e.g. for AMI, but also for classic releases)
 - [x] Write good docs :)
