@@ -15,21 +15,21 @@ func TestLocal(t *testing.T) {
 }
 
 func TestRemote(t *testing.T) {
-	err := RemoteCheck("../testdata/remote.yaml")
+	_, err := RemoteCheck("../testdata/remote.yaml")
 	if err != nil {
 		t.Errorf("Happy path local test returned: %v", err)
 	}
 }
 
 func TestDummyRemote(t *testing.T) {
-	err := RemoteCheck("../testdata/remote-dummy.yaml")
+	_, err := RemoteCheck("../testdata/remote-dummy.yaml")
 	if err != nil {
 		t.Errorf("Happy path local test returned: %v", err)
 	}
 }
 
 func TestRemoteConstraint(t *testing.T) {
-	err := RemoteCheck("../testdata/remote-constraint.yaml")
+	_, err := RemoteCheck("../testdata/remote-constraint.yaml")
 	if err != nil {
 		t.Errorf("Happy path local test returned: %v", err)
 	}
@@ -61,7 +61,7 @@ func TestFileDoesntExist(t *testing.T) {
 }
 
 func TestUnknownUpstreamFlavour(t *testing.T) {
-	err := RemoteCheck("../testdata/unknown-upstream.yaml")
+	_, err := RemoteCheck("../testdata/unknown-upstream.yaml")
 	if err == nil {
 		t.Errorf("Did not return an error when it should have")
 	}
