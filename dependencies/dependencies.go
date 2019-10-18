@@ -149,11 +149,12 @@ func LocalCheck(dependencyFilePath string) error {
 // Will return an error if checking the versions upstream fails.
 //
 // Out-of-date dependencies will be printed out on stdout at the INFO level.
-func RemoteCheck(dependencyFilePath string) error {
+func RemoteCheck(dependencyFilePath string) ([]string, error) {
 	externalDeps, err := fromFile(dependencyFilePath)
 	if err != nil {
-		return err
+		return nil, err
 	}
+	updates := make([]string, 0)
 	for _, dep := range externalDeps.Dependencies {
 		log.Debugf("Examining dependency: %v", dep.Name)
 
@@ -173,47 +174,47 @@ func RemoteCheck(dependencyFilePath string) error {
 			var d upstreams.Dummy
 			decodeErr := mapstructure.Decode(upstream, &d)
 			if decodeErr != nil {
-				return decodeErr
+				return nil, decodeErr
 			}
 			latestVersion.Version, err = d.LatestVersion()
 		case upstreams.GithubFlavour:
 			var gh upstreams.Github
 			decodeErr := mapstructure.Decode(upstream, &gh)
 			if decodeErr != nil {
-				return decodeErr
+				return nil, decodeErr
 			}
 			latestVersion.Version, err = gh.LatestVersion()
 		case upstreams.AMIFlavour:
 			var ami upstreams.AMI
 			decodeErr := mapstructure.Decode(upstream, &ami)
 			if decodeErr != nil {
-				return decodeErr
+				return nil, decodeErr
 			}
 			latestVersion.Version, err = ami.LatestVersion()
 		case upstreams.HelmFlavour:
 			var helm upstreams.Helm
 			decodeErr := mapstructure.Decode(upstream, &helm)
 			if decodeErr != nil {
-				return decodeErr
+				return nil, decodeErr
 			}
 			latestVersion.Version, err = helm.LatestVersion()
 		default:
-			return fmt.Errorf("Unknown upstream flavour '%v' for dependency %v", flavour, dep.Name)
+			return nil, fmt.Errorf("Unknown upstream flavour '%v' for dependency %v", flavour, dep.Name)
 		}
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		updateAvailable, err := latestVersion.MoreSensitivelyRecentThan(currentVersion, dep.Sensitivity)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		if updateAvailable {
-			log.Infof("Update available for dependency %v: %v (current: %v)\n", dep.Name, latestVersion.Version, currentVersion.Version)
+			updates = append(updates, fmt.Sprintf("Update available for dependency %v: %v (current: %v)", dep.Name, latestVersion.Version, currentVersion.Version))
 		} else {
 			log.Debugf("No update available for dependency %v: %v (latest: %v)\n", dep.Name, currentVersion.Version, latestVersion.Version)
 		}
 	}
-	return nil
+	return updates, nil
 }

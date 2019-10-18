@@ -22,7 +22,7 @@ var (
 
 // Initialise logging level based on LOG_LEVEL env var, or the --verbose flag.
 // Defaults to info
-func initLogging(verbose bool, human bool, json bool) {
+func initLogging(verbose bool, json bool) {
 	logLevelStr, ok := os.LookupEnv("LOG_LEVEL")
 	if !ok {
 		if verbose {
@@ -36,9 +36,7 @@ func initLogging(verbose bool, human bool, json bool) {
 		log.Fatalf("Invalid LOG_LEVEL: %v", logLevelStr)
 	}
 	log.SetLevel(logLevel)
-	if human {
-		log.SetFormatter(&log.TextFormatter{DisableTimestamp: true})
-	} else if json {
+	if json {
 		log.SetFormatter(&log.JSONFormatter{})
 	} else {
 		log.SetFormatter(&log.TextFormatter{
@@ -50,7 +48,6 @@ func initLogging(verbose bool, human bool, json bool) {
 
 func main() {
 	var verbose bool
-	var human bool
 	var json bool
 	var config string
 
@@ -63,11 +60,6 @@ func main() {
 			Name:        "verbose",
 			Usage:       "Set log level to DEBUG",
 			Destination: &verbose,
-		},
-		cli.BoolFlag{
-			Name:        "human-output",
-			Usage:       "Human-readable logging output (nice text only)",
-			Destination: &human,
 		},
 		cli.BoolFlag{
 			Name:        "json-output",
@@ -87,12 +79,19 @@ func main() {
 			Aliases: []string{},
 			Usage:   "Check dependencies locally and against upstream versions",
 			Action: func(c *cli.Context) error {
-				initLogging(verbose, human, json)
+				initLogging(verbose, json)
 				err := dependencies.LocalCheck(config)
 				if err != nil {
 					return err
 				}
-				return dependencies.RemoteCheck(config)
+				updates, err := dependencies.RemoteCheck(config)
+				if err != nil {
+					return err
+				}
+				for _, update := range updates {
+					fmt.Printf(update + "\n")
+				}
+				return nil
 			},
 		},
 		{
@@ -100,7 +99,7 @@ func main() {
 			Aliases: []string{},
 			Usage:   "Only check dependency consistency locally",
 			Action: func(c *cli.Context) error {
-				initLogging(verbose, human, json)
+				initLogging(verbose, json)
 				return dependencies.LocalCheck(config)
 			},
 		},
