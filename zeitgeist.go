@@ -22,7 +22,7 @@ var (
 
 // Initialise logging level based on LOG_LEVEL env var, or the --verbose flag.
 // Defaults to info
-func initLogging(verbose bool) {
+func initLogging(verbose bool, human bool, json bool) {
 	logLevelStr, ok := os.LookupEnv("LOG_LEVEL")
 	if !ok {
 		if verbose {
@@ -36,14 +36,22 @@ func initLogging(verbose bool) {
 		log.Fatalf("Invalid LOG_LEVEL: %v", logLevelStr)
 	}
 	log.SetLevel(logLevel)
-	log.SetFormatter(&log.TextFormatter{
-		FullTimestamp:          true,
-		DisableLevelTruncation: true,
-	})
+	if human {
+		log.SetFormatter(&log.TextFormatter{DisableTimestamp: true})
+	} else if json {
+		log.SetFormatter(&log.JSONFormatter{})
+	} else {
+		log.SetFormatter(&log.TextFormatter{
+			FullTimestamp:          true,
+			DisableLevelTruncation: true,
+		})
+	}
 }
 
 func main() {
 	var verbose bool
+	var human bool
+	var json bool
 	var config string
 
 	app := cli.NewApp()
@@ -55,6 +63,16 @@ func main() {
 			Name:        "verbose",
 			Usage:       "Set log level to DEBUG",
 			Destination: &verbose,
+		},
+		cli.BoolFlag{
+			Name:        "human-output",
+			Usage:       "Human-readable logging output (nice text only)",
+			Destination: &human,
+		},
+		cli.BoolFlag{
+			Name:        "json-output",
+			Usage:       "JSON logging output",
+			Destination: &json,
 		},
 		cli.StringFlag{
 			Name:        "config, c",
@@ -69,7 +87,7 @@ func main() {
 			Aliases: []string{},
 			Usage:   "Check dependencies locally and against upstream versions",
 			Action: func(c *cli.Context) error {
-				initLogging(verbose)
+				initLogging(verbose, human, json)
 				err := dependencies.LocalCheck(config)
 				if err != nil {
 					return err
@@ -82,7 +100,7 @@ func main() {
 			Aliases: []string{},
 			Usage:   "Only check dependency consistency locally",
 			Action: func(c *cli.Context) error {
-				initLogging(verbose)
+				initLogging(verbose, human, json)
 				return dependencies.LocalCheck(config)
 			},
 		},
