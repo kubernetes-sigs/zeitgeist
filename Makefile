@@ -4,7 +4,7 @@ build:
 lint:
 	test -z $(shell go fmt .) || (echo "Linting failed !" && exit 8)
 	go vet ./...
-	go get -u golang.org/x/lint/golint
+	GO111MODULE=off go get -u golang.org/x/lint/golint
 	golint ./...
 
 test:
