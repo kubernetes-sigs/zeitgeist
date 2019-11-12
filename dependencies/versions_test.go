@@ -92,6 +92,13 @@ func TestSemverSensitiveVersions(t *testing.T) {
 	if shouldError == nil {
 		t.Errorf("Should error on sensitivity %v", "foo")
 	}
+
+	a = Version{"6.21.0", Semver}
+	b = Version{"8.1.8", Semver}
+	shouldBeTrue, _ = b.MoreSensitivelyRecentThan(a, Minor)
+	if shouldBeTrue != true {
+		t.Errorf("Version %v should be more recent that version %v with sensitivity %v", b, a, Minor)
+	}
 }
 
 func TestAlphaVersions(t *testing.T) {

@@ -83,7 +83,7 @@ func semverCompare(a semver.Version, b semver.Version, sensitivity VersionSensit
 	case Major:
 		return a.Major > b.Major, nil
 	case Minor:
-		return !(a.Major < b.Major) && a.Minor > b.Minor, nil
+		return a.Major > b.Major || (a.Major == b.Major && a.Minor > b.Minor), nil
 	case Patch:
 		return a.GT(b), nil
 	default:
