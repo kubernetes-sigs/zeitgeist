@@ -31,8 +31,8 @@ import (
 // Variables set by GoReleaser on release
 var (
 	version = "dev"
-	commit  = "none"
-	date    = "unknown"
+	commit  = "none"    // nolint: deadcode,gochecknoglobals,unused,varcheck
+	date    = "unknown" // nolint: deadcode,gochecknoglobals,unused,varcheck
 )
 
 // Initialise logging level based on LOG_LEVEL env var, or the --verbose flag.
@@ -129,6 +129,7 @@ func main() {
 	}
 
 	// Default action when no action is passed: display the help
+	// nolint: gocritic
 	app.Action = func(c *cli.Context) error {
 		return cli.ShowAppHelp(c)
 	}
