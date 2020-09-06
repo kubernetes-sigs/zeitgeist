@@ -40,7 +40,8 @@ const (
 	Random VersionScheme = "random"
 )
 
-// VersionSensitivity informs us on how to compare whether a version is more recent than another, for example to only notify on new major versions
+// VersionSensitivity informs us on how to compare whether a version is more
+// recent than another, for example to only notify on new major versions
 // Only applicable to Semver versioning
 type VersionSensitivity string
 
@@ -60,7 +61,8 @@ func (a Version) MoreRecentThan(b Version) (bool, error) {
 	return a.MoreSensitivelyRecentThan(b, Patch)
 }
 
-// MoreSensitivelyRecentThan checks whether a given version is more recent than another one, accepting a VersionSensitivity argument
+// MoreSensitivelyRecentThan checks whether a given version is more recent than
+// another one, accepting a VersionSensitivity argument
 //
 // If the VersionScheme is "random", then it will return true if a != b.
 func (a Version) MoreSensitivelyRecentThan(b Version, sensitivity VersionSensitivity) (bool, error) {
@@ -68,19 +70,23 @@ func (a Version) MoreSensitivelyRecentThan(b Version, sensitivity VersionSensiti
 	if sensitivity == "" {
 		sensitivity = Patch
 	}
+
 	if a.Scheme != b.Scheme {
 		return false, fmt.Errorf("trying to compare incompatible 'Version' schemes: %s and %s", a.Scheme, b.Scheme)
 	}
+
 	switch a.Scheme {
 	case Semver:
 		aSemver, err := semver.Parse(a.Version)
 		if err != nil {
 			return false, err
 		}
+
 		bSemver, err := semver.Parse(b.Version)
 		if err != nil {
 			return false, err
 		}
+
 		return semverCompare(aSemver, bSemver, sensitivity)
 	case Alpha:
 		// Alphanumeric comparison (basic string compare)

@@ -46,7 +46,8 @@ type AMI struct {
 //
 // Authentication
 //
-// Authentication is provided by the standard AWS credentials use the standard `~/.aws/config` and `~/.aws/credentials` files, and support environment variables.
+// Authentication is provided by the standard AWS credentials use the standard
+// `~/.aws/config` and `~/.aws/credentials` files, and support environment variables.
 // See AWS documentation for more details:
 // https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
 func (upstream AMI) LatestVersion() (string, error) {
@@ -75,6 +76,7 @@ func (upstream AMI) LatestVersion() (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	images := result.Images
 
 	// Sort images by creation time, so we can return the latest

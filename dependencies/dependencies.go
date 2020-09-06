@@ -66,21 +66,27 @@ type RefPath struct {
 func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	// Use a different type to prevent infinite loop in unmarshalling
 	type DependencyYAML Dependency
+
 	d := (*DependencyYAML)(decoded)
+
 	if err := unmarshal(&d); err != nil {
 		return err
 	}
+
 	// Custom validation for the Dependency type
 	if d.Name == "" {
 		return fmt.Errorf("Dependency has no `name`: %v", d)
 	}
+
 	if d.Version == "" {
 		return fmt.Errorf("Dependency has no `version`: %v", d)
 	}
+
 	// Default scheme to Semver if unset
 	if d.Scheme == "" {
 		d.Scheme = Semver
 	}
+
 	// Validate Scheme and return
 	switch d.Scheme {
 	case Semver, Alpha, Random:
@@ -88,7 +94,9 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 	default:
 		return fmt.Errorf("unknown version scheme: %s", d.Scheme)
 	}
+
 	log.Debugf("Deserialised Dependency %v: %v", d.Name, d)
+
 	return nil
 }
 
@@ -99,10 +107,12 @@ func fromFile(dependencyFilePath string) (*Dependencies, error) {
 	}
 
 	dependencies := &Dependencies{}
+
 	err = yaml.Unmarshal(depFile, dependencies)
 	if err != nil {
 		return nil, err
 	}
+
 	return dependencies, nil
 }
 
@@ -111,42 +121,61 @@ func fromFile(dependencyFilePath string) (*Dependencies, error) {
 // Will return an error if the dependency cannot be found in the files it has defined, or if the version does not match
 func LocalCheck(dependencyFilePath string) error {
 	base := filepath.Dir(dependencyFilePath)
+
 	externalDeps, err := fromFile(dependencyFilePath)
 	if err != nil {
 		return err
 	}
+
 	var nonMatchingPaths []string
+
 	for _, dep := range externalDeps.Dependencies {
 		log.Debugf("Examining dependency: %v", dep.Name)
+
 		for _, refPath := range dep.RefPaths {
 			filePath := filepath.Join(base, refPath.Path)
+
 			file, err := os.Open(filePath)
 			if err != nil {
 				log.Errorf("Error opening %v: %v", filePath, err)
 				return err
 			}
+
 			log.Debugf("Examining file: %v", filePath)
+
 			match := refPath.Match
 			matcher := regexp.MustCompile(match)
 			scanner := bufio.NewScanner(file)
 
 			var found bool
+
 			var lineNumber int
 			for scanner.Scan() {
 				lineNumber++
+
 				line := scanner.Text()
 				if matcher.MatchString(line) {
 					if strings.Contains(line, dep.Version) {
-						log.Debugf("Line %v matches expected regexp '%v' and version '%v':\n%v", lineNumber, match, dep.Version, line)
+						log.Debugf(
+							"Line %v matches expected regexp '%v' and version '%v':\n%v",
+							lineNumber,
+							match,
+							dep.Version,
+							line,
+						)
+
 						found = true
+
 						break
 					} else {
 						log.Warnf("Line %v matches expected regexp '%v', but not version '%v':\n%v", lineNumber, match, dep.Version, line)
 					}
 				}
 			}
+
 			if !found {
 				log.Debugf("Finished reading file %v, no match found.", filePath)
+
 				nonMatchingPaths = append(nonMatchingPaths, refPath.Path)
 			}
 		}
@@ -157,6 +186,7 @@ func LocalCheck(dependencyFilePath string) error {
 			return errors.New("Dependencies are not in sync")
 		}
 	}
+
 	return nil
 }
 
@@ -170,17 +200,20 @@ func RemoteCheck(dependencyFilePath string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	updates := make([]string, 0)
+
 	for _, dep := range externalDeps.Dependencies {
 		log.Debugf("Examining dependency: %v", dep.Name)
 
 		if dep.Upstream == nil {
 			continue
 		}
-		upstream := dep.Upstream
 
+		upstream := dep.Upstream
 		latestVersion := Version{dep.Version, dep.Scheme}
 		currentVersion := Version{dep.Version, dep.Scheme}
+
 		var err error
 
 		// Cast the flavour from the currently unknown upstream type
@@ -188,35 +221,44 @@ func RemoteCheck(dependencyFilePath string) ([]string, error) {
 		switch flavour {
 		case upstreams.DummyFlavour:
 			var d upstreams.Dummy
+
 			decodeErr := mapstructure.Decode(upstream, &d)
 			if decodeErr != nil {
 				return nil, decodeErr
 			}
+
 			latestVersion.Version, err = d.LatestVersion()
 		case upstreams.GithubFlavour:
 			var gh upstreams.Github
+
 			decodeErr := mapstructure.Decode(upstream, &gh)
 			if decodeErr != nil {
 				return nil, decodeErr
 			}
+
 			latestVersion.Version, err = gh.LatestVersion()
 		case upstreams.AMIFlavour:
 			var ami upstreams.AMI
+
 			decodeErr := mapstructure.Decode(upstream, &ami)
 			if decodeErr != nil {
 				return nil, decodeErr
 			}
+
 			latestVersion.Version, err = ami.LatestVersion()
 		case upstreams.HelmFlavour:
 			var helm upstreams.Helm
+
 			decodeErr := mapstructure.Decode(upstream, &helm)
 			if decodeErr != nil {
 				return nil, decodeErr
 			}
+
 			latestVersion.Version, err = helm.LatestVersion()
 		default:
 			return nil, fmt.Errorf("unknown upstream flavour '%v' for dependency %v", flavour, dep.Name)
 		}
+
 		if err != nil {
 			return nil, err
 		}
@@ -227,10 +269,24 @@ func RemoteCheck(dependencyFilePath string) ([]string, error) {
 		}
 
 		if updateAvailable {
-			updates = append(updates, fmt.Sprintf("Update available for dependency %v: %v (current: %v)", dep.Name, latestVersion.Version, currentVersion.Version))
+			updates = append(
+				updates,
+				fmt.Sprintf(
+					"Update available for dependency %v: %v (current: %v)",
+					dep.Name,
+					latestVersion.Version,
+					currentVersion.Version,
+				),
+			)
 		} else {
-			log.Debugf("No update available for dependency %v: %v (latest: %v)\n", dep.Name, currentVersion.Version, latestVersion.Version)
+			log.Debugf(
+				"No update available for dependency %v: %v (latest: %v)\n",
+				dep.Name,
+				currentVersion.Version,
+				latestVersion.Version,
+			)
 		}
 	}
+
 	return updates, nil
 }

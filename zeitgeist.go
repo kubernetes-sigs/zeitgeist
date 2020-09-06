@@ -46,25 +46,32 @@ func initLogging(verbose, json bool) {
 			logLevelStr = "info"
 		}
 	}
+
 	logLevel, err := log.ParseLevel(logLevelStr)
 	if err != nil {
 		log.Fatalf("Invalid LOG_LEVEL: %v", logLevelStr)
 	}
+
 	log.SetLevel(logLevel)
+
 	if json {
 		log.SetFormatter(&log.JSONFormatter{})
 	} else {
-		log.SetFormatter(&log.TextFormatter{
-			FullTimestamp:          true,
-			DisableLevelTruncation: true,
-		})
+		log.SetFormatter(
+			&log.TextFormatter{
+				FullTimestamp:          true,
+				DisableLevelTruncation: true,
+			},
+		)
 	}
 }
 
 func main() {
-	var verbose bool
-	var json bool
-	var config string
+	var (
+		verbose bool
+		json    bool
+		config  string
+	)
 
 	app := cli.NewApp()
 	app.Name = "zeitgeist"
@@ -88,6 +95,7 @@ func main() {
 			Destination: &config,
 		},
 	}
+
 	app.Commands = []cli.Command{
 		{
 			Name:    "validate",

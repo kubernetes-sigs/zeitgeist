@@ -19,6 +19,9 @@ linters:
     - dogsled
     - dupl
     - errcheck
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
     - goconst
     - gocritic
     - gocyclo
@@ -26,7 +29,9 @@ linters:
     - gofmt
     - goimports
     - golint
+    - gomnd
     - goprintffuncname
+    - gosec
     - gosimple
     - govet
     - ineffassign
@@ -36,6 +41,7 @@ linters:
     - nakedret
     - prealloc
     - rowserrcheck
+    - scopelint
     - staticcheck
     - structcheck
     - stylecheck
@@ -45,15 +51,12 @@ linters:
     - unused
     - varcheck
     - whitespace
-    # - funlen
-    # - gochecknoglobals
-    # - gochecknoinits
-    # - gocognit
-    # - gomnd
-    # - gosec
-    # - lll
-    # - scopelint
-    # - wsl
+
+    # Nits: These are things one might mention, but not block on during review.
+    #       We can consider disabling these checks, if we determine them to be
+    #       a little too nitty and obtrusive.
+    - lll
+    - wsl
 linters-settings:
   godox:
     keywords:
@@ -106,6 +109,7 @@ linters-settings:
       - emptyFallthrough
       - emptyStringTest
       - hexLiteral
+      - ifElseChain
       - methodExprCall
       - regexpMust
       - singleCaseSwitch
@@ -121,7 +125,6 @@ linters-settings:
       - valSwap
       - wrapperFunc
       - yodaStyleExpr
-      # - ifElseChain
 
       # Opinionated
       - builtinShadow

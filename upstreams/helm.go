@@ -47,7 +47,9 @@ type Helm struct {
 	CAFile   string
 }
 
+// TODO: Does this need to be a global variable?
 // Cache remote repositories locally to prevent unnecessary network round-trips
+// nolint: gochecknoglobals
 var cache map[string]*repo.IndexFile
 
 // getIndex returns the index for the given repository, and caches it for subsequent calls
@@ -69,15 +71,18 @@ func getIndex(c *repo.Entry) (*repo.IndexFile, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot write index file for repository requested")
 	}
+
 	defer os.Remove(tempIndexFile.Name())
 
 	r, err := repo.NewChartRepository(c, getter.All(environment.EnvSettings{}))
 	if err != nil {
 		return nil, err
 	}
+
 	if err := r.DownloadIndexFile(tempIndexFile.Name()); err != nil {
 		return nil, fmt.Errorf("looks like %q is not a valid chart repository or cannot be reached: %s", c.URL, err)
 	}
+
 	index, err := repo.LoadIndexFile(tempIndexFile.Name())
 	if err != nil {
 		return nil, err
@@ -85,6 +90,7 @@ func getIndex(c *repo.Entry) (*repo.IndexFile, error) {
 
 	// Found: add to cache
 	cache[c.URL] = index
+
 	return index, nil
 }
 
@@ -121,8 +127,14 @@ func (upstream *Helm) LatestVersion() (string, error) {
 	cv, err := index.Get(upstream.Name, upstream.Constraints)
 	if err != nil {
 		if upstream.Constraints != "" {
-			return "", fmt.Errorf("%s not found in %s repository (with constraints: %s)", upstream.Name, repoURL, upstream.Constraints)
+			return "", fmt.Errorf(
+				"%s not found in %s repository (with constraints: %s)",
+				upstream.Name,
+				repoURL,
+				upstream.Constraints,
+			)
 		}
+
 		return "", fmt.Errorf("%s not found in %s repository", upstream.Name, repoURL)
 	}
 
