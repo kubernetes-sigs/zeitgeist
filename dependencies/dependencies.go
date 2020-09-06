@@ -157,7 +157,7 @@ func LocalCheck(dependencyFilePath string) error {
 				if matcher.MatchString(line) {
 					if strings.Contains(line, dep.Version) {
 						log.Debugf(
-							"Line %v matches expected regexp '%v' and version '%v':\n%v",
+							"Line %v matches expected regexp '%v' and version '%v': %v",
 							lineNumber,
 							match,
 							dep.Version,
@@ -168,7 +168,13 @@ func LocalCheck(dependencyFilePath string) error {
 
 						break
 					} else {
-						log.Warnf("Line %v matches expected regexp '%v', but not version '%v':\n%v", lineNumber, match, dep.Version, line)
+						log.Warnf(
+							"Line %v matches expected regexp '%v', but not version '%v': %v",
+							lineNumber,
+							match,
+							dep.Version,
+							line,
+						)
 					}
 				}
 			}
@@ -181,8 +187,14 @@ func LocalCheck(dependencyFilePath string) error {
 		}
 
 		if len(nonMatchingPaths) > 0 {
-			log.Errorf("%v indicates that %v should be at version %v, but the following files didn't match:\n"+
-				"%v\n", dependencyFilePath, dep.Name, dep.Version, strings.Join(nonMatchingPaths, "\n"))
+			log.Errorf(
+				"%v indicates that %v should be at version %v, but the following files didn't match: %v",
+				dependencyFilePath,
+				dep.Name,
+				dep.Version,
+				strings.Join(nonMatchingPaths, ", "),
+			)
+
 			return errors.New("Dependencies are not in sync")
 		}
 	}
