@@ -1,6 +1,6 @@
 module sigs.k8s.io/zeitgeist
 
-go 1.12
+go 1.15
 
 require (
 	github.com/Masterminds/semver v1.4.2 // indirect

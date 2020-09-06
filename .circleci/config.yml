@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-    - image: circleci/golang:1.12
+    - image: circleci/golang:1.15
     environment:
       TEST_RESULTS: /tmp/test-results
 
@@ -36,7 +36,7 @@ jobs:
 
   release:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.15
     steps:
       - checkout
       - run:
