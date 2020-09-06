@@ -20,6 +20,10 @@ import (
 	"testing"
 )
 
+// TODO: These tests should be refactored to be table-driven
+//       Additionally, we can use https://github.com/stretchr/testify/require
+//       to check the various statuses.
+
 func TestSanity(t *testing.T) {
 	var err error
 
@@ -60,16 +64,19 @@ func TestSemverVersions(t *testing.T) {
 	a := Version{"1.0.0", Semver}
 	b := Version{"2.0.0", Semver}
 
+	// nolint: errcheck
 	shouldBeFalse, _ := a.MoreRecentThan(b)
 	if shouldBeFalse == true {
 		t.Errorf("Version %v is more recent that version %v; should be the opposite", a, b)
 	}
 
+	// nolint: errcheck
 	shouldBeTrue, _ := b.MoreRecentThan(a)
 	if shouldBeTrue == false {
 		t.Errorf("Version %v is more recent that version %v; should be the opposite", b, a)
 	}
 
+	// nolint: errcheck
 	shouldBeFalse, _ = a.MoreRecentThan(a)
 	if shouldBeFalse == true {
 		t.Errorf("Version %v is more recent than itself; it should not be", a)
@@ -80,16 +87,19 @@ func TestSemverSensitiveVersions(t *testing.T) {
 	a := Version{"1.0.0", Semver}
 	b := Version{"1.1.0", Semver}
 
+	// nolint: errcheck
 	shouldBeFalse, _ := b.MoreSensitivelyRecentThan(a, Major)
 	if shouldBeFalse == true {
 		t.Errorf("Version %v should not be more recent that version %v with sensitivity %v", b, a, Major)
 	}
 
+	// nolint: errcheck
 	shouldBeTrue, _ := b.MoreSensitivelyRecentThan(a, Minor)
 	if shouldBeTrue != true {
 		t.Errorf("Version %v should be more recent that version %v with sensitivity %v", b, a, Minor)
 	}
 
+	// nolint: errcheck
 	shouldBeTrue, _ = b.MoreSensitivelyRecentThan(a, Patch)
 	if shouldBeTrue != true {
 		t.Errorf("Version %v should be more recent that version %v with sensitivity %v", b, a, Patch)
@@ -98,16 +108,19 @@ func TestSemverSensitiveVersions(t *testing.T) {
 	a = Version{"1.0.0", Semver}
 	b = Version{"1.0.1", Semver}
 
+	// nolint: errcheck
 	shouldBeFalse, _ = b.MoreSensitivelyRecentThan(a, Major)
 	if shouldBeFalse == true {
 		t.Errorf("Version %v should not be more recent that version %v with sensitivity %v", b, a, Major)
 	}
 
+	// nolint: errcheck
 	shouldBeFalse, _ = b.MoreSensitivelyRecentThan(a, Minor)
 	if shouldBeFalse == true {
 		t.Errorf("Version %v should not be more recent that version %v with sensitivity %v", b, a, Minor)
 	}
 
+	// nolint: errcheck
 	shouldBeTrue, _ = b.MoreSensitivelyRecentThan(a, Patch)
 	if shouldBeTrue != true {
 		t.Errorf("Version %v should be more recent that version %v with sensitivity %v", b, a, Patch)
@@ -121,6 +134,7 @@ func TestSemverSensitiveVersions(t *testing.T) {
 	a = Version{"6.21.0", Semver}
 	b = Version{"8.1.8", Semver}
 
+	// nolint: errcheck
 	shouldBeTrue, _ = b.MoreSensitivelyRecentThan(a, Minor)
 	if shouldBeTrue != true {
 		t.Errorf("Version %v should be more recent that version %v with sensitivity %v", b, a, Minor)
@@ -131,16 +145,19 @@ func TestAlphaVersions(t *testing.T) {
 	a := Version{"20180101-commitid", Alpha}
 	b := Version{"20180505-commitid", Alpha}
 
+	// nolint: errcheck
 	shouldBeFalse, _ := a.MoreRecentThan(b)
 	if shouldBeFalse == true {
 		t.Errorf("Version %v is more recent that version %v; should be the opposite", a, b)
 	}
 
+	// nolint: errcheck
 	shouldBeTrue, _ := b.MoreRecentThan(a)
 	if shouldBeTrue == false {
 		t.Errorf("Version %v is more recent that version %v; should be the opposite", b, a)
 	}
 
+	// nolint: errcheck
 	shouldBeFalse, _ = a.MoreRecentThan(a)
 	if shouldBeFalse == true {
 		t.Errorf("Version %v is more recent than itself; it should not be", a)
@@ -151,11 +168,13 @@ func TestRandomVersions(t *testing.T) {
 	a := Version{"ami-09bbefc07310f7914", Random}
 	b := Version{"ami-0199284372364b02a", Random}
 
+	// nolint: errcheck
 	shouldBeTrue, _ := b.MoreRecentThan(a)
 	if shouldBeTrue == false {
 		t.Errorf("Version %v is more recent that version %v; should be the opposite", b, a)
 	}
 
+	// nolint: errcheck
 	shouldBeFalse, _ := a.MoreRecentThan(a)
 	if shouldBeFalse == true {
 		t.Errorf("Version %v is more recent than itself; it should not be", a)
