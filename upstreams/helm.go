@@ -51,7 +51,7 @@ type Helm struct {
 var cache map[string]*repo.IndexFile
 
 // getIndex returns the index for the given repository, and caches it for subsequent calls
-func getIndex(c repo.Entry) (*repo.IndexFile, error) {
+func getIndex(c *repo.Entry) (*repo.IndexFile, error) {
 	// Check cache first
 	if cache == nil {
 		// No cache: initialise it
@@ -71,7 +71,7 @@ func getIndex(c repo.Entry) (*repo.IndexFile, error) {
 	}
 	defer os.Remove(tempIndexFile.Name())
 
-	r, err := repo.NewChartRepository(&c, getter.All(environment.EnvSettings{}))
+	r, err := repo.NewChartRepository(c, getter.All(environment.EnvSettings{}))
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func getIndex(c repo.Entry) (*repo.IndexFile, error) {
 // Authentication
 //
 // Authentication is passed through parameters on the upstream, matching the ones you'd pass to Helm directly.
-func (upstream Helm) LatestVersion() (string, error) {
+func (upstream *Helm) LatestVersion() (string, error) {
 	log.Debugf("Using Helm upstream")
 
 	repoURL := upstream.Repo
@@ -113,7 +113,7 @@ func (upstream Helm) LatestVersion() (string, error) {
 	}
 
 	// Get the index
-	index, err := getIndex(entry)
+	index, err := getIndex(&entry)
 	if err != nil {
 		return "", err
 	}
