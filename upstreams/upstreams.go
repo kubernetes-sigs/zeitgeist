@@ -36,7 +36,7 @@ type UpstreamBase struct {
 // LatestVersion will always return an error.
 // UpstreamBase is only used to determine which actual upstream needs to be called, so it cannot return a sensible value
 func (u *UpstreamBase) LatestVersion() (string, error) {
-	return "", errors.New("Cannot determine latest version for UpstreamBase")
+	return "", errors.New("cannot determine latest version for UpstreamBase")
 }
 
 // UpstreamFlavour is an enum of all supported upstreams and their string representation

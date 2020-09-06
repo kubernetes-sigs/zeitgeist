@@ -82,7 +82,7 @@ func (upstream AMI) LatestVersion() (string, error) {
 	log.Debugf("Matched AMIs:\n%s", images)
 
 	if len(images) < 1 {
-		return "", fmt.Errorf("No AMI found for upstream %s", upstream)
+		return "", fmt.Errorf("no AMI found for upstream %s", upstream)
 	}
 
 	latestImage := images[0]

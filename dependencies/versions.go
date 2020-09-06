@@ -69,15 +69,15 @@ func (a Version) MoreSensitivelyRecentThan(b Version, sensitivity VersionSensiti
 		sensitivity = Patch
 	}
 	if a.Scheme != b.Scheme {
-		return false, fmt.Errorf("Trying to compare incompatible Version schemes: %s and %s", a.Scheme, b.Scheme)
+		return false, fmt.Errorf("trying to compare incompatible 'Version' schemes: %s and %s", a.Scheme, b.Scheme)
 	}
 	switch a.Scheme {
 	case Semver:
-		aSemver, err := semver.Parse(string(a.Version))
+		aSemver, err := semver.Parse(a.Version)
 		if err != nil {
 			return false, err
 		}
-		bSemver, err := semver.Parse(string(b.Version))
+		bSemver, err := semver.Parse(b.Version)
 		if err != nil {
 			return false, err
 		}
@@ -89,12 +89,12 @@ func (a Version) MoreSensitivelyRecentThan(b Version, sensitivity VersionSensiti
 		// When identifiers are random (e.g. hashes), the newer version will just be a different version
 		return a.Version != b.Version, nil
 	default:
-		return false, fmt.Errorf("Unknown version scheme: %s", a.Scheme)
+		return false, fmt.Errorf("unknown version scheme: %s", a.Scheme)
 	}
 }
 
 // semverCompare compares two semver versions depending on a sensitivity level
-func semverCompare(a semver.Version, b semver.Version, sensitivity VersionSensitivity) (bool, error) {
+func semverCompare(a, b semver.Version, sensitivity VersionSensitivity) (bool, error) {
 	switch sensitivity {
 	case Major:
 		return a.Major > b.Major, nil
@@ -103,6 +103,6 @@ func semverCompare(a semver.Version, b semver.Version, sensitivity VersionSensit
 	case Patch:
 		return a.GT(b), nil
 	default:
-		return false, fmt.Errorf("Unknown version sensitivity: %s", sensitivity)
+		return false, fmt.Errorf("unknown version sensitivity: %s", sensitivity)
 	}
 }

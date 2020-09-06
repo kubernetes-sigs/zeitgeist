@@ -86,7 +86,7 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 	case Semver, Alpha, Random:
 		// All good!
 	default:
-		return fmt.Errorf("Unknown version scheme: %s", d.Scheme)
+		return fmt.Errorf("unknown version scheme: %s", d.Scheme)
 	}
 	log.Debugf("Deserialised Dependency %v: %v", d.Name, d)
 	return nil
@@ -215,7 +215,7 @@ func RemoteCheck(dependencyFilePath string) ([]string, error) {
 			}
 			latestVersion.Version, err = helm.LatestVersion()
 		default:
-			return nil, fmt.Errorf("Unknown upstream flavour '%v' for dependency %v", flavour, dep.Name)
+			return nil, fmt.Errorf("unknown upstream flavour '%v' for dependency %v", flavour, dep.Name)
 		}
 		if err != nil {
 			return nil, err

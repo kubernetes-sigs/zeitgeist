@@ -22,6 +22,7 @@ import (
 	"os"
 
 	log "github.com/sirupsen/logrus"
+
 	"k8s.io/helm/pkg/getter"
 	"k8s.io/helm/pkg/helm/environment"
 	"k8s.io/helm/pkg/repo"
@@ -75,7 +76,7 @@ func getIndex(c repo.Entry) (*repo.IndexFile, error) {
 		return nil, err
 	}
 	if err := r.DownloadIndexFile(tempIndexFile.Name()); err != nil {
-		return nil, fmt.Errorf("Looks like %q is not a valid chart repository or cannot be reached: %s", c.URL, err)
+		return nil, fmt.Errorf("looks like %q is not a valid chart repository or cannot be reached: %s", c.URL, err)
 	}
 	index, err := repo.LoadIndexFile(tempIndexFile.Name())
 	if err != nil {

@@ -44,7 +44,7 @@ func getClient() *github.Client {
 	if accessToken != "" {
 		log.Debugf("GitHub Access Token provided")
 		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken})
-		tc := oauth2.NewClient(oauth2.NoContext, ts)
+		tc := oauth2.NewClient(context.Background(), ts)
 		client = github.NewClient(tc)
 	} else {
 		log.Warnf("No GitHub Access Token provided, might run into API limits. Set an access token with the GITHUB_ACCESS_TOKEN env var.")
@@ -68,7 +68,7 @@ func (upstream Github) LatestVersion() (string, error) {
 func latestVersion(upstream Github, getClient func() *github.Client) (string, error) {
 	client := getClient()
 	if !strings.Contains(upstream.URL, "/") {
-		return "", fmt.Errorf("Invalid github repo: %v\nGithub repo should be in the form owner/repo, e.g. kubernetes/kubernetes", upstream.URL)
+		return "", fmt.Errorf("invalid github repo: %v\nGithub repo should be in the form owner/repo, e.g. kubernetes/kubernetes", upstream.URL)
 	}
 
 	semverConstraints := upstream.Constraints
@@ -78,7 +78,7 @@ func latestVersion(upstream Github, getClient func() *github.Client) (string, er
 	}
 	expectedRange, err := semver.ParseRange(semverConstraints)
 	if err != nil {
-		return "", fmt.Errorf("Invalid semver constraints range: %v", upstream.Constraints)
+		return "", fmt.Errorf("invalid semver constraints range: %v", upstream.Constraints)
 	}
 
 	splitURL := strings.Split(upstream.URL, "/")
@@ -95,7 +95,7 @@ func latestVersion(upstream Github, getClient func() *github.Client) (string, er
 	for {
 		releasesInPage, resp, err := client.Repositories.ListReleases(context.Background(), owner, repo, opt)
 		if err != nil {
-			return "", fmt.Errorf("Cannot list releases for repository %v/%v, error: %v", owner, repo, err)
+			return "", fmt.Errorf("cannot list releases for repository %v/%v, error: %v", owner, repo, err)
 		}
 		releases = append(releases, releasesInPage...)
 		// Pagination handling: if there's a next page, try it too
@@ -123,11 +123,9 @@ func latestVersion(upstream Github, getClient func() *github.Client) (string, er
 		version, err := semver.Parse(strings.Trim(tag, "v"))
 		if err != nil {
 			log.Debugf("Error parsing version %v (%v)as semver, cannot validate semver constraints", tag, err)
-		} else {
-			if !expectedRange(version) {
-				log.Debugf("Skipping release not matching range constraints (%v): %v\n", upstream.Constraints, tag)
-				continue
-			}
+		} else if !expectedRange(version) {
+			log.Debugf("Skipping release not matching range constraints (%v): %v\n", upstream.Constraints, tag)
+			continue
 		}
 
 		log.Debugf("Found latest matching release: %v\n", version)
@@ -135,5 +133,5 @@ func latestVersion(upstream Github, getClient func() *github.Client) (string, er
 	}
 
 	// No latest version found – no versions? Only prereleases?
-	return "", fmt.Errorf("No potential version found")
+	return "", fmt.Errorf("no potential version found")
 }

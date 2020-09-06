@@ -37,7 +37,7 @@ var (
 
 // Initialise logging level based on LOG_LEVEL env var, or the --verbose flag.
 // Defaults to info
-func initLogging(verbose bool, json bool) {
+func initLogging(verbose, json bool) {
 	logLevelStr, ok := os.LookupEnv("LOG_LEVEL")
 	if !ok {
 		if verbose {
