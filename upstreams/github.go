@@ -40,21 +40,19 @@ type Github struct {
 	Constraints string
 }
 
+// TODO: Consider reusing the kubernetes/release GitHub client here instead
 func getClient() *github.Client {
 	var client *github.Client
 
 	accessToken := os.Getenv("GITHUB_ACCESS_TOKEN")
 	if accessToken != "" {
-		log.Debugf("GitHub Access Token provided")
+		log.Debugf("GitHub access token provided")
 
 		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken})
 		tc := oauth2.NewClient(context.Background(), ts)
 		client = github.NewClient(tc)
 	} else {
-		log.Warnf(
-			`No GitHub Access Token provided, might run into API limits.
-			Set an access token with the GITHUB_ACCESS_TOKEN env var.`,
-		)
+		log.Warnf("Set the GITHUB_ACCESS_TOKEN env var to avoid API limits")
 		client = github.NewClient(nil)
 	}
 
