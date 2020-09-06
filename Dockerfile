@@ -12,12 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM golang:1.15-alpine as builder
+### builder image
 
-RUN apk --update add git upx
+FROM golang:1.15.1 as builder
 
-WORKDIR /go/src/sigs.k8s.io/zeitgeist
-ENV GO111MODULE=on
+WORKDIR /workspace
+
 ADD go.mod .
 ADD go.sum .
 RUN go mod download
@@ -25,14 +25,10 @@ RUN go mod download
 ADD . .
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o zeitgeist .
 
-# Make things even smaller!
-RUN upx zeitgeist
+### zeitgeist image
 
-FROM scratch
-# Copy trusted CAs for TLS
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-# And our executable!
-COPY --from=builder /go/src/sigs.k8s.io/zeitgeist/zeitgeist /
-# Run as non-root
-USER 1001
+FROM gcr.io/distroless/static-debian10:latest
+
+COPY --from=builder /workspace/zeitgeist .
+
 CMD ["/zeitgeist"]
