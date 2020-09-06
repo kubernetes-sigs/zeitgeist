@@ -27,11 +27,11 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/pluies/zeitgeist/upstreams"
-
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
+
+	"sigs.k8s.io/zeitgeist/upstreams"
 )
 
 // Dependencies is used to deserialise the configuration file

@@ -1,4 +1,4 @@
-module github.com/pluies/zeitgeist
+module sigs.k8s.io/zeitgeist
 
 go 1.12
 

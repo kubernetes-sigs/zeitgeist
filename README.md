@@ -3,8 +3,8 @@
 ([/ˈzaɪtɡaɪst/](https://en.wikipedia.org/wiki/Help:IPA/English)) is a language-agnostic dependency checker that keeps track of external dependencies across your project and ensure they're up-to-date.
 
 [![CircleCI](https://circleci.com/gh/Pluies/zeitgeist.svg?style=shield)](https://circleci.com/gh/Pluies/zeitgeist)
-[![Go Report Card](https://goreportcard.com/badge/github.com/Pluies/zeitgeist)](https://goreportcard.com/report/github.com/Pluies/zeitgeist)
-[![GoDoc](https://godoc.org/github.com/Pluies/zeitgeist?status.svg)](https://godoc.org/github.com/Pluies/zeitgeist)
+[![Go Report Card](https://goreportcard.com/badge/sigs.k8s.io/zeitgeist)](https://goreportcard.com/report/sigs.k8s.io/zeitgeist)
+[![GoDoc](https://godoc.org/sigs.k8s.io/zeitgeist?status.svg)](https://godoc.org/sigs.k8s.io/zeitgeist)
 
 - [Rationale](#rationale)
 - [What is Zeitgeist](#what-is-zeitgeist)
@@ -90,7 +90,7 @@ Use `zeitgeist validate` to also check with defined `upstreams` whether a new ve
 
 ![zeigeist validate](/docs/validate.png)
 
-See the [full documentation](https://godoc.org/github.com/Pluies/zeitgeist/dependencies#Dependency) to see configuration options.
+See the [full documentation](https://godoc.org/sigs.k8s.io/zeitgeist/dependencies#Dependency) to see configuration options.
 
 ## When is Zeitgeist _not_ suggested
 

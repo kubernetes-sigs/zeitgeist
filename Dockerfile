@@ -16,7 +16,7 @@ FROM golang:1.12-alpine as builder
 
 RUN apk --update add git upx
 
-WORKDIR /go/src/github.com/pluies/zeitgeist
+WORKDIR /go/src/sigs.k8s.io/zeitgeist
 ENV GO111MODULE=on
 ADD go.mod .
 ADD go.sum .
@@ -32,7 +32,7 @@ FROM scratch
 # Copy trusted CAs for TLS
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 # And our executable!
-COPY --from=builder /go/src/github.com/pluies/zeitgeist/zeitgeist /
+COPY --from=builder /go/src/sigs.k8s.io/zeitgeist/zeitgeist /
 # Run as non-root
 USER 1001
 CMD ["/zeitgeist"]

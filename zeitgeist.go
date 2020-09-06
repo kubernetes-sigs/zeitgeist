@@ -22,10 +22,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pluies/zeitgeist/dependencies"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
+
+	"sigs.k8s.io/zeitgeist/dependencies"
 )
 
 // Variables set by GoReleaser on release
