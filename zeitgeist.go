@@ -22,22 +22,22 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pluies/zeitgeist/dependencies"
-
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
+
+	"sigs.k8s.io/zeitgeist/dependencies"
 )
 
 // Variables set by GoReleaser on release
 var (
 	version = "dev"
-	commit  = "none"
-	date    = "unknown"
+	commit  = "none"    // nolint: deadcode,gochecknoglobals,unused,varcheck
+	date    = "unknown" // nolint: deadcode,gochecknoglobals,unused,varcheck
 )
 
 // Initialise logging level based on LOG_LEVEL env var, or the --verbose flag.
 // Defaults to info
-func initLogging(verbose bool, json bool) {
+func initLogging(verbose, json bool) {
 	logLevelStr, ok := os.LookupEnv("LOG_LEVEL")
 	if !ok {
 		if verbose {
@@ -46,25 +46,32 @@ func initLogging(verbose bool, json bool) {
 			logLevelStr = "info"
 		}
 	}
+
 	logLevel, err := log.ParseLevel(logLevelStr)
 	if err != nil {
 		log.Fatalf("Invalid LOG_LEVEL: %v", logLevelStr)
 	}
+
 	log.SetLevel(logLevel)
+
 	if json {
 		log.SetFormatter(&log.JSONFormatter{})
 	} else {
-		log.SetFormatter(&log.TextFormatter{
-			FullTimestamp:          true,
-			DisableLevelTruncation: true,
-		})
+		log.SetFormatter(
+			&log.TextFormatter{
+				FullTimestamp:          true,
+				DisableLevelTruncation: true,
+			},
+		)
 	}
 }
 
 func main() {
-	var verbose bool
-	var json bool
-	var config string
+	var (
+		verbose bool
+		json    bool
+		config  string
+	)
 
 	app := cli.NewApp()
 	app.Name = "zeitgeist"
@@ -88,6 +95,7 @@ func main() {
 			Destination: &config,
 		},
 	}
+
 	app.Commands = []cli.Command{
 		{
 			Name:    "validate",
@@ -121,6 +129,7 @@ func main() {
 	}
 
 	// Default action when no action is passed: display the help
+	// nolint: gocritic
 	app.Action = func(c *cli.Context) error {
 		return cli.ShowAppHelp(c)
 	}

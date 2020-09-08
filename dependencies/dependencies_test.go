@@ -56,6 +56,7 @@ func TestBrokenFile(t *testing.T) {
 	if err == nil {
 		t.Errorf("Did not return an error on trying to open a file that doesn't exist")
 	}
+
 	err = LocalCheck("../testdata/Dockerfile")
 	if err == nil {
 		t.Errorf("Did not return an error on trying to open a non-yaml file")
@@ -107,6 +108,7 @@ func TestDeserialising(t *testing.T) {
 
 	for _, valid := range validYamls {
 		var d Dependency
+
 		err := yaml.Unmarshal([]byte(valid), &d)
 		if err != nil {
 			t.Errorf("Failed to deserialise valid yaml:\n%s", valid)
