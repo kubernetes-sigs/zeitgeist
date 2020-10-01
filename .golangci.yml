@@ -19,8 +19,6 @@ linters:
     - dogsled
     - dupl
     - errcheck
-    - gochecknoglobals
-    - gochecknoinits
     - gocognit
     - goconst
     - gocritic
@@ -57,6 +55,11 @@ linters:
     #       a little too nitty and obtrusive.
     - lll
     - wsl
+
+    # Disabled
+    # cobra uses globals and inits to set command configuration
+    #- gochecknoglobals
+    #- gochecknoinits
 linters-settings:
   godox:
     keywords:
