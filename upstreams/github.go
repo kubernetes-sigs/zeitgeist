@@ -17,15 +17,13 @@ limitations under the License.
 package upstreams
 
 import (
-	"context"
-	"os"
 	"strings"
 
 	"github.com/blang/semver"
-	"github.com/google/go-github/github"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/oauth2"
+
+	"k8s.io/release/pkg/github"
 )
 
 const resultsPerPage = 30
@@ -40,25 +38,6 @@ type Github struct {
 	Constraints string
 }
 
-// TODO: Consider reusing the kubernetes/release GitHub client here instead
-func getClient() *github.Client {
-	var client *github.Client
-
-	accessToken := os.Getenv("GITHUB_ACCESS_TOKEN")
-	if accessToken != "" {
-		log.Debugf("GitHub access token provided")
-
-		ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: accessToken})
-		tc := oauth2.NewClient(context.Background(), ts)
-		client = github.NewClient(tc)
-	} else {
-		log.Warnf("Set the GITHUB_ACCESS_TOKEN env var to avoid API limits")
-		client = github.NewClient(nil)
-	}
-
-	return client
-}
-
 // LatestVersion returns the latest non-draft, non-prerelease Github Release
 // for the given repository (depending on the Constraints if set).
 //
@@ -70,11 +49,11 @@ func getClient() *github.Client {
 // To authenticate your requests, use the GITHUB_ACCESS_TOKEN environment variable.
 func (upstream Github) LatestVersion() (string, error) {
 	log.Debugf("Using GitHub flavour")
-	return latestVersion(upstream, getClient)
+	return latestVersion(upstream)
 }
 
-func latestVersion(upstream Github, getClient func() *github.Client) (string, error) {
-	client := getClient()
+func latestVersion(upstream Github) (string, error) {
+	client := github.New()
 
 	if !strings.Contains(upstream.URL, "/") {
 		return "", errors.Errorf(
@@ -97,28 +76,17 @@ func latestVersion(upstream Github, getClient func() *github.Client) (string, er
 	splitURL := strings.Split(upstream.URL, "/")
 	owner := splitURL[0]
 	repo := splitURL[1]
-	opt := &github.ListOptions{PerPage: resultsPerPage}
 
 	// We'll need to fetch all releases, as Github doesn't provide sorting options.
 	// If we don't do that, we risk running into the case where for example:
 	// - Version 1.0.0 and 2.0.0 exist
 	// - A bugfix 1.0.1 gets released
-	// - Now the "latest" (date-wise) release is not the highest semver, and not necessarily the one we want
-	var releases []*github.RepositoryRelease
-
-	for {
-		releasesInPage, resp, err := client.Repositories.ListReleases(context.Background(), owner, repo, opt)
-		if err != nil {
-			return "", errors.Errorf("cannot list releases for repository %v/%v, error: %v", owner, repo, err)
-		}
-
-		releases = append(releases, releasesInPage...)
-		// Pagination handling: if there's a next page, try it too
-		if resp.NextPage == 0 {
-			break
-		}
-
-		opt.Page = resp.NextPage
+	//
+	// Now the "latest" (date-wise) release is not the highest semver, and not necessarily the one we want
+	log.Debugf("Retrieving releases for %s/%s...", owner, repo)
+	releases, err := client.Releases(owner, repo, false)
+	if err != nil {
+		return "", errors.Wrap(err, "retrieving GitHub releases")
 	}
 
 	for _, release := range releases {
@@ -133,15 +101,10 @@ func latestVersion(upstream Github, getClient func() *github.Client) (string, er
 			continue
 		}
 
-		if release.Prerelease != nil && *release.Prerelease {
-			log.Debugf("Skipping prerelease release: %v\n", tag)
-			continue
-		}
-
 		// Try to match semver and range
 		version, err := semver.Parse(strings.Trim(tag, "v"))
 		if err != nil {
-			log.Debugf("Error parsing version %v (%v)as semver, cannot validate semver constraints", tag, err)
+			log.Debugf("Error parsing version %v (%v) as semver, cannot validate semver constraints", tag, err)
 		} else if !expectedRange(version) {
 			log.Debugf("Skipping release not matching range constraints (%v): %v\n", upstream.Constraints, tag)
 			continue
