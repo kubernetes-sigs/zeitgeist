@@ -17,15 +17,14 @@ limitations under the License.
 package upstreams
 
 import (
-	"fmt"
-	"io/ioutil"
 	"os"
 
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"k8s.io/helm/pkg/getter"
-	"k8s.io/helm/pkg/helm/environment"
-	"k8s.io/helm/pkg/repo"
+	"helm.sh/helm/v3/pkg/cli"
+	"helm.sh/helm/v3/pkg/getter"
+	"helm.sh/helm/v3/pkg/repo"
 )
 
 // Helm upstream
@@ -47,6 +46,8 @@ type Helm struct {
 	CAFile   string
 }
 
+const defaultRepoURL = "https://kubernetes-charts.storage.googleapis.com/"
+
 // TODO: Does this need to be a global variable?
 // Cache remote repositories locally to prevent unnecessary network round-trips
 // nolint: gochecknoglobals
@@ -66,24 +67,20 @@ func getIndex(c *repo.Entry) (*repo.IndexFile, error) {
 		}
 	}
 
-	// Download and write the index file to a temporary location
-	tempIndexFile, err := ioutil.TempFile("", "tmp-repo-file")
-	if err != nil {
-		return nil, fmt.Errorf("cannot write index file for repository requested")
-	}
-
-	defer os.Remove(tempIndexFile.Name())
-
-	r, err := repo.NewChartRepository(c, getter.All(environment.EnvSettings{}))
+	envSettings := cli.EnvSettings{}
+	chartRepo, err := repo.NewChartRepository(c, getter.All(&envSettings))
 	if err != nil {
 		return nil, err
 	}
 
-	if err := r.DownloadIndexFile(tempIndexFile.Name()); err != nil {
-		return nil, fmt.Errorf("looks like %q is not a valid chart repository or cannot be reached: %s", c.URL, err)
+	indexFilePath, err := chartRepo.DownloadIndexFile()
+	if err != nil {
+		return nil, errors.Errorf("looks like %q is not a valid chart repository or cannot be reached: %s", c.URL, err)
 	}
 
-	index, err := repo.LoadIndexFile(tempIndexFile.Name())
+	defer os.Remove(indexFilePath)
+
+	index, err := repo.LoadIndexFile(indexFilePath)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +103,7 @@ func (upstream *Helm) LatestVersion() (string, error) {
 
 	repoURL := upstream.Repo
 	if repoURL == "" || repoURL == "stable" {
-		repoURL = "https://kubernetes-charts.storage.googleapis.com/"
+		repoURL = defaultRepoURL
 	}
 
 	entry := repo.Entry{
@@ -127,7 +124,7 @@ func (upstream *Helm) LatestVersion() (string, error) {
 	cv, err := index.Get(upstream.Name, upstream.Constraints)
 	if err != nil {
 		if upstream.Constraints != "" {
-			return "", fmt.Errorf(
+			return "", errors.Errorf(
 				"%s not found in %s repository (with constraints: %s)",
 				upstream.Name,
 				repoURL,
@@ -135,7 +132,7 @@ func (upstream *Helm) LatestVersion() (string, error) {
 			)
 		}
 
-		return "", fmt.Errorf("%s not found in %s repository", upstream.Name, repoURL)
+		return "", errors.Errorf("%s not found in %s repository", upstream.Name, repoURL)
 	}
 
 	return cv.Version, nil
