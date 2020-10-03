@@ -18,12 +18,12 @@ package upstreams
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"strings"
 
 	"github.com/blang/semver"
 	"github.com/google/go-github/github"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
@@ -77,7 +77,7 @@ func latestVersion(upstream Github, getClient func() *github.Client) (string, er
 	client := getClient()
 
 	if !strings.Contains(upstream.URL, "/") {
-		return "", fmt.Errorf(
+		return "", errors.Errorf(
 			"invalid github repo: %v\nGithub repo should be in the form owner/repo, e.g. kubernetes/kubernetes",
 			upstream.URL,
 		)
@@ -91,7 +91,7 @@ func latestVersion(upstream Github, getClient func() *github.Client) (string, er
 
 	expectedRange, err := semver.ParseRange(semverConstraints)
 	if err != nil {
-		return "", fmt.Errorf("invalid semver constraints range: %v", upstream.Constraints)
+		return "", errors.Errorf("invalid semver constraints range: %v", upstream.Constraints)
 	}
 
 	splitURL := strings.Split(upstream.URL, "/")
@@ -109,7 +109,7 @@ func latestVersion(upstream Github, getClient func() *github.Client) (string, er
 	for {
 		releasesInPage, resp, err := client.Repositories.ListReleases(context.Background(), owner, repo, opt)
 		if err != nil {
-			return "", fmt.Errorf("cannot list releases for repository %v/%v, error: %v", owner, repo, err)
+			return "", errors.Errorf("cannot list releases for repository %v/%v, error: %v", owner, repo, err)
 		}
 
 		releases = append(releases, releasesInPage...)
@@ -153,5 +153,5 @@ func latestVersion(upstream Github, getClient func() *github.Client) (string, er
 	}
 
 	// No latest version found – no versions? Only prereleases?
-	return "", fmt.Errorf("no potential version found")
+	return "", errors.Errorf("no potential version found")
 }

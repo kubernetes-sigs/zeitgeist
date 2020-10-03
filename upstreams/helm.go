@@ -17,10 +17,10 @@ limitations under the License.
 package upstreams
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"k8s.io/helm/pkg/getter"
@@ -69,7 +69,7 @@ func getIndex(c *repo.Entry) (*repo.IndexFile, error) {
 	// Download and write the index file to a temporary location
 	tempIndexFile, err := ioutil.TempFile("", "tmp-repo-file")
 	if err != nil {
-		return nil, fmt.Errorf("cannot write index file for repository requested")
+		return nil, errors.Errorf("cannot write index file for repository requested")
 	}
 
 	defer os.Remove(tempIndexFile.Name())
@@ -80,7 +80,7 @@ func getIndex(c *repo.Entry) (*repo.IndexFile, error) {
 	}
 
 	if err := r.DownloadIndexFile(tempIndexFile.Name()); err != nil {
-		return nil, fmt.Errorf("looks like %q is not a valid chart repository or cannot be reached: %s", c.URL, err)
+		return nil, errors.Errorf("looks like %q is not a valid chart repository or cannot be reached: %s", c.URL, err)
 	}
 
 	index, err := repo.LoadIndexFile(tempIndexFile.Name())
@@ -127,7 +127,7 @@ func (upstream *Helm) LatestVersion() (string, error) {
 	cv, err := index.Get(upstream.Name, upstream.Constraints)
 	if err != nil {
 		if upstream.Constraints != "" {
-			return "", fmt.Errorf(
+			return "", errors.Errorf(
 				"%s not found in %s repository (with constraints: %s)",
 				upstream.Name,
 				repoURL,
@@ -135,7 +135,7 @@ func (upstream *Helm) LatestVersion() (string, error) {
 			)
 		}
 
-		return "", fmt.Errorf("%s not found in %s repository", upstream.Name, repoURL)
+		return "", errors.Errorf("%s not found in %s repository", upstream.Name, repoURL)
 	}
 
 	return cv.Version, nil

@@ -25,7 +25,7 @@ limitations under the License.
 package upstreams
 
 import (
-	"errors"
+	"github.com/pkg/errors"
 )
 
 // UpstreamBase only contains a flavour. "Concrete" upstreams each implement their own fields.

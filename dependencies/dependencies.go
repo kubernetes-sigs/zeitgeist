@@ -19,7 +19,6 @@ package dependencies
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -28,6 +27,7 @@ import (
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
+	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 
@@ -75,11 +75,11 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 
 	// Custom validation for the Dependency type
 	if d.Name == "" {
-		return fmt.Errorf("Dependency has no `name`: %v", d)
+		return errors.Errorf("Dependency has no `name`: %v", d)
 	}
 
 	if d.Version == "" {
-		return fmt.Errorf("Dependency has no `version`: %v", d)
+		return errors.Errorf("Dependency has no `version`: %v", d)
 	}
 
 	// Default scheme to Semver if unset
@@ -92,7 +92,7 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 	case Semver, Alpha, Random:
 		// All good!
 	default:
-		return fmt.Errorf("unknown version scheme: %s", d.Scheme)
+		return errors.Errorf("unknown version scheme: %s", d.Scheme)
 	}
 
 	log.Debugf("Deserialised Dependency %v: %v", d.Name, d)
@@ -268,7 +268,7 @@ func RemoteCheck(dependencyFilePath string) ([]string, error) {
 
 			latestVersion.Version, err = helm.LatestVersion()
 		default:
-			return nil, fmt.Errorf("unknown upstream flavour '%v' for dependency %v", flavour, dep.Name)
+			return nil, errors.Errorf("unknown upstream flavour '%v' for dependency %v", flavour, dep.Name)
 		}
 
 		if err != nil {
