@@ -31,7 +31,7 @@ import (
 type Helm struct {
 	UpstreamBase `mapstructure:",squash"`
 	// URL of the repository
-	// If left blank, defaults to "stable", i.e. https://kubernetes-charts.storage.googleapis.com/
+	// If left blank, defaults to "stable" i.e., https://charts.helm.sh/stable
 	Repo string
 	// Name of the Helm chart
 	Name string
@@ -46,7 +46,7 @@ type Helm struct {
 	CAFile   string
 }
 
-const defaultRepoURL = "https://kubernetes-charts.storage.googleapis.com/"
+const defaultRepoURL = "https://charts.helm.sh/stable"
 
 // TODO: Does this need to be a global variable?
 // Cache remote repositories locally to prevent unnecessary network round-trips
