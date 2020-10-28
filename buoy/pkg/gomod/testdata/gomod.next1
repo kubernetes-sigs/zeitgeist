@@ -1,0 +1,12 @@
+module knative.dev/serving
+
+go 1.14
+
+require (
+	github.com/cloudevents/sdk-go/v2 v2.2.0
+	github.com/google/go-cmp v0.5.2
+	k8s.io/api v0.18.8
+	knative.dev/eventing v0.14.0
+	knative.dev/pkg v0.0.0-20200922164940-4bf40ad82aab
+	does-not-exist.nope/invalid v0.42.0
+)
