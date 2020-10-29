@@ -15,6 +15,7 @@ aliases:
   zeitgeist-reviewers:
     - cpanato # Release Manager
     - hasheddan # Release Manager
+    - n3wscott
     - saschagrunert # Release Manager
   
   # TODO: This alias, along with the buoy subdirectory, can be safely removed
