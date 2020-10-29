@@ -16,3 +16,9 @@ aliases:
     - cpanato # Release Manager
     - hasheddan # Release Manager
     - saschagrunert # Release Manager
+  
+  # TODO: This alias, along with the buoy subdirectory, can be safely removed
+  #       once buoy has been integrated with zeitgeist.
+  buoy-owners: # formerly https://github.com/n3wscott/buoy
+    - justaugustus # subproject owner / Release Manager
+    - n3wscott # buoy creator
