@@ -12,3 +12,4 @@ version: 0.20.1 # kubernetes
 other_deps:
   - ami-09bbefc07310f7914 # zeitgeist:aws-eks-ami
   - linkerd-2.10.0
+  - eks-1.13.0

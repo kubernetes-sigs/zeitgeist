@@ -58,6 +58,9 @@ const (
 	// ContainerFlavour is for Container Images
 	ContainerFlavour Flavour = "container"
 
+	// EKSFlavour is for Elastic Kubernetes Service
+	EKSFlavour Flavour = "eks"
+
 	// DummyFlavour is for testing
 	DummyFlavour Flavour = "dummy"
 

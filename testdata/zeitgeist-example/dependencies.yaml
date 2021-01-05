@@ -47,3 +47,11 @@ dependencies:
   refPaths:
   - path: testdata/zeitgeist-example/a-config-file.yaml
     match: linkerd-
+
+- name: eks
+  version: 1.13.0
+  upstream:
+    flavour: eks
+  refPaths:
+  - path: testdata/zeitgeist-example/a-config-file.yaml
+    match: eks
