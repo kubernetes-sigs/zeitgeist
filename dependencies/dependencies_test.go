@@ -19,69 +19,91 @@ package dependencies
 import (
 	"testing"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
-// Happy Path test
-func TestLocal(t *testing.T) {
-	err := LocalCheck("../testdata/local.yaml")
-	if err != nil {
-		t.Errorf("Happy path local test returned: %v", err)
-	}
+type mockedReceiveMsgs struct {
+	ec2iface.EC2API
+	Resp ec2.DescribeImagesOutput
 }
 
-func TestRemote(t *testing.T) {
-	_, err := RemoteCheck("../testdata/remote.yaml")
-	if err != nil {
-		t.Errorf("Happy path local test returned: %v", err)
+func (m mockedReceiveMsgs) DescribeImages(in *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
+	// Only need to return mocked response output
+	return &m.Resp, nil
+}
+
+func TestLocalSuccess(t *testing.T) {
+	client := NewClient()
+
+	err := client.LocalCheck("../testdata/local.yaml")
+	require.Nil(t, err)
+}
+
+func TestRemoteSuccess(t *testing.T) {
+	var client Client
+	client.AWSEC2Client = mockedReceiveMsgs{
+		Resp: ec2.DescribeImagesOutput{
+			Images: []*ec2.Image{
+				{
+					CreationDate: aws.String("2019-05-10T13:17:12.000Z"),
+					ImageId:      aws.String("ami-09bbefc07310f7914"),
+					Name:         aws.String("amazon-eks-node-1.13-honk"),
+				},
+			},
+		},
 	}
+
+	_, err := client.RemoteCheck("../testdata/remote.yaml")
+	require.Nil(t, err)
 }
 
 func TestDummyRemote(t *testing.T) {
-	_, err := RemoteCheck("../testdata/remote-dummy.yaml")
-	if err != nil {
-		t.Errorf("Happy path local test returned: %v", err)
-	}
+	client := NewClient()
+
+	_, err := client.RemoteCheck("../testdata/remote-dummy.yaml")
+	require.Nil(t, err)
 }
 
 func TestRemoteConstraint(t *testing.T) {
-	_, err := RemoteCheck("../testdata/remote-constraint.yaml")
-	if err != nil {
-		t.Errorf("Happy path local test returned: %v", err)
-	}
+	client := NewClient()
+
+	_, err := client.RemoteCheck("../testdata/remote-constraint.yaml")
+	require.Nil(t, err)
 }
 
 func TestBrokenFile(t *testing.T) {
-	err := LocalCheck("../testdata/does-not-exist")
-	if err == nil {
-		t.Errorf("Did not return an error on trying to open a file that doesn't exist")
-	}
+	client := NewClient()
 
-	err = LocalCheck("../testdata/Dockerfile")
-	if err == nil {
-		t.Errorf("Did not return an error on trying to open a non-yaml file")
-	}
+	err := client.LocalCheck("../testdata/does-not-exist")
+	require.NotNil(t, err)
+
+	err = client.LocalCheck("../testdata/Dockerfile")
+	require.NotNil(t, err)
 }
 
 func TestLocalOutOfSync(t *testing.T) {
-	err := LocalCheck("../testdata/local-out-of-sync.yaml")
-	if err == nil {
-		t.Errorf("Did not return an error when it should have")
-	}
+	client := NewClient()
+
+	err := client.LocalCheck("../testdata/local-out-of-sync.yaml")
+	require.NotNil(t, err)
 }
 
 func TestFileDoesntExist(t *testing.T) {
-	err := LocalCheck("../testdata/local-no-file.yaml")
-	if err == nil {
-		t.Errorf("Did not return an error when it should have")
-	}
+	client := NewClient()
+
+	err := client.LocalCheck("../testdata/local-no-file.yaml")
+	require.NotNil(t, err)
 }
 
 func TestUnknownUpstreamFlavour(t *testing.T) {
-	_, err := RemoteCheck("../testdata/unknown-upstream.yaml")
-	if err == nil {
-		t.Errorf("Did not return an error when it should have")
-	}
+	client := NewClient()
+
+	_, err := client.RemoteCheck("../testdata/unknown-upstream.yaml")
+	require.NotNil(t, err)
 }
 
 func TestDeserialising(t *testing.T) {

@@ -18,33 +18,81 @@ package upstreams
 
 import (
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/stretchr/testify/require"
 )
 
-func TestAMIHappyPath(t *testing.T) {
-	ami := AMI{
-		Owner: "amazon",
-		Name:  "amazon-eks-node-1.13-*",
-	}
-
-	latestVersion, err := ami.LatestVersion()
-	if err != nil {
-		t.Errorf("Failed AMI happy path test: %v", err)
-	}
-
-	if latestVersion == "" {
-		t.Errorf("Got an empty latestVersion")
-	}
+type mockedReceiveMsgs struct {
+	ec2iface.EC2API
+	Resp ec2.DescribeImagesOutput
 }
 
-func TestAMIDoesntExist(t *testing.T) {
-	fakeAmi := "this-ami-doesnt-exist-zeitgeist"
-	ami := AMI{
-		Owner: "amazon",
-		Name:  fakeAmi,
+func (m mockedReceiveMsgs) DescribeImages(in *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
+	// Only need to return mocked response output
+	return &m.Resp, nil
+}
+
+func TestGetAMI(t *testing.T) {
+	testCases := []struct {
+		Name          string
+		Input         AMI
+		Resp          ec2.DescribeImagesOutput
+		Expected      string
+		ExpectedError bool
+	}{
+		{
+			Name: "AMI exist",
+			Input: AMI{
+				Owner: "amazon",
+				Name:  "amazon-eks-node-1.13-*",
+			},
+			Resp: ec2.DescribeImagesOutput{
+				Images: []*ec2.Image{
+					{
+						CreationDate: aws.String("2019-05-10T13:17:12.000Z"),
+						ImageId:      aws.String("ami-123oldimage"),
+						Name:         aws.String("amazon-eks-node-1.13-honk"),
+					},
+					{
+						CreationDate: aws.String("2019-05-12T13:17:12.000Z"),
+						ImageId:      aws.String("ami-honk"),
+						Name:         aws.String("amazon-eks-node-1.13-old"),
+					},
+				},
+			},
+			Expected:      "ami-honk",
+			ExpectedError: false,
+		},
+		{
+			Name: "AMI does not exist",
+			Input: AMI{
+				Owner: "honk",
+				Name:  "this-ami-doesnt-exist-zeitgeist",
+			},
+			Resp: ec2.DescribeImagesOutput{
+				Images: []*ec2.Image{},
+			},
+			Expected:      "no AMI found for upstream this-ami-doesnt-exist-zeitgeist",
+			ExpectedError: true,
+		},
 	}
 
-	_, err := ami.LatestVersion()
-	if err == nil {
-		t.Errorf("Found a latest version for unknown AMI: %s", fakeAmi)
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.Name, func(t *testing.T) {
+			tc.Input.ServiceClient = mockedReceiveMsgs{Resp: tc.Resp}
+
+			latestImage, err := tc.Input.LatestVersion()
+			if tc.ExpectedError {
+				require.NotNil(t, err)
+				require.EqualError(t, err, tc.Expected)
+			} else {
+				require.Nil(t, err)
+				require.Equal(t, tc.Expected, latestImage)
+			}
+		})
 	}
 }
