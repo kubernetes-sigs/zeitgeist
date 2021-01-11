@@ -26,6 +26,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
@@ -33,6 +34,11 @@ import (
 
 	"sigs.k8s.io/zeitgeist/upstreams"
 )
+
+// Client holds any client that is needed
+type Client struct {
+	AWSEC2Client ec2iface.EC2API
+}
 
 // Dependencies is used to deserialise the configuration file
 type Dependencies struct {
@@ -60,6 +66,13 @@ type RefPath struct {
 	Path string `yaml:"path"`
 	// Match expression for the line that should contain the dependency's version. Regexp is supported.
 	Match string `yaml:"match"`
+}
+
+// NewClient returns all clients that can be used to the validation
+func NewClient() *Client {
+	return &Client{
+		AWSEC2Client: upstreams.NewAWSClient(),
+	}
 }
 
 // UnmarshalYAML implements custom unmarshalling of Dependency with validation
@@ -119,7 +132,7 @@ func fromFile(dependencyFilePath string) (*Dependencies, error) {
 // LocalCheck checks whether dependencies are in-sync locally
 //
 // Will return an error if the dependency cannot be found in the files it has defined, or if the version does not match
-func LocalCheck(dependencyFilePath string) error {
+func (c *Client) LocalCheck(dependencyFilePath string) error {
 	base := filepath.Dir(dependencyFilePath)
 
 	externalDeps, err := fromFile(dependencyFilePath)
@@ -207,7 +220,7 @@ func LocalCheck(dependencyFilePath string) error {
 // Will return an error if checking the versions upstream fails.
 //
 // Out-of-date dependencies will be printed out on stdout at the INFO level.
-func RemoteCheck(dependencyFilePath string) ([]string, error) {
+func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
 	externalDeps, err := fromFile(dependencyFilePath)
 	if err != nil {
 		return nil, err
@@ -256,6 +269,8 @@ func RemoteCheck(dependencyFilePath string) ([]string, error) {
 			if decodeErr != nil {
 				return nil, decodeErr
 			}
+
+			ami.ServiceClient = c.AWSEC2Client
 
 			latestVersion.Version, err = ami.LatestVersion()
 		case upstreams.HelmFlavour:

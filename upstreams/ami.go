@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
@@ -36,6 +37,24 @@ type AMI struct {
 	// Name predicate, as used in --filter
 	// Supports wilcards
 	Name string
+	// ServiceClient is the AWS client to talk to AWS API
+	ServiceClient ec2iface.EC2API
+}
+
+//
+// NewAWSClient return a new aws service client for ec2
+//
+// Authentication is provided by the standard AWS credentials use the standard
+// `~/.aws/config` and `~/.aws/credentials` files, and support environment variables.
+// See AWS documentation for more details:
+// https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
+func NewAWSClient() *ec2.EC2 {
+	// Create a new session based on shared / env credentials
+	s := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
+	return ec2.New(s)
 }
 
 // LatestVersion returns the latest version of an AMI.
@@ -43,21 +62,8 @@ type AMI struct {
 // Returns the latest ami id (e.g. `ami-1234567`) from all AMIs matching the predicates, sorted by CreationDate.
 //
 // If images cannot be listed, or if no image matches the predicates, it will return an error instead.
-//
-// Authentication
-//
-// Authentication is provided by the standard AWS credentials use the standard
-// `~/.aws/config` and `~/.aws/credentials` files, and support environment variables.
-// See AWS documentation for more details:
-// https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
 func (upstream AMI) LatestVersion() (string, error) {
 	log.Debugf("Using AMI upstream")
-
-	// Create a new session based on shared / env credentials
-	s := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-	}))
-	svc := ec2.New(s)
 
 	// Generate filters based on configuration
 	var filters []*ec2.Filter
@@ -72,7 +78,7 @@ func (upstream AMI) LatestVersion() (string, error) {
 	}
 
 	// Do the actual API call
-	result, err := svc.DescribeImages(input)
+	result, err := upstream.ServiceClient.DescribeImages(input)
 	if err != nil {
 		return "", err
 	}
@@ -84,11 +90,11 @@ func (upstream AMI) LatestVersion() (string, error) {
 	log.Debugf("Matched AMIs:\n%s", images)
 
 	if len(images) < 1 {
-		return "", errors.Errorf("no AMI found for upstream %s", upstream)
+		return "", errors.Errorf("no AMI found for upstream %s", upstream.Name)
 	}
 
 	latestImage := images[0]
-	log.Debugf("Latest AMI:\n%s", latestImage)
+	log.Debugf("Latest AMI: %s\n", latestImage)
 
 	return *latestImage.ImageId, nil
 }

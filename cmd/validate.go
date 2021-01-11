@@ -75,8 +75,10 @@ func init() {
 // RunValidate is the function invoked by 'krel gcbmgr', responsible for
 // submitting release jobs to GCB
 func RunValidate(opts *ValidateOptions) error {
+	client := dependencies.NewClient()
+
 	if opts.remote {
-		updates, err := dependencies.RemoteCheck(opts.config)
+		updates, err := client.RemoteCheck(opts.config)
 		if err != nil {
 			return errors.Wrap(err, "check remote dependencies")
 		}
@@ -86,5 +88,5 @@ func RunValidate(opts *ValidateOptions) error {
 		}
 	}
 
-	return dependencies.LocalCheck(opts.config)
+	return client.LocalCheck(opts.config)
 }
