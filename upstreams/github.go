@@ -26,8 +26,6 @@ import (
 	"k8s.io/release/pkg/github"
 )
 
-const resultsPerPage = 30
-
 // Github upstream representation
 type Github struct {
 	UpstreamBase `mapstructure:",squash"`

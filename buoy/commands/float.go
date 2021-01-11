@@ -34,7 +34,7 @@ func addFloatCmd(root *cobra.Command) {
 		ruleset     git.RulesetType
 	)
 
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "float go.mod",
 		Short: "Find latest versions of dependencies based on a release.",
 		Long: `
@@ -86,8 +86,9 @@ For rulesets that that restrict the selection process, no ref is selected.
 
 	cmd.Flags().StringVarP(&domain, "domain", "d", "knative.dev", "domain filter (i.e. knative.dev) [required]")
 	cmd.Flags().StringVarP(&release, "release", "r", "", "release should be '<major>.<minor>' (i.e.: 1.23 or v1.23) [required]")
-	_ = cmd.MarkFlagRequired("release")
 	cmd.Flags().StringVar(&rulesetFlag, "ruleset", git.AnyRule.String(), fmt.Sprintf("The ruleset to evaluate the dependency refs. Rulesets: [%s]", strings.Join(git.Rulesets(), ", ")))
+
+	_ = cmd.MarkFlagRequired("release") // nolint: errcheck
 
 	root.AddCommand(cmd)
 }

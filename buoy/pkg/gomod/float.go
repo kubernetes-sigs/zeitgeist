@@ -35,6 +35,9 @@ func Float(gomod, release, domain string, ruleset git.RulesetType) ([]string, er
 	}
 
 	this, err := semver.ParseTolerant(release)
+	if err != nil {
+		return nil, err
+	}
 
 	refs := make([]string, 0)
 	for _, pkg := range packages {

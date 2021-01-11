@@ -13,23 +13,24 @@ issues:
 linters:
   disable-all: true
   enable:
+    - asciicheck
     - bodyclose
     - deadcode
     - depguard
     - dogsled
     - dupl
     - errcheck
-    - gocognit
     - goconst
     - gocritic
     - gocyclo
     - godox
     - gofmt
+    - gofumpt
+    - goheader
     - goimports
     - golint
-    - gomnd
+    - gomodguard
     - goprintffuncname
-    - gosec
     - gosimple
     - govet
     - ineffassign
@@ -39,7 +40,7 @@ linters:
     - nakedret
     - prealloc
     - rowserrcheck
-    - scopelint
+    - sqlclosecheck
     - staticcheck
     - structcheck
     - stylecheck
@@ -49,17 +50,25 @@ linters:
     - unused
     - varcheck
     - whitespace
-
-    # Nits: These are things one might mention, but not block on during review.
-    #       We can consider disabling these checks, if we determine them to be
-    #       a little too nitty and obtrusive.
-    - lll
-    - wsl
-
-    # Disabled
-    # cobra uses globals and inits to set command configuration
-    #- gochecknoglobals
-    #- gochecknoinits
+    # - exhaustive
+    # - exportloopref
+    # - funlen
+    # - gci
+    # - gochecknoglobals
+    # - gochecknoinits
+    # - gocognit
+    # - godot
+    # - goerr113
+    # - gomnd
+    # - gosec
+    # - lll
+    # - nestif
+    # - nlreturn
+    # - noctx
+    # - nolintlint
+    # - scopelint
+    # - testpackage
+    # - wsl
 linters-settings:
   godox:
     keywords:
@@ -112,7 +121,6 @@ linters-settings:
       - emptyFallthrough
       - emptyStringTest
       - hexLiteral
-      - ifElseChain
       - methodExprCall
       - regexpMust
       - singleCaseSwitch
@@ -128,6 +136,7 @@ linters-settings:
       - valSwap
       - wrapperFunc
       - yodaStyleExpr
+      # - ifElseChain
 
       # Opinionated
       - builtinShadow
