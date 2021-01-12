@@ -79,6 +79,9 @@ func ReleaseStatus(gomod, release string, out io.Writer) (*ReleaseMeta, error) {
 	ref, refType = repo.BestRefFor(this, git.ReleaseRule)
 	if refType == git.ReleaseRef {
 		_, r, _ := git.ParseRef(ref)
+
+		// TODO: refactor to check the error
+		// nolint: errcheck
 		rv, _ := semver.ParseTolerant(r) // has to parse, r is from BestRefFor
 		rv.Patch++
 

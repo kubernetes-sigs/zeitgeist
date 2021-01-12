@@ -20,7 +20,7 @@ import "github.com/spf13/cobra"
 
 // New creates a new buoy cli command set.
 func New() *cobra.Command {
-	var buoyCmd = &cobra.Command{
+	buoyCmd := &cobra.Command{
 		Use:   "buoy",
 		Short: "Introspect go module dependencies.",
 	}

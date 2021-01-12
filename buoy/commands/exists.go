@@ -33,7 +33,7 @@ func addExistsCmd(root *cobra.Command) {
 		tag     bool
 	)
 
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "exists go.mod",
 		Short: "Determine if the release branch exists for a given module.",
 		Args:  cobra.ExactArgs(1),
@@ -63,9 +63,10 @@ func addExistsCmd(root *cobra.Command) {
 	}
 
 	cmd.Flags().StringVarP(&release, "release", "r", "", "release should be '<major>.<minor>' (i.e.: 1.23 or v1.23) [required]")
-	_ = cmd.MarkFlagRequired("release")
 	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Print verbose output (stderr)")
 	cmd.Flags().BoolVarP(&tag, "next", "t", false, "Print the next release tag (stdout)")
+
+	_ = cmd.MarkFlagRequired("release") // nolint: errcheck
 
 	root.AddCommand(cmd)
 }

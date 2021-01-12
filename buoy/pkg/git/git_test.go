@@ -34,8 +34,10 @@ func TestGetRepo_BasicOne(t *testing.T) {
 	if r == nil {
 		t.Error("failed to GetRepo: repo is nil")
 	}
-	if want := "master"; r.DefaultBranch != want {
-		t.Errorf("expected default branch to be %q, got %q", want, r.DefaultBranch)
+	// TODO: refactor test (use require pkg)
+	// nolint: staticcheck
+	if r.DefaultBranch != "master" {
+		t.Errorf("expected default branch to be master, got %q", r.DefaultBranch)
 	}
 	if want := 2; len(r.Branches) != want {
 		t.Errorf("expected branch count to be %d, got %d", want, len(r.Branches))

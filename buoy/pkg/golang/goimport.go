@@ -22,9 +22,9 @@ import (
 	"net/http"
 	"strings"
 
-	"sigs.k8s.io/zeitgeist/buoy/pkg/git"
-
 	"golang.org/x/net/html"
+
+	"sigs.k8s.io/zeitgeist/buoy/pkg/git"
 )
 
 // MetaImport represents the parsed <meta name="go-import"
@@ -33,13 +33,15 @@ type MetaImport struct {
 	Prefix, VCS, RepoRoot string
 }
 
-func (m *MetaImport) OrgRepo() (string, string) {
+func (m *MetaImport) OrgRepo() (org, repo string) {
 	repoRoot := strings.TrimSuffix(m.RepoRoot, ".git")
 	urlParts := strings.Split(repoRoot, "://")
 	parts := strings.Split(urlParts[len(urlParts)-1], "/")
+
 	if len(parts) >= 2 {
 		return parts[len(parts)-2], parts[len(parts)-1]
 	}
+
 	panic("unknown repo root: " + m.RepoRoot)
 }
 
@@ -54,12 +56,12 @@ func metaContent(doc *html.Node, name string) (string, error) {
 					return
 				}
 			}
-
 		}
 		for child := node.FirstChild; child != nil; child = child.NextSibling {
 			crawler(child)
 		}
 	}
+
 	crawler(doc)
 	if meta != nil {
 		for _, attr := range meta.Attr {
@@ -68,6 +70,7 @@ func metaContent(doc *html.Node, name string) (string, error) {
 			}
 		}
 	}
+
 	return "", fmt.Errorf("missing <meta name=%s> in the node tree", name)
 }
 
@@ -78,6 +81,8 @@ func GetMetaImport(url string) (*MetaImport, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
+
 	doc, err := html.Parse(resp.Body)
 	if err != nil {
 		return nil, err

@@ -95,7 +95,7 @@ func TestMetaContent(t *testing.T) {
 			meta: "foo",
 			doc: func() *html.Node {
 				body := `<html><head><meta name="foo" content="bar"></head></html>`
-				doc, _ := html.Parse(strings.NewReader(body))
+				doc, _ := html.Parse(strings.NewReader(body)) // nolint: errcheck
 				return doc
 			}(),
 			want: "bar",
@@ -104,7 +104,7 @@ func TestMetaContent(t *testing.T) {
 			meta: "bar",
 			doc: func() *html.Node {
 				body := `<html><head><meta name="foo" content="bar"></head></html>`
-				doc, _ := html.Parse(strings.NewReader(body))
+				doc, _ := html.Parse(strings.NewReader(body)) // nolint: errcheck
 				return doc
 			}(),
 			wantErr: true,
@@ -120,7 +120,7 @@ func TestMetaContent(t *testing.T) {
 					<meta http-equiv="refresh" content="0; url=https://pkg.go.dev/tableflip.dev/buoy/">
 				</head>
 				</html>`
-				doc, _ := html.Parse(strings.NewReader(body))
+				doc, _ := html.Parse(strings.NewReader(body)) // nolint: errcheck
 				return doc
 			}(),
 			want: "tableflip.dev/buoy git https://github.com/n3wscott/buoy",
@@ -142,6 +142,7 @@ func TestMetaContent(t *testing.T) {
 
 func TestGetMetaImport(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// nolint: errcheck
 		w.Write([]byte(`<html>
 		<head>
 			<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -182,7 +183,7 @@ func TestGetMetaImport_InvalidHost(t *testing.T) {
 
 func TestGetMetaImport_MissingGoImport(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`<html>hi</html>`))
+		w.Write([]byte(`<html>hi</html>`)) // nolint: errcheck
 	}))
 	defer ts.Close()
 

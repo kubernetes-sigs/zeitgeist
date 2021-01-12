@@ -30,13 +30,15 @@ import (
 )
 
 func addCheckCmd(root *cobra.Command) {
-	var domain string
-	var release string
-	var rulesetFlag string
-	var ruleset git.RulesetType
-	var verbose bool
+	var (
+		domain      string
+		release     string
+		rulesetFlag string
+		ruleset     git.RulesetType
+		verbose     bool
+	)
 
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "check go.mod",
 		Short: "Determine if this module has a ref for each dependency for a given release based on a ruleset.",
 		Long: `
@@ -79,12 +81,17 @@ Rulesets,
 		},
 	}
 
-	cmd.Flags().StringVarP(&domain, "domain", "d", "", "domain filter (i.e. knative.dev) [required]")
-	_ = cmd.MarkFlagRequired("domain")
-	cmd.Flags().StringVarP(&release, "release", "r", "", "release should be '<major>.<minor>' (i.e.: 1.23 or v1.23) [required]")
-	_ = cmd.MarkFlagRequired("release")
-	cmd.Flags().StringVar(&rulesetFlag, "ruleset", git.ReleaseOrReleaseBranchRule.String(), fmt.Sprintf("The ruleset to evaluate the dependency refs. Rulesets: [%s]", strings.Join(git.Rulesets(), ", ")))
+	cmd.Flags().StringVarP(&domain,
+		"domain", "d", "", "domain filter (i.e. knative.dev) [required]")
+	cmd.Flags().StringVarP(&release,
+		"release", "r", "", "release should be '<major>.<minor>' (i.e.: 1.23 or v1.23) [required]")
+	cmd.Flags().StringVar(&rulesetFlag,
+		"ruleset", git.ReleaseOrReleaseBranchRule.String(),
+		fmt.Sprintf("The ruleset to evaluate the dependency refs. Rulesets: [%s]", strings.Join(git.Rulesets(), ", ")))
 	cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Print verbose output.")
+
+	_ = cmd.MarkFlagRequired("domain")  // nolint: errcheck
+	_ = cmd.MarkFlagRequired("release") // nolint: errcheck
 
 	root.AddCommand(cmd)
 }

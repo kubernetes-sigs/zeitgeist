@@ -99,6 +99,8 @@ func (r *Repo) BestRefFor(this semver.Version, ruleset RulesetType) (string, Ref
 		// Look for a release.
 		for _, t := range r.Tags {
 			if sv, ok := normalizeTagVersion(t); ok {
+				// TODO: refactor to check the error
+				// nolint: errcheck
 				v, _ := semver.Make(sv)
 				// Go does not understand how to fetch semver tags with pre or build tags, skip those.
 				if v.Pre != nil || v.Build != nil {
@@ -122,6 +124,8 @@ func (r *Repo) BestRefFor(this semver.Version, ruleset RulesetType) (string, Ref
 		// Look for a release branch.
 		for _, b := range r.Branches {
 			if bv, ok := normalizeBranchVersion(b); ok {
+				// TODO: refactor to check the error
+				// nolint: errcheck
 				v, _ := semver.Make(bv)
 
 				if v.Major == this.Major && v.Minor == this.Minor {
@@ -136,8 +140,7 @@ func (r *Repo) BestRefFor(this semver.Version, ruleset RulesetType) (string, Ref
 		}
 	}
 
-	switch ruleset {
-	case AnyRule:
+	if ruleset == AnyRule {
 		// Look for a Return default branch.
 		return fmt.Sprintf("%s@%s", r.Ref, r.DefaultBranch), DefaultBranchRef
 	}
@@ -175,7 +178,7 @@ func ReleaseBranchVersion(v semver.Version) string {
 // ParseRef takes a go module ref and converts it to the module name and RefType.
 // ParseRef expects ref to be in the form "module@ref".
 // Only release branches and
-func ParseRef(ref string) (string, string, RefType) {
+func ParseRef(ref string) (module, reference string, branchRef RefType) {
 	parts := strings.Split(ref, "@")
 	if len(parts) != 2 {
 		return ref, "", UndefinedRef
@@ -193,5 +196,4 @@ func ParseRef(ref string) (string, string, RefType) {
 
 	// At this point we have to assume it is a branch.
 	return parts[0], parts[1], BranchRef
-
 }

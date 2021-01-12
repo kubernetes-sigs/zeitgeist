@@ -27,7 +27,7 @@ import (
 func addNeedsCmd(root *cobra.Command) {
 	var domain string
 
-	var cmd = &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "needs go.mod",
 		Short: "Find dependencies based on a base import domain.",
 		Args:  cobra.MinimumNArgs(1),
@@ -49,7 +49,8 @@ func addNeedsCmd(root *cobra.Command) {
 	}
 
 	cmd.Flags().StringVarP(&domain, "domain", "d", "", "domain filter (i.e. knative.dev) [required]")
-	_ = cmd.MarkFlagRequired("domain")
+
+	_ = cmd.MarkFlagRequired("domain") // nolint: errcheck
 
 	root.AddCommand(cmd)
 }

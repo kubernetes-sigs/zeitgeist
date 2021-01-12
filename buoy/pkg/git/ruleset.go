@@ -34,8 +34,10 @@ const (
 	InvalidRule
 )
 
-var rulesetTypeString = []string{"Any", "ReleaseOrBranch", "Release", "Branch", "Invalid"}
-var rulesetLookup map[string]RulesetType
+var (
+	rulesetTypeString = []string{"Any", "ReleaseOrBranch", "Release", "Branch", "Invalid"}
+	rulesetLookup     map[string]RulesetType
+)
 
 // init will produce a ruleset lookup map to help with ruleset string conversion.
 func init() {
