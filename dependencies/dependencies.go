@@ -262,6 +262,16 @@ func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
 			}
 
 			latestVersion.Version, err = gh.LatestVersion()
+		case upstreams.GitLabFlavour:
+			var gl upstreams.GitLab
+
+			decodeErr := mapstructure.Decode(upstream, &gl)
+			if decodeErr != nil {
+				log.Debug("errr decoding")
+				return nil, decodeErr
+			}
+
+			latestVersion.Version, err = gl.LatestVersion()
 		case upstreams.AMIFlavour:
 			var ami upstreams.AMI
 

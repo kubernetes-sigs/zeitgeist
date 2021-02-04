@@ -80,6 +80,12 @@ dependencies:
   refPaths:
   - path: clusters.yaml
     match: workers_ami
+- name: package
+  version: 3.99.99
+  upstream:
+    flavour: gitlab
+    url: honk/honk
+    constraints: <3.0.0
 ```
 
 Use `zeitgeist local` to verify that the dependency version is correct in all files referenced in _`refPaths`_:
@@ -89,6 +95,32 @@ Use `zeitgeist local` to verify that the dependency version is correct in all fi
 Use `zeitgeist validate` to also check with defined `upstreams` whether a new version is available for the given dependencies:
 
 ![zeigeist validate](/docs/validate.png)
+
+
+When using `zeitgeist validate --remote` with flavour `github` or `gitlab` you will need to set some environment variables.
+
+For `GitHub` you will need to set:
+
+```console
+export GITHUB_TOKEN=<YOUR_GITHUB_TOKEN>
+```
+
+For `GitLab`:
+
+When using the public `GitLab` instance at https://gitlab.com/ :
+
+```console
+export GITLAB_TOKEN=<YOUR_GITLAB_TOKEN>
+```
+
+When using the self-hosted `GitLab` instance, ie. https://my-gitlab.company.com/ :
+
+```console
+export GITLAB_PRIVATE_TOKEN=<YOUR_GITLAB_PRIVATE_TOKEN>
+```
+
+You can use in the `dependencies.yaml` both public and private GitLab instances. The only limitation today is that
+you can only use one private GitLab at the moment.
 
 See the [full documentation](https://godoc.org/sigs.k8s.io/zeitgeist/dependencies#Dependency) to see configuration options.
 
