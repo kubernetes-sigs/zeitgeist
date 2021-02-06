@@ -18,6 +18,8 @@ package dependencies
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 // TODO: These tests should be refactored to be table-driven
@@ -31,33 +33,25 @@ func TestSanity(t *testing.T) {
 	b := Version{"2.0.0", Alpha}
 
 	_, err = a.MoreRecentThan(b)
-	if err == nil {
-		t.Errorf("Should error on copmparing different types")
-	}
+	require.NotNil(t, err)
 
 	a = Version{"1.0.0", "Foo"}
 	b = Version{"2.0.0", "Foo"}
 
 	_, err = a.MoreRecentThan(b)
-	if err == nil {
-		t.Errorf("Should error on copmparing unknown types")
-	}
+	require.NotNil(t, err)
 
 	a = Version{"ami-1234", Semver}
 	b = Version{"ami-4567", Semver}
 
 	_, err = a.MoreRecentThan(b)
-	if err == nil {
-		t.Errorf("Should error on broken Semver strings")
-	}
+	require.NotNil(t, err)
 
 	a = Version{"1.0.0", Semver}
 	b = Version{"bad-version", Semver}
 
 	_, err = a.MoreRecentThan(b)
-	if err == nil {
-		t.Errorf("Should error on broken Semver strings")
-	}
+	require.NotNil(t, err)
 }
 
 func TestSemverVersions(t *testing.T) {
@@ -66,21 +60,15 @@ func TestSemverVersions(t *testing.T) {
 
 	// nolint: errcheck
 	shouldBeFalse, _ := a.MoreRecentThan(b)
-	if shouldBeFalse == true {
-		t.Errorf("Version %v is more recent that version %v; should be the opposite", a, b)
-	}
+	require.False(t, shouldBeFalse)
 
 	// nolint: errcheck
 	shouldBeTrue, _ := b.MoreRecentThan(a)
-	if shouldBeTrue == false {
-		t.Errorf("Version %v is more recent that version %v; should be the opposite", b, a)
-	}
+	require.True(t, shouldBeTrue)
 
 	// nolint: errcheck
 	shouldBeFalse, _ = a.MoreRecentThan(a)
-	if shouldBeFalse == true {
-		t.Errorf("Version %v is more recent than itself; it should not be", a)
-	}
+	require.False(t, shouldBeFalse)
 }
 
 func TestSemverSensitiveVersions(t *testing.T) {
@@ -89,56 +77,40 @@ func TestSemverSensitiveVersions(t *testing.T) {
 
 	// nolint: errcheck
 	shouldBeFalse, _ := b.MoreSensitivelyRecentThan(a, Major)
-	if shouldBeFalse == true {
-		t.Errorf("Version %v should not be more recent that version %v with sensitivity %v", b, a, Major)
-	}
+	require.False(t, shouldBeFalse)
 
 	// nolint: errcheck
 	shouldBeTrue, _ := b.MoreSensitivelyRecentThan(a, Minor)
-	if shouldBeTrue != true {
-		t.Errorf("Version %v should be more recent that version %v with sensitivity %v", b, a, Minor)
-	}
+	require.True(t, shouldBeTrue)
 
 	// nolint: errcheck
 	shouldBeTrue, _ = b.MoreSensitivelyRecentThan(a, Patch)
-	if shouldBeTrue != true {
-		t.Errorf("Version %v should be more recent that version %v with sensitivity %v", b, a, Patch)
-	}
+	require.True(t, shouldBeTrue)
 
 	a = Version{"1.0.0", Semver}
 	b = Version{"1.0.1", Semver}
 
 	// nolint: errcheck
 	shouldBeFalse, _ = b.MoreSensitivelyRecentThan(a, Major)
-	if shouldBeFalse == true {
-		t.Errorf("Version %v should not be more recent that version %v with sensitivity %v", b, a, Major)
-	}
+	require.False(t, shouldBeFalse)
 
 	// nolint: errcheck
 	shouldBeFalse, _ = b.MoreSensitivelyRecentThan(a, Minor)
-	if shouldBeFalse == true {
-		t.Errorf("Version %v should not be more recent that version %v with sensitivity %v", b, a, Minor)
-	}
+	require.False(t, shouldBeFalse)
 
 	// nolint: errcheck
 	shouldBeTrue, _ = b.MoreSensitivelyRecentThan(a, Patch)
-	if shouldBeTrue != true {
-		t.Errorf("Version %v should be more recent that version %v with sensitivity %v", b, a, Patch)
-	}
+	require.True(t, shouldBeTrue)
 
 	_, shouldError := b.MoreSensitivelyRecentThan(a, "foo")
-	if shouldError == nil {
-		t.Errorf("Should error on sensitivity %v", "foo")
-	}
+	require.Error(t, shouldError)
 
 	a = Version{"6.21.0", Semver}
 	b = Version{"8.1.8", Semver}
 
 	// nolint: errcheck
 	shouldBeTrue, _ = b.MoreSensitivelyRecentThan(a, Minor)
-	if shouldBeTrue != true {
-		t.Errorf("Version %v should be more recent that version %v with sensitivity %v", b, a, Minor)
-	}
+	require.True(t, shouldBeTrue)
 }
 
 func TestAlphaVersions(t *testing.T) {
@@ -147,21 +119,15 @@ func TestAlphaVersions(t *testing.T) {
 
 	// nolint: errcheck
 	shouldBeFalse, _ := a.MoreRecentThan(b)
-	if shouldBeFalse == true {
-		t.Errorf("Version %v is more recent that version %v; should be the opposite", a, b)
-	}
+	require.False(t, shouldBeFalse)
 
 	// nolint: errcheck
 	shouldBeTrue, _ := b.MoreRecentThan(a)
-	if shouldBeTrue == false {
-		t.Errorf("Version %v is more recent that version %v; should be the opposite", b, a)
-	}
+	require.True(t, shouldBeTrue)
 
 	// nolint: errcheck
 	shouldBeFalse, _ = a.MoreRecentThan(a)
-	if shouldBeFalse == true {
-		t.Errorf("Version %v is more recent than itself; it should not be", a)
-	}
+	require.False(t, shouldBeFalse)
 }
 
 func TestRandomVersions(t *testing.T) {
@@ -170,13 +136,9 @@ func TestRandomVersions(t *testing.T) {
 
 	// nolint: errcheck
 	shouldBeTrue, _ := b.MoreRecentThan(a)
-	if shouldBeTrue == false {
-		t.Errorf("Version %v is more recent that version %v; should be the opposite", b, a)
-	}
+	require.True(t, shouldBeTrue)
 
 	// nolint: errcheck
 	shouldBeFalse, _ := a.MoreRecentThan(a)
-	if shouldBeFalse == true {
-		t.Errorf("Version %v is more recent than itself; it should not be", a)
-	}
+	require.False(t, shouldBeFalse)
 }

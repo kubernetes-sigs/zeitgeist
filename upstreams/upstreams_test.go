@@ -19,6 +19,8 @@ package upstreams
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -28,12 +30,8 @@ func TestUpstreamBaseLatestVersion(t *testing.T) {
 	input := []byte("flavour: dummy")
 
 	err := yaml.Unmarshal(input, &u)
-	if err != nil {
-		t.Errorf("Failed to deserialise valid yaml:\n%s\nError: %v", input, err)
-	}
+	require.NoError(t, err)
 
 	_, err = u.LatestVersion()
-	if err == nil {
-		t.Errorf("LatestVersion on UpstreamBase should return an error")
-	}
+	require.Error(t, err)
 }

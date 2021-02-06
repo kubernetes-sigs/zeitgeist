@@ -19,6 +19,8 @@ package gomod
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -80,19 +82,18 @@ func TestModule(t *testing.T) {
 			wantErr: true,
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			name, deps, err := Module(tt.file, tt.domain)
-			if (tt.wantErr && err == nil) || (!tt.wantErr && err != nil) {
-				t.Errorf("unexpected error state, want error == %t, got %v", tt.wantErr, err)
+			if tt.wantErr {
+				require.Error(t, err)
 				return
 			}
-			if name != tt.wantName {
-				t.Errorf("Module() name incorrect; got %q, want: %q", name, tt.wantName)
-			}
-			if diff := cmp.Diff(tt.wantDeps, deps); diff != "" {
-				t.Error("Module() deps diff(-want,+got):\n", diff)
-			}
+
+			require.NoError(t, err)
+			require.Equal(t, name, tt.wantName)
+			require.Empty(t, cmp.Diff(tt.wantDeps, deps))
 		})
 	}
 }
@@ -150,20 +151,18 @@ func TestModules(t *testing.T) {
 			wantErr: true,
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			pkgs, deps, err := Modules(tt.files, tt.domain)
-			if (tt.wantErr && err == nil) || (!tt.wantErr && err != nil) {
-				t.Errorf("unexpected error state, want error == %t, got %v", tt.wantErr, err)
+			if tt.wantErr {
+				require.Error(t, err)
 				return
 			}
-			if diff := cmp.Diff(tt.wantPkgs, pkgs); diff != "" {
-				t.Error("Modules() pkgs diff(-want,+got):\n", diff)
-			}
 
-			if diff := cmp.Diff(tt.wantDeps, deps); diff != "" {
-				t.Error("Modules() deps diff(-want,+got):\n", diff)
-			}
+			require.NoError(t, err)
+			require.Empty(t, cmp.Diff(tt.wantDeps, deps))
+			require.Empty(t, cmp.Diff(tt.wantPkgs, pkgs))
 		})
 	}
 }

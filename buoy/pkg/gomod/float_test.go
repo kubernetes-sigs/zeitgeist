@@ -19,6 +19,8 @@ package gomod
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"sigs.k8s.io/zeitgeist/buoy/pkg/git"
 )
 
@@ -98,21 +100,15 @@ func TestFloat(t *testing.T) {
 			},
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			deps, err := Float(tt.gomod, tt.release, tt.domain, tt.rule)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
+
 			for _, dep := range deps {
 				module, _, got := git.ParseRef(dep)
-				if want, ok := tt.want[module]; ok {
-					if got != want {
-						t.Errorf("Float() %s; got %q, want: %q", module, got, want)
-					}
-				} else {
-					t.Error("untested float dep: ", dep)
-				}
+				require.Equal(t, got, tt.want[module])
 			}
 		})
 	}
@@ -139,12 +135,11 @@ func TestFloat_unhappy(t *testing.T) {
 			rule:    git.AnyRule,
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			_, err := Float(tt.gomod, tt.release, tt.domain, tt.rule)
-			if err == nil {
-				t.Errorf("expected to error")
-			}
+			require.Error(t, err)
 		})
 	}
 }

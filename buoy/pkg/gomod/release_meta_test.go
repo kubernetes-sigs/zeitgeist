@@ -20,6 +20,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -67,15 +69,17 @@ func TestReleaseStatus(t *testing.T) {
 			wantErr: true,
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			got, err := ReleaseStatus(tt.gomod, tt.release, os.Stdout)
-			if (tt.wantErr && err == nil) || (!tt.wantErr && err != nil) {
-				t.Errorf("unexpected error state, want error == %t, got %v", tt.wantErr, err)
+			if tt.wantErr {
+				require.Error(t, err)
+				return
 			}
-			if diff := cmp.Diff(got, tt.want); diff != "" {
-				t.Errorf("Unexpected output (-got +want):\n%s", diff)
-			}
+
+			require.NoError(t, err)
+			require.Empty(t, cmp.Diff(got, tt.want))
 		})
 	}
 }

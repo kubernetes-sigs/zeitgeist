@@ -19,6 +19,8 @@ package upstreams
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -31,9 +33,7 @@ func TestUnserialiseGithub(t *testing.T) {
 		var u Github
 
 		err := yaml.Unmarshal([]byte(valid), &u)
-		if err != nil {
-			t.Errorf("Failed to deserialise valid yaml:\n%s", valid)
-		}
+		require.NoError(t, err)
 	}
 }
 
@@ -46,9 +46,7 @@ func TestInvalidValues(t *testing.T) {
 	}
 
 	_, err = gh.LatestVersion()
-	if err == nil {
-		t.Errorf("Should fail on invalid URL:\n%s", invalidURL)
-	}
+	require.Error(t, err)
 
 	invalidConstraint := "invalid-constraint"
 	gh2 := Github{
@@ -57,9 +55,7 @@ func TestInvalidValues(t *testing.T) {
 	}
 
 	_, err = gh2.LatestVersion()
-	if err == nil {
-		t.Errorf("Should fail on invalid Constraint:\n%s", invalidConstraint)
-	}
+	require.Error(t, err)
 }
 
 func TestWrongRepository(t *testing.T) {
@@ -68,9 +64,7 @@ func TestWrongRepository(t *testing.T) {
 	}
 
 	_, err := gh.LatestVersion()
-	if err == nil {
-		t.Errorf("Should fail on repository that does not exist")
-	}
+	require.Error(t, err)
 }
 
 func TestNonExistentBranch(t *testing.T) {
@@ -107,11 +101,6 @@ func TestHappyPath(t *testing.T) {
 	}
 
 	latestVersion, err := gh.LatestVersion()
-	if err != nil {
-		t.Errorf("Failed Github happy path test: %v", err)
-	}
-
-	if latestVersion == "" {
-		t.Errorf("Got an empty latestVersion")
-	}
+	require.NoError(t, err)
+	require.NotEmpty(t, latestVersion)
 }

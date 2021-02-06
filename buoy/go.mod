@@ -8,6 +8,7 @@ require (
 	github.com/go-git/go-git/v5 v5.2.0
 	github.com/google/go-cmp v0.5.4
 	github.com/spf13/cobra v1.1.1
+	github.com/stretchr/testify v1.4.0
 	golang.org/x/mod v0.4.1
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777
 	k8s.io/apimachinery v0.18.8
