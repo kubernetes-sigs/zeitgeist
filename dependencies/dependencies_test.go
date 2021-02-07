@@ -39,7 +39,7 @@ func (m mockedReceiveMsgs) DescribeImages(in *ec2.DescribeImagesInput) (*ec2.Des
 func TestLocalSuccess(t *testing.T) {
 	client := NewClient()
 
-	err := client.LocalCheck("../testdata/local.yaml")
+	err := client.LocalCheck("../testdata/local.yaml", "../testdata")
 	require.Nil(t, err)
 }
 
@@ -78,24 +78,24 @@ func TestRemoteConstraint(t *testing.T) {
 func TestBrokenFile(t *testing.T) {
 	client := NewClient()
 
-	err := client.LocalCheck("../testdata/does-not-exist")
+	err := client.LocalCheck("../testdata/does-not-exist", "../testdata")
 	require.NotNil(t, err)
 
-	err = client.LocalCheck("../testdata/Dockerfile")
+	err = client.LocalCheck("../testdata/Dockerfile", "../testdata")
 	require.NotNil(t, err)
 }
 
 func TestLocalOutOfSync(t *testing.T) {
 	client := NewClient()
 
-	err := client.LocalCheck("../testdata/local-out-of-sync.yaml")
+	err := client.LocalCheck("../testdata/local-out-of-sync.yaml", "../testdata")
 	require.NotNil(t, err)
 }
 
 func TestFileDoesntExist(t *testing.T) {
 	client := NewClient()
 
-	err := client.LocalCheck("../testdata/local-no-file.yaml")
+	err := client.LocalCheck("../testdata/local-no-file.yaml", "../testdata")
 	require.NotNil(t, err)
 }
 

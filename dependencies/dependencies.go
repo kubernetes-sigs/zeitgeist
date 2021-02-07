@@ -132,21 +132,19 @@ func fromFile(dependencyFilePath string) (*Dependencies, error) {
 // LocalCheck checks whether dependencies are in-sync locally
 //
 // Will return an error if the dependency cannot be found in the files it has defined, or if the version does not match
-func (c *Client) LocalCheck(dependencyFilePath string) error {
-	base := filepath.Dir(dependencyFilePath)
-
+func (c *Client) LocalCheck(dependencyFilePath, basePath string) error {
+	log.Debugf("Base path %s", basePath)
 	externalDeps, err := fromFile(dependencyFilePath)
 	if err != nil {
 		return err
 	}
 
 	var nonMatchingPaths []string
-
 	for _, dep := range externalDeps.Dependencies {
 		log.Debugf("Examining dependency: %v", dep.Name)
 
 		for _, refPath := range dep.RefPaths {
-			filePath := filepath.Join(base, refPath.Path)
+			filePath := filepath.Join(basePath, refPath.Path)
 
 			file, err := os.Open(filePath)
 			if err != nil {

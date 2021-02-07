@@ -18,17 +18,21 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"sigs.k8s.io/zeitgeist/dependencies"
 )
 
 type ValidateOptions struct {
-	local  bool
-	remote bool
-	config string
+	local    bool
+	remote   bool
+	config   string
+	basePath string
 }
 
 var validateOpts = &ValidateOptions{}
@@ -69,12 +73,23 @@ func init() {
 		"location of zeitgeist configuration file",
 	)
 
+	validateCmd.PersistentFlags().StringVar(
+		&validateOpts.basePath,
+		"base-path",
+		"",
+		"base path where will the start point to find the dependencies files to check. Defaults to where the program is called.",
+	)
+
 	rootCmd.AddCommand(validateCmd)
 }
 
 // RunValidate is the function invoked by 'krel gcbmgr', responsible for
 // submitting release jobs to GCB
 func RunValidate(opts *ValidateOptions) error {
+	if err := opts.SetAndValidate(); err != nil {
+		return errors.Wrap(err, "validating zeitgeist options")
+	}
+
 	client := dependencies.NewClient()
 
 	if opts.remote {
@@ -88,5 +103,24 @@ func RunValidate(opts *ValidateOptions) error {
 		}
 	}
 
-	return client.LocalCheck(opts.config)
+	return client.LocalCheck(opts.config, opts.basePath)
+}
+
+// SetAndValidate sets some default options and verifies if options are valid
+func (o *ValidateOptions) SetAndValidate() error {
+	logrus.Info("Validating zeitgeist options...")
+
+	if o.basePath != "" {
+		if _, err := os.Stat(o.basePath); os.IsNotExist(err) {
+			return err
+		}
+	} else {
+		dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+		if err != nil {
+			return err
+		}
+		o.basePath = dir
+	}
+
+	return nil
 }
