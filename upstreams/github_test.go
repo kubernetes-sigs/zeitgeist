@@ -73,6 +73,34 @@ func TestWrongRepository(t *testing.T) {
 	}
 }
 
+func TestNonExistentBranch(t *testing.T) {
+	gh := Github{
+		URL:    "helm/heml",
+		Branch: "branch_that_does_no_exists",
+	}
+
+	_, err := gh.LatestVersion()
+	if err == nil {
+		t.Errorf("Failed non existent branch test. Error should not be nil")
+	}
+}
+
+func TestBranchHappyPath(t *testing.T) {
+	gh := Github{
+		URL:    "helm/helm",
+		Branch: "master",
+	}
+
+	latestVersion, err := gh.LatestVersion()
+	if err != nil {
+		t.Errorf("Faield github branch happy path test: %v", err)
+	}
+
+	if latestVersion == "" {
+		t.Errorf("Got an empty latestVersion")
+	}
+}
+
 func TestHappyPath(t *testing.T) {
 	gh := Github{
 		URL: "helm/helm",
