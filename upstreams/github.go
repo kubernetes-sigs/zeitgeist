@@ -34,6 +34,9 @@ type Github struct {
 	// Optional: semver constraints, e.g. < 2.0.0
 	// Will have no effect if the dependency does not follow Semver
 	Constraints string
+	// If branch is specified, the version should be a commit SHA
+	// Will look for new commits on the branch
+	Branch string
 }
 
 // LatestVersion returns the latest non-draft, non-prerelease Github Release
@@ -51,6 +54,13 @@ func (upstream Github) LatestVersion() (string, error) {
 }
 
 func latestVersion(upstream Github) (string, error) {
+	if upstream.Branch == "" {
+		return latestRelease(upstream)
+	}
+	return latestCommit(upstream)
+}
+
+func latestRelease(upstream Github) (string, error) {
 	client := github.New()
 
 	if !strings.Contains(upstream.URL, "/") {
@@ -115,4 +125,30 @@ func latestVersion(upstream Github) (string, error) {
 
 	// No latest version found – no versions? Only prereleases?
 	return "", errors.Errorf("no potential version found")
+}
+
+func latestCommit(upstream Github) (string, error) {
+	client := github.New()
+
+	if !strings.Contains(upstream.URL, "/") {
+		return "", errors.Errorf(
+			"invalid github repo: %v\nGithub repo should be in the form owner/repo, e.g. kubernetes/kubernetes",
+			upstream.URL,
+		)
+	}
+
+	splitURL := strings.Split(upstream.URL, "/")
+	owner := splitURL[0]
+	repo := splitURL[1]
+
+	branches, err := client.ListBranches(owner, repo)
+	if err != nil {
+		return "", errors.Wrap(err, "retrieving GitHub branches")
+	}
+	for _, branch := range branches {
+		if branch.GetName() == upstream.Branch {
+			return *branch.GetCommit().SHA, nil
+		}
+	}
+	return "", errors.Errorf("branch '%v' not found", upstream.Branch)
 }

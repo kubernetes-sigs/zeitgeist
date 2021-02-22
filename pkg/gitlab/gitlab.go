@@ -28,7 +28,7 @@ import (
 const (
 	// TokenEnvKey is the default GitLab token environemt variable key
 	TokenEnvKey = "GITLAB_TOKEN"
-	// PrivateTokenEnvKey is the priavete GitLAb token environemt variable key
+	// PrivateTokenEnvKey is the private GitLab token environment variable key
 	PrivateTokenEnvKey = "GITLAB_PRIVATE_TOKEN"
 	apiVersionPath     = "api/v4/"
 )
@@ -48,6 +48,9 @@ type Client interface {
 	ListReleases(
 		string, string, *gitlab.ListReleasesOptions,
 	) ([]*gitlab.Release, *gitlab.Response, error)
+	ListBranches(
+		string, string, *gitlab.ListBranchesOptions,
+	) ([]*gitlab.Branch, *gitlab.Response, error)
 }
 
 // New creates a new default GitLab client. Tokens set via the $GITLAB_TOKEN
@@ -101,6 +104,14 @@ func (g *gitlabClient) ListReleases(
 	return releases, resp, err
 }
 
+func (g *gitlabClient) ListBranches(
+	owner, repo string, opt *gitlab.ListBranchesOptions,
+) ([]*gitlab.Branch, *gitlab.Response, error) {
+	project := fmt.Sprintf("%s/%s", owner, repo)
+	branches, resp, err := g.Branches.ListBranches(project, opt)
+	return branches, resp, err
+}
+
 // SetClient can be used to manually set the internal GitLab client
 func (g *GitLab) SetClient(client Client) {
 	g.client = client
@@ -120,4 +131,12 @@ func (g *GitLab) Releases(owner, repo string) ([]*gitlab.Release, error) {
 	}
 
 	return allReleases, nil
+}
+
+func (g *GitLab) Branches(owner, repo string) ([]*gitlab.Branch, error) {
+	branches, _, err := g.client.ListBranches(owner, repo, nil)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to retrieve Gitlab releases for %v/%v", owner, repo)
+	}
+	return branches, nil
 }

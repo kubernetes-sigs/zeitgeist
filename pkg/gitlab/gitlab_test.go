@@ -46,6 +46,58 @@ func newSUTPrivate() (*gitlab.GitLab, *gitlabfakes.FakeClient) {
 	return sut, client
 }
 
+func TestBranchesSuccessEmpty(t *testing.T) {
+	// Given
+	sut, client := newSUT()
+	client.ListBranchesReturns([]*gogitlab.Branch{}, nil, nil)
+
+	// When
+	res, err := sut.Branches("", "")
+
+	// Then
+	require.Nil(t, err)
+	require.Empty(t, res)
+}
+
+func TestPrivateBranchesSuccessEmpty(t *testing.T) {
+	// Given
+	sut, client := newSUTPrivate()
+	client.ListBranchesReturns([]*gogitlab.Branch{}, nil, nil)
+
+	// When
+	res, err := sut.Branches("", "")
+
+	// Then
+	require.Nil(t, err)
+	require.Empty(t, res)
+}
+
+func TestBranchesFailed(t *testing.T) {
+	// Given
+	sut, client := newSUT()
+	client.ListBranchesReturns(nil, nil, errors.New("error"))
+
+	// When
+	res, err := sut.Branches("", "")
+
+	// Then
+	require.NotNil(t, err)
+	require.Nil(t, res, nil)
+}
+
+func TestPrivateBranchesFailed(t *testing.T) {
+	// Given
+	sut, client := newSUTPrivate()
+	client.ListBranchesReturns(nil, nil, errors.New("error"))
+
+	// When
+	res, err := sut.Branches("", "")
+
+	// Then
+	require.NotNil(t, err)
+	require.Nil(t, res, nil)
+}
+
 func TestReleasesSuccessEmpty(t *testing.T) {
 	// Given
 	sut, client := newSUT()

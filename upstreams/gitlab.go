@@ -35,18 +35,28 @@ type GitLab struct {
 	// Optional: semver constraints, e.g. < 2.0.0
 	// Will have no effect if the dependency does not follow Semver
 	Constraints string
+	// If branch is specified, the version should be a commit SHA
+	// Will look for new commits on the branch
+	Branch string
 }
 
 // LatestVersion returns the latest non-draft, non-prerelease GitLab Release
 // for the given repository (depending on the Constraints if set).
 //
 // To authenticate your requests, use the GITLAB_TOKEN environment variable.
-func (upstream GitLab) LatestVersion() (string, error) {
+func (upstream GitLab) LatestVersion() (string, error) { // nolint:gocritic
 	log.Debugf("Using GitLab flavour")
-	return latestGitLabVersion(upstream)
+	return latestGitLabVersion(&upstream)
 }
 
-func latestGitLabVersion(upstream GitLab) (string, error) {
+func latestGitLabVersion(upstream *GitLab) (string, error) {
+	if upstream.Branch == "" {
+		return latestGitLabRelease(upstream)
+	}
+	return latestGitlabCommit(upstream)
+}
+
+func latestGitLabRelease(upstream *GitLab) (string, error) {
 	var client *gitlab.GitLab
 	if upstream.Server == "" {
 		client = gitlab.New()
@@ -115,4 +125,33 @@ func latestGitLabVersion(upstream GitLab) (string, error) {
 
 	// No latest version found – no versions? Only prereleases?
 	return "", errors.Errorf("no potential version found")
+}
+
+func latestGitlabCommit(upstream *GitLab) (string, error) {
+	var client *gitlab.GitLab
+	if upstream.Server == "" {
+		client = gitlab.New()
+	} else {
+		client = gitlab.NewPrivate(upstream.Server)
+	}
+	if client == nil {
+		return "", errors.New(
+			"cannot configure a GitLab client, make sure you have exported the GITLAB_TOKEN",
+		)
+	}
+
+	splitURL := strings.Split(upstream.URL, "/")
+	owner := splitURL[0]
+	repo := splitURL[1]
+
+	branches, err := client.Branches(owner, repo)
+	if err != nil {
+		return "", errors.Wrap(err, "retrieving GitLab branches")
+	}
+	for _, branch := range branches {
+		if branch.Name == upstream.Branch {
+			return branch.Commit.ID, nil
+		}
+	}
+	return "", errors.Errorf("branch '%v' not found", upstream.Branch)
 }
