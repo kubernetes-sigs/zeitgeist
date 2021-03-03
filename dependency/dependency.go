@@ -330,6 +330,16 @@ func (c *Client) checkUpstreamVersions(deps []*Dependency) ([]versionUpdateInfo,
 			ami.ServiceClient = c.AWSEC2Client
 
 			latestVersion.Version, err = ami.LatestVersion()
+		case upstream.ContainerFlavour:
+			var ct upstream.Container
+
+			decodeErr := mapstructure.Decode(up, &ct)
+			if decodeErr != nil {
+				log.Debug("errr decoding")
+				return nil, decodeErr
+			}
+
+			latestVersion.Version, err = ct.LatestVersion()
 		default:
 			return nil, errors.Errorf("unknown upstream flavour '%#v' for dependency %s", flavour, dep.Name)
 		}

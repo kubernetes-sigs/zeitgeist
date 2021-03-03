@@ -51,7 +51,10 @@ const (
 
 	// AMIFlavour is for Amazon Machine Images
 	AMIFlavour Flavour = "ami"
-
+	// ContainerFlavour is for Container Images
+	ContainerFlavour Flavour = "container"
 	// DummyFlavour is for testing
 	DummyFlavour Flavour = "dummy"
+
+	DefaultSemVerConstraints = ">= 0.0.0"
 )

@@ -9,24 +9,6 @@ import (
 )
 
 type FakeClient struct {
-	ListReleasesStub        func(string, string, *gitlaba.ListReleasesOptions) ([]*gitlaba.Release, *gitlaba.Response, error)
-	listReleasesMutex       sync.RWMutex
-	listReleasesArgsForCall []struct {
-		arg1 string
-		arg2 string
-		arg3 *gitlaba.ListReleasesOptions
-	}
-	listReleasesReturns struct {
-		result1 []*gitlaba.Release
-		result2 *gitlaba.Response
-		result3 error
-	}
-	listReleasesReturnsOnCall map[int]struct {
-		result1 []*gitlaba.Release
-		result2 *gitlaba.Response
-		result3 error
-	}
-
 	ListBranchesStub        func(string, string, *gitlaba.ListBranchesOptions) ([]*gitlaba.Branch, *gitlaba.Response, error)
 	listBranchesMutex       sync.RWMutex
 	listBranchesArgsForCall []struct {
@@ -44,6 +26,23 @@ type FakeClient struct {
 		result2 *gitlaba.Response
 		result3 error
 	}
+	ListReleasesStub        func(string, string, *gitlaba.ListReleasesOptions) ([]*gitlaba.Release, *gitlaba.Response, error)
+	listReleasesMutex       sync.RWMutex
+	listReleasesArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 *gitlaba.ListReleasesOptions
+	}
+	listReleasesReturns struct {
+		result1 []*gitlaba.Release
+		result2 *gitlaba.Response
+		result3 error
+	}
+	listReleasesReturnsOnCall map[int]struct {
+		result1 []*gitlaba.Release
+		result2 *gitlaba.Response
+		result3 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -56,15 +55,16 @@ func (fake *FakeClient) ListBranches(arg1 string, arg2 string, arg3 *gitlaba.Lis
 		arg2 string
 		arg3 *gitlaba.ListBranchesOptions
 	}{arg1, arg2, arg3})
+	stub := fake.ListBranchesStub
+	fakeReturns := fake.listBranchesReturns
 	fake.recordInvocation("ListBranches", []interface{}{arg1, arg2, arg3})
 	fake.listBranchesMutex.Unlock()
-	if fake.ListBranchesStub != nil {
-		return fake.ListBranchesStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2, ret.result3
 	}
-	fakeReturns := fake.listBranchesReturns
 	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
 }
 
@@ -124,15 +124,16 @@ func (fake *FakeClient) ListReleases(arg1 string, arg2 string, arg3 *gitlaba.Lis
 		arg2 string
 		arg3 *gitlaba.ListReleasesOptions
 	}{arg1, arg2, arg3})
+	stub := fake.ListReleasesStub
+	fakeReturns := fake.listReleasesReturns
 	fake.recordInvocation("ListReleases", []interface{}{arg1, arg2, arg3})
 	fake.listReleasesMutex.Unlock()
-	if fake.ListReleasesStub != nil {
-		return fake.ListReleasesStub(arg1, arg2, arg3)
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2, ret.result3
 	}
-	fakeReturns := fake.listReleasesReturns
 	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
 }
 
@@ -187,6 +188,8 @@ func (fake *FakeClient) ListReleasesReturnsOnCall(i int, result1 []*gitlaba.Rele
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
+	fake.listBranchesMutex.RLock()
+	defer fake.listBranchesMutex.RUnlock()
 	fake.listReleasesMutex.RLock()
 	defer fake.listReleasesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

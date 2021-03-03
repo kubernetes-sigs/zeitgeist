@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	// TokenEnvKey is the default GitLab token environemt variable key
+	// TokenEnvKey is the default GitLab token environment variable key
 	TokenEnvKey = "GITLAB_TOKEN"
 	// PrivateTokenEnvKey is the private GitLab token environment variable key
 	PrivateTokenEnvKey = "GITLAB_PRIVATE_TOKEN"
