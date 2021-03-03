@@ -49,27 +49,6 @@ dependencies:
   refPaths:
   - path: helper-image/Dockerfile
     match: TERRAFORM_VERSION
-- name: helm
-  version: 2.12.2
-  upstream:
-    flavour: github
-    url: helm/helm
-    constraints: <3.0.0
-  refPaths:
-  - path: bootstrap/tiller.yaml
-    match: gcr.io/kubernetes-helm/tiller
-  - path: helper-image/Dockerfile
-    match: HELM_LATEST_VERSION
-- name: fluentd-chart
-  version: 2.1.1
-  sensitivity: major
-  upstream:
-    flavour: helm
-    repo: stable
-    name: fluentd
-  refPaths:
-  - path: helm/fluentbit/requirements.yaml
-    match: version
 - name: aws-eks-ami
   version: ami-09bbefc07310f7914
   scheme: random
@@ -152,7 +131,7 @@ Zeitgeist is inspired by [Kubernetes' script to manage external dependencies](ht
 ## To do
 
 - [x] Find a good name for the project
-- [x] Support `helm` upstream
+- [ ] Support `helm` upstream
 - [ ] Support `eks` upstream
 - [x] Support `ami` upstream
 - [ ] support `docker` upstream

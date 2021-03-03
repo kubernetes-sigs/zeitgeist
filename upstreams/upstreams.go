@@ -49,8 +49,6 @@ const (
 	GitLabFlavour UpstreamFlavour = "gitlab"
 	// AMIFlavour is for Amazon Machine Images
 	AMIFlavour UpstreamFlavour = "ami"
-	// HelmFlavour is for Helm charts
-	HelmFlavour UpstreamFlavour = "helm"
 	// DummyFlavour is for testing
 	DummyFlavour UpstreamFlavour = "dummy"
 )

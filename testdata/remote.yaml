@@ -23,8 +23,3 @@ dependencies:
     flavour: ami
     owner: amazon
     name: "amazon-eks-node-1.13-*"
-- name: fluentd-chart
-  version: 1.0.0
-  upstream:
-    flavour: helm
-    name: fluentd
