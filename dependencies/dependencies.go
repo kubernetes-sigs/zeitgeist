@@ -176,16 +176,7 @@ func (c *Client) LocalCheck(dependencyFilePath, basePath string) error {
 						)
 
 						found = true
-
 						break
-					} else {
-						log.Warnf(
-							"Line %v matches expected regexp '%v', but not version '%v': %v",
-							lineNumber,
-							match,
-							dep.Version,
-							line,
-						)
 					}
 				}
 			}
