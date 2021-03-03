@@ -272,15 +272,6 @@ func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
 			ami.ServiceClient = c.AWSEC2Client
 
 			latestVersion.Version, err = ami.LatestVersion()
-		case upstreams.HelmFlavour:
-			var helm upstreams.Helm
-
-			decodeErr := mapstructure.Decode(upstream, &helm)
-			if decodeErr != nil {
-				return nil, decodeErr
-			}
-
-			latestVersion.Version, err = helm.LatestVersion()
 		default:
 			return nil, errors.Errorf("unknown upstream flavour '%v' for dependency %v", flavour, dep.Name)
 		}
