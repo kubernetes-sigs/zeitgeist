@@ -22,7 +22,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/xanzy/go-gitlab"
-	"k8s.io/release/pkg/util"
+
+	"sigs.k8s.io/zeitgeist/internal/util"
 )
 
 const (
