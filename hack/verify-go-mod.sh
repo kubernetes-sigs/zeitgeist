@@ -18,5 +18,19 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+REPO_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
+
+MODULES=(
+  buoy
+)
+
 go mod tidy
-git diff --exit-code
+git diff --exit-code go.*
+
+for mod in "${MODULES[@]}"; do
+  MODULE_DIR="${REPO_ROOT}/${mod}"
+  cd "${MODULE_DIR}"
+  go mod tidy
+  git diff --exit-code go.*
+  cd -
+done
