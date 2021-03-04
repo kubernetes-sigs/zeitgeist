@@ -40,9 +40,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
-	"sigs.k8s.io/zeitgeist/internal/command"
+	"sigs.k8s.io/release-utils/command"
+	"sigs.k8s.io/release-utils/util"
 	"sigs.k8s.io/zeitgeist/internal/release/regex"
-	"sigs.k8s.io/zeitgeist/internal/util"
 )
 
 const (

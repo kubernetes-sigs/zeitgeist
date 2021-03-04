@@ -22,7 +22,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
-	"sigs.k8s.io/zeitgeist/internal/log"
+	"sigs.k8s.io/release-utils/log"
 )
 
 type rootOptions struct {

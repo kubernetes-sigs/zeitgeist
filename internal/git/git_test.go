@@ -30,7 +30,7 @@ import (
 	gogit "github.com/go-git/go-git/v5"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
-	"sigs.k8s.io/zeitgeist/internal/command"
+	"sigs.k8s.io/release-utils/command"
 	"sigs.k8s.io/zeitgeist/internal/git"
 	"sigs.k8s.io/zeitgeist/internal/git/gitfakes"
 )

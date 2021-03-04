@@ -30,9 +30,9 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
+	"sigs.k8s.io/release-utils/util"
 	"sigs.k8s.io/zeitgeist/internal/git"
 	"sigs.k8s.io/zeitgeist/internal/github/internal"
-	"sigs.k8s.io/zeitgeist/internal/util"
 )
 
 const (
