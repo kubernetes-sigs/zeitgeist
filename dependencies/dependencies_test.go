@@ -19,10 +19,11 @@ package dependencies
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v3"
 )
 
@@ -118,9 +119,7 @@ func TestDeserialising(t *testing.T) {
 		var d Dependency
 
 		err := yaml.Unmarshal([]byte(invalid), &d)
-		if err == nil {
-			t.Errorf("Did not return an error when it should have on invalid yaml:\n\n%s\n", invalid)
-		}
+		require.NotNil(t, err)
 	}
 
 	validYamls := []string{
@@ -132,8 +131,6 @@ func TestDeserialising(t *testing.T) {
 		var d Dependency
 
 		err := yaml.Unmarshal([]byte(valid), &d)
-		if err != nil {
-			t.Errorf("Failed to deserialise valid yaml:\n%s", valid)
-		}
+		require.Nil(t, err)
 	}
 }

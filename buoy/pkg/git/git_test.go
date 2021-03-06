@@ -19,6 +19,8 @@ package git
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/blang/semver/v4"
 	fixtures "github.com/go-git/go-git-fixtures/v4"
 )
@@ -28,30 +30,19 @@ func TestGetRepo_BasicOne(t *testing.T) {
 	repoURL := f.DotGit().Root()
 
 	r, err := GetRepo("foo", repoURL)
-	if err != nil {
-		t.Error("failed to GetRepo: ", err)
-	}
-	if r == nil {
-		t.Error("failed to GetRepo: repo is nil")
-	}
+	require.NoError(t, err)
+	require.NotNil(t, r)
+
 	// TODO: refactor test (use require pkg)
 	// nolint: staticcheck
-	if r.DefaultBranch != "master" {
-		t.Errorf("expected default branch to be master, got %q", r.DefaultBranch)
-	}
-	if want := 2; len(r.Branches) != want {
-		t.Errorf("expected branch count to be %d, got %d", want, len(r.Branches))
-	}
-	if want := 1; len(r.Tags) != want {
-		t.Errorf("expected tag count to be %d, got %d", want, len(r.Branches))
-	}
+	require.Equal(t, r.DefaultBranch, "master")
+	require.Len(t, r.Branches, 2)
+	require.Len(t, r.Tags, 1)
 }
 
 func TestGetRepo_Error(t *testing.T) {
 	_, err := GetRepo("foo", "invalid")
-	if err == nil {
-		t.Error("expected to get an error from GetRepo but did not")
-	}
+	require.Error(t, err)
 }
 
 func TestRepo_BestRefFor(t *testing.T) {
@@ -185,15 +176,12 @@ func TestRepo_BestRefFor(t *testing.T) {
 			rule:    ReleaseBranchRule,
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			got, release := tt.repo.BestRefFor(tt.version, tt.rule)
-			if got != tt.want {
-				t.Errorf("repo.BestRefFor() got ref = %v, want %v", got, tt.want)
-			}
-			if release != tt.release {
-				t.Errorf("repo.BestRefFor() got isRelease = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, got, tt.want)
+			require.Equal(t, release, tt.release)
 		})
 	}
 }
@@ -220,16 +208,12 @@ func TestNormalizeTagVersion(t *testing.T) {
 			wantOK:  false,
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			got, gotOK := normalizeTagVersion(tt.version)
-			if gotOK != tt.wantOK {
-				t.Errorf("normalizeBranchVersion() ok = %t, wantOK %t", gotOK, tt.wantOK)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("normalizeBranchVersion() got = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, gotOK, tt.wantOK)
+			require.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -256,12 +240,11 @@ func TestTagVersion(t *testing.T) {
 			want: "v0.1.0",
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			got := ReleaseVersion(tt.version)
-			if got != tt.want {
-				t.Errorf("ReleaseVersion() got = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -288,16 +271,12 @@ func TestNormalizeBranchVersion(t *testing.T) {
 			wantOK:  false,
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			got, gotOK := normalizeBranchVersion(tt.version)
-			if gotOK != tt.wantOK {
-				t.Errorf("normalizeBranchVersion() ok = %t, wantOK %t", gotOK, tt.wantOK)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("normalizeBranchVersion() got = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, gotOK, tt.wantOK)
+			require.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -324,12 +303,11 @@ func TestBranchVersion(t *testing.T) {
 			want: "release-0.1",
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			got := ReleaseBranchVersion(tt.version)
-			if got != tt.want {
-				t.Errorf("ReleaseBranchVersion() got = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -360,12 +338,11 @@ func TestRefType_String(t *testing.T) {
 			want: "",
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			got := tt.rt.String()
-			if got != tt.want {
-				t.Errorf("rt.String() got = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -376,44 +353,41 @@ func TestParseRef(t *testing.T) {
 		wantModule  string
 		wantRef     string
 		wantRefType RefType
-	}{{
-		ref:         "foo@v0.1.1",
-		wantModule:  "foo",
-		wantRef:     "v0.1.1",
-		wantRefType: ReleaseRef,
-	}, {
-		ref:         "foo@release-v0.1",
-		wantModule:  "foo",
-		wantRef:     "release-v0.1",
-		wantRefType: ReleaseBranchRef,
-	}, {
-		ref:         "foo@default",
-		wantModule:  "foo",
-		wantRef:     "default",
-		wantRefType: BranchRef,
-	}, {
-		ref:         "invalid",
-		wantModule:  "invalid",
-		wantRef:     "",
-		wantRefType: UndefinedRef,
-	}, {
-		ref:         "",
-		wantModule:  "",
-		wantRef:     "",
-		wantRefType: UndefinedRef,
-	}}
+	}{
+		{
+			ref:         "foo@v0.1.1",
+			wantModule:  "foo",
+			wantRef:     "v0.1.1",
+			wantRefType: ReleaseRef,
+		}, {
+			ref:         "foo@release-v0.1",
+			wantModule:  "foo",
+			wantRef:     "release-v0.1",
+			wantRefType: ReleaseBranchRef,
+		}, {
+			ref:         "foo@default",
+			wantModule:  "foo",
+			wantRef:     "default",
+			wantRefType: BranchRef,
+		}, {
+			ref:         "invalid",
+			wantModule:  "invalid",
+			wantRef:     "",
+			wantRefType: UndefinedRef,
+		}, {
+			ref:         "",
+			wantModule:  "",
+			wantRef:     "",
+			wantRefType: UndefinedRef,
+		},
+	}
+
 	for _, tt := range tests {
 		t.Run(tt.ref, func(t *testing.T) {
 			gotModule, gotRef, gotRefType := ParseRef(tt.ref)
-			if gotModule != tt.wantModule {
-				t.Errorf("ParseRef() module got = %v, want %v", gotModule, tt.wantModule)
-			}
-			if gotRef != tt.wantRef {
-				t.Errorf("ParseRef() ref got = %v, want %v", gotRef, tt.wantRef)
-			}
-			if gotRefType != tt.wantRefType {
-				t.Errorf("ParseRef() refType got = %v, want %v", gotRefType, tt.wantRefType)
-			}
+			require.Equal(t, gotModule, tt.wantModule)
+			require.Equal(t, gotRef, tt.wantRef)
+			require.Equal(t, gotRefType, tt.wantRefType)
 		})
 	}
 }

@@ -19,6 +19,8 @@ package upstreams
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -32,8 +34,6 @@ func TestUnserialiseGitLab(t *testing.T) {
 		var u GitLab
 
 		err := yaml.Unmarshal([]byte(valid), &u)
-		if err != nil {
-			t.Errorf("Failed to deserialise valid yaml:\n%s", valid)
-		}
+		require.NoError(t, err)
 	}
 }

@@ -22,6 +22,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"golang.org/x/net/html"
 )
 
@@ -53,15 +55,12 @@ func TestMetaImport_OrgRepo(t *testing.T) {
 			repo: "boiii",
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			org, repo := tt.meta.OrgRepo()
-			if org != tt.org {
-				t.Errorf("OrgRepo() org = %v, want %v", org, tt.org)
-			}
-			if repo != tt.repo {
-				t.Errorf("OrgRepo() repo = %v, want %v", repo, tt.repo)
-			}
+			require.Equal(t, org, tt.org)
+			require.Equal(t, repo, tt.repo)
 		})
 	}
 }
@@ -72,14 +71,12 @@ func TestMetaImport_OrgRepo_UnknownVCS(t *testing.T) {
 	}
 
 	defer func() {
-		if r := recover(); r == nil {
-			// expect panic.
-			t.Errorf("Expected OrgRepo to panic.")
-		}
+		r := recover()
+		// expect panic.
+		require.NotNil(t, r)
 	}()
 
 	org, repo := meta.OrgRepo()
-
 	// if we get here, it is a fail.
 	t.Errorf("Expected OrgRepo to panic, got: %s, %s", org, repo)
 }
@@ -126,16 +123,16 @@ func TestMetaContent(t *testing.T) {
 			want: "tableflip.dev/buoy git https://github.com/n3wscott/buoy",
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			got, err := metaContent(tt.doc, tt.meta)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("metaContent() error = %v, wantErr %v", err, tt.wantErr)
+			if tt.wantErr {
+				require.Error(t, err)
 				return
 			}
-			if got != tt.want {
-				t.Errorf("metaContent() got = %v, want %v", got, tt.want)
-			}
+			require.NoError(t, err)
+			require.Equal(t, got, tt.want)
 		})
 	}
 }
@@ -155,20 +152,10 @@ func TestGetMetaImport(t *testing.T) {
 	defer ts.Close()
 
 	meta, err := GetMetaImport(ts.URL)
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
-		return
-	}
-
-	if want := "tableflip.dev/buoy"; meta.Prefix != want {
-		t.Errorf("meta.Prefix got = %v, want %v", meta.Prefix, want)
-	}
-	if want := "git"; meta.VCS != want {
-		t.Errorf("meta.VCS got = %v, want %v", meta.VCS, want)
-	}
-	if want := "https://github.com/n3wscott/buoy"; meta.RepoRoot != want {
-		t.Errorf("meta.RepoRoot got = %v, want %v", meta.RepoRoot, want)
-	}
+	require.NoError(t, err)
+	require.Equal(t, meta.Prefix, "tableflip.dev/buoy")
+	require.Equal(t, meta.VCS, "git")
+	require.Equal(t, meta.RepoRoot, "https://github.com/n3wscott/buoy")
 }
 
 func TestGetMetaImport_InvalidHost(t *testing.T) {
@@ -176,9 +163,7 @@ func TestGetMetaImport_InvalidHost(t *testing.T) {
 	ts.Close()
 
 	_, err := GetMetaImport(ts.URL)
-	if err == nil {
-		t.Errorf("expected error, but did not get it.")
-	}
+	require.Error(t, err)
 }
 
 func TestGetMetaImport_MissingGoImport(t *testing.T) {
@@ -188,7 +173,5 @@ func TestGetMetaImport_MissingGoImport(t *testing.T) {
 	defer ts.Close()
 
 	_, err := GetMetaImport(ts.URL)
-	if err == nil {
-		t.Errorf("expected error, but did not get it.")
-	}
+	require.Error(t, err)
 }

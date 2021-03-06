@@ -21,6 +21,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"sigs.k8s.io/zeitgeist/buoy/pkg/git"
 )
 
@@ -99,11 +101,14 @@ func TestCheck(t *testing.T) {
 			wantErr: true,
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			err := Check(tt.gomod, tt.release, tt.domain, tt.rule, os.Stdout)
-			if (tt.wantErr && err == nil) || (!tt.wantErr && err != nil) {
-				t.Errorf("unexpected error state, want error == %t, got %v", tt.wantErr, err)
+			if tt.wantErr {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
 			}
 		})
 	}
@@ -130,11 +135,10 @@ func TestError(t *testing.T) {
 			isDependencyErr: false,
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			if errors.Is(tt.err, DependencyErr) != tt.isDependencyErr {
-				t.Error("expected errors.Is(err, DependencyErr) to be ", tt.isDependencyErr)
-			}
+			require.Equal(t, errors.Is(tt.err, DependencyErr), tt.isDependencyErr)
 		})
 	}
 }
@@ -156,11 +160,10 @@ func TestError_Error(t *testing.T) {
 			want: "foo failed because of the following dependencies [bar, baz]",
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			if got := tt.err.Error(); tt.want != got {
-				t.Errorf("err.Error() = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, tt.err.Error(), tt.want)
 		})
 	}
 }

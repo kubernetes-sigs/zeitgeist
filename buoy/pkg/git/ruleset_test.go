@@ -17,8 +17,9 @@ limitations under the License.
 package git
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestRuleset(t *testing.T) {
@@ -76,11 +77,10 @@ func TestRuleset(t *testing.T) {
 			want: InvalidRule,
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			if got := Ruleset(tt.rule); got != tt.want {
-				t.Errorf("Ruleset() = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, Ruleset(tt.rule), tt.want)
 		})
 	}
 }
@@ -115,11 +115,10 @@ func TestRulesetType_String(t *testing.T) {
 			want: "",
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			if got := tt.rt.String(); got != tt.want {
-				t.Errorf("String() = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, tt.rt.String(), tt.want)
 		})
 	}
 }
@@ -132,11 +131,10 @@ func TestRulesets(t *testing.T) {
 			want: []string{"Any", "ReleaseOrBranch", "Release", "Branch"},
 		},
 	}
+
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			if got := Rulesets(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Rulesets() = %v, want %v", got, tt.want)
-			}
+			require.Equal(t, Rulesets(), tt.want)
 		})
 	}
 }
