@@ -14,10 +14,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+/* Zeitgeist is a language-agnostic dependency checker */
+
 package main
 
-import "sigs.k8s.io/zeitgeist/cmd"
+import (
+	"github.com/sirupsen/logrus"
+
+	"sigs.k8s.io/zeitgeist/commands"
+)
 
 func main() {
-	cmd.Execute()
+	if err := commands.New().Execute(); err != nil {
+		logrus.Fatalf("error during command execution: %v", err)
+	}
 }

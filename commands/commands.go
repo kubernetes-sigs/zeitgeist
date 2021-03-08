@@ -14,12 +14,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-/* Zeitgeist is a language-agnostic dependency checker */
-
-package cmd
+package commands
 
 import (
-	"github.com/sirupsen/logrus"
+	"fmt"
+
 	"github.com/spf13/cobra"
 
 	"sigs.k8s.io/release-utils/log"
@@ -40,28 +39,26 @@ var (
 	date    = "unknown" // nolint: deadcode,unused,varcheck
 )
 
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:               "zeitgeist",
-	Short:             "Zeitgeist is a language-agnostic dependency checker",
-	PersistentPreRunE: initLogging,
-}
-
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		logrus.Fatal(err)
+func New() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:               "zeitgeist",
+		Short:             "Zeitgeist is a language-agnostic dependency checker",
+		PersistentPreRunE: initLogging,
 	}
-}
 
-func init() {
-	rootCmd.PersistentFlags().StringVar(
+	cmd.PersistentFlags().StringVar(
 		&rootOpts.logLevel,
 		"log-level",
 		"info",
-		"the logging verbosity, either 'panic', 'fatal', 'error', 'warn', 'warning', 'info', 'debug' or 'trace'",
+		fmt.Sprintf("the logging verbosity, either %s", log.LevelNames()),
 	)
+
+	AddCommands(cmd)
+	return cmd
+}
+
+func AddCommands(topLevel *cobra.Command) {
+	// addValidate(topLevel)
 }
 
 func initLogging(*cobra.Command, []string) error {
