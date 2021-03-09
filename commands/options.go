@@ -25,8 +25,8 @@ import (
 
 type options struct {
 	// configuration options
-	local  bool
-	remote bool
+	localOnly bool
+	remote    bool
 
 	// path options
 	basePath   string

@@ -45,18 +45,12 @@ func New() *cobra.Command {
 	}
 
 	// Submit types
-	cmd.PersistentFlags().BoolVar(
-		&rootOpts.local,
-		"local",
-		false,
-		"if specified, subcommands will only perform local checks",
-	)
 
 	cmd.PersistentFlags().BoolVar(
-		&rootOpts.remote,
-		"remote",
+		&rootOpts.localOnly,
+		"local-only",
 		false,
-		"if specified, subcommands will query against remotes defined in the config",
+		"if specified, subcommands will only perform local checks",
 	)
 
 	cmd.PersistentFlags().StringVar(
@@ -79,6 +73,38 @@ func New() *cobra.Command {
 		"info",
 		fmt.Sprintf("the logging verbosity, either %s", log.LevelNames()),
 	)
+
+	// START - Deprecated flags
+
+	// TODO: Remove in the next (post-v0.3.0) minor release
+	cmd.PersistentFlags().BoolVar(
+		&rootOpts.localOnly,
+		"local",
+		false,
+		"if specified, subcommands will only perform local checks",
+	)
+
+	// TODO: Remove in the next (post-v0.3.0) minor release
+	cmd.PersistentFlags().BoolVar(
+		&rootOpts.remote,
+		"remote",
+		false,
+		"if specified, subcommands will query against remotes defined in the config",
+	)
+
+	// nolint: errcheck
+	cmd.PersistentFlags().MarkDeprecated(
+		"local",
+		"and will be removed in a future release. Use --local-only instead.",
+	)
+
+	// nolint: errcheck
+	cmd.PersistentFlags().MarkDeprecated(
+		"remote",
+		"as remote checks now happen by default.",
+	)
+
+	// END - Deprecated flags
 
 	AddCommands(cmd)
 	return cmd
