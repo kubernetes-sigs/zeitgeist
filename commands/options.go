@@ -33,7 +33,7 @@ type options struct {
 
 // setAndValidate sets some default options and verifies if options are valid
 func (o *options) setAndValidate() error {
-	logrus.Info("Validating zeitgeist options...")
+	logrus.Debug("Validating zeitgeist options...")
 
 	if o.basePath != "" {
 		if _, err := os.Stat(o.basePath); os.IsNotExist(err) {
