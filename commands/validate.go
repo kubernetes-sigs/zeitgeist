@@ -49,10 +49,14 @@ func addValidate(topLevel *cobra.Command) {
 func runValidate(opts *options) error {
 	client := dependencies.NewClient()
 
-	if opts.remote {
-		updates, err := client.RemoteCheck(opts.config)
+	if opts.localOnly {
+		if err := client.LocalCheck(opts.configFile, opts.basePath); err != nil {
+			return errors.Wrap(err, "checking local dependencies")
+		}
+	} else {
+		updates, err := client.RemoteCheck(opts.configFile)
 		if err != nil {
-			return errors.Wrap(err, "check remote dependencies")
+			return errors.Wrap(err, "checking remote dependencies")
 		}
 
 		for _, update := range updates {
@@ -60,5 +64,5 @@ func runValidate(opts *options) error {
 		}
 	}
 
-	return client.LocalCheck(opts.config, opts.basePath)
+	return nil
 }

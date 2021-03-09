@@ -24,16 +24,21 @@ import (
 )
 
 type options struct {
+	// configuration options
+	localOnly bool
+	remote    bool
+
+	// path options
+	basePath   string
+	configFile string
+
+	// command options
 	logLevel string
-	local    bool
-	remote   bool
-	config   string
-	basePath string
 }
 
 // setAndValidate sets some default options and verifies if options are valid
 func (o *options) setAndValidate() error {
-	logrus.Info("Validating zeitgeist options...")
+	logrus.Debug("Validating zeitgeist options...")
 
 	if o.basePath != "" {
 		if _, err := os.Stat(o.basePath); os.IsNotExist(err) {
