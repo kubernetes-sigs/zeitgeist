@@ -18,77 +18,35 @@ package commands
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
 
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 
 	"sigs.k8s.io/zeitgeist/dependencies"
 )
 
-type ValidateOpts struct {
-	local    bool
-	remote   bool
-	config   string
-	basePath string
-}
-
-const defaultConfigFile = "dependencies.yaml"
-
 func addValidate(topLevel *cobra.Command) {
-	vo := ValidateOpts{}
+	vo := rootOpts
 
 	cmd := &cobra.Command{
 		Use:           "validate",
 		Short:         "Check dependencies locally and against upstream versions",
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		PreRunE: func(*cobra.Command, []string) error {
+			return vo.setAndValidate()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return RunValidate(&vo)
+			return runValidate(vo)
 		},
 	}
-
-	// Submit types
-	cmd.PersistentFlags().BoolVar(
-		&vo.local,
-		"local",
-		false,
-		"validate dependencies locally",
-	)
-
-	cmd.PersistentFlags().BoolVar(
-		&vo.remote,
-		"remote",
-		false,
-		"validate dependencies against specified upstreams",
-	)
-
-	cmd.PersistentFlags().StringVar(
-		&vo.config,
-		"config",
-		defaultConfigFile,
-		"location of zeitgeist configuration file",
-	)
-
-	cmd.PersistentFlags().StringVar(
-		&vo.basePath,
-		"base-path",
-		"",
-		"base path where will the start point to find the dependencies files to check. Defaults to where the program is called.",
-	)
 
 	topLevel.AddCommand(cmd)
 }
 
-// RunValidate is the function invoked by 'addValidate', responsible for
+// runValidate is the function invoked by 'addValidate', responsible for
 // validating dependencies in a specified configuration file.
-func RunValidate(opts *ValidateOpts) error {
-	if err := opts.SetAndValidate(); err != nil {
-		return errors.Wrap(err, "validating zeitgeist options")
-	}
-
+func runValidate(opts *options) error {
 	client := dependencies.NewClient()
 
 	if opts.remote {
@@ -103,23 +61,4 @@ func RunValidate(opts *ValidateOpts) error {
 	}
 
 	return client.LocalCheck(opts.config, opts.basePath)
-}
-
-// SetAndValidate sets some default options and verifies if options are valid
-func (o *ValidateOpts) SetAndValidate() error {
-	logrus.Info("Validating zeitgeist options...")
-
-	if o.basePath != "" {
-		if _, err := os.Stat(o.basePath); os.IsNotExist(err) {
-			return err
-		}
-	} else {
-		dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
-		if err != nil {
-			return err
-		}
-		o.basePath = dir
-	}
-
-	return nil
 }

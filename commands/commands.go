@@ -24,12 +24,10 @@ import (
 	"sigs.k8s.io/release-utils/log"
 )
 
-type rootOptions struct {
-	logLevel string
-}
+const defaultConfigFile = "dependencies.yaml"
 
 var (
-	rootOpts = &rootOptions{}
+	rootOpts = &options{}
 
 	// TODO: Implement these as a separate function or subcommand to avoid the
 	//       deadcode,unused,varcheck nolints
@@ -45,6 +43,35 @@ func New() *cobra.Command {
 		Short:             "Zeitgeist is a language-agnostic dependency checker",
 		PersistentPreRunE: initLogging,
 	}
+
+	// Submit types
+	cmd.PersistentFlags().BoolVar(
+		&rootOpts.local,
+		"local",
+		false,
+		"if specified, subcommands will only perform local checks",
+	)
+
+	cmd.PersistentFlags().BoolVar(
+		&rootOpts.remote,
+		"remote",
+		false,
+		"if specified, subcommands will query against remotes defined in the config",
+	)
+
+	cmd.PersistentFlags().StringVar(
+		&rootOpts.config,
+		"config",
+		defaultConfigFile,
+		"configuration file location",
+	)
+
+	cmd.PersistentFlags().StringVar(
+		&rootOpts.basePath,
+		"base-path",
+		"",
+		"base path to begin searching for dependencies (defaults to where the program was called from)",
+	)
 
 	cmd.PersistentFlags().StringVar(
 		&rootOpts.logLevel,
