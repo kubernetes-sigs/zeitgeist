@@ -23,7 +23,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/xanzy/go-gitlab"
 
-	"sigs.k8s.io/release-utils/util"
+	"sigs.k8s.io/release-utils/env"
 )
 
 const (
@@ -59,7 +59,7 @@ type Client interface {
 // If the $GITLAB_TOKEN is not set, then it will return a nil client.
 // GitLab requires autenticated users.
 func New() *GitLab {
-	token := util.EnvDefault(TokenEnvKey, "")
+	token := env.Default(TokenEnvKey, "")
 	var git *gitlab.Client
 	if token == "" {
 		logrus.Debug("No GITLAB_TOKEN configured")
@@ -78,7 +78,7 @@ func New() *GitLab {
 }
 
 func NewPrivate(baseURL string) *GitLab {
-	token := util.EnvDefault(PrivateTokenEnvKey, "")
+	token := env.Default(PrivateTokenEnvKey, "")
 	var git *gitlab.Client
 	if token == "" {
 		logrus.Debug("No GITLAB_PRIVATE_TOKEN configured")

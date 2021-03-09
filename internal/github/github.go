@@ -30,6 +30,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 
+	"sigs.k8s.io/release-utils/env"
 	"sigs.k8s.io/release-utils/util"
 	"sigs.k8s.io/zeitgeist/internal/git"
 	"sigs.k8s.io/zeitgeist/internal/github/internal"
@@ -139,7 +140,7 @@ type Client interface {
 // If the $GITHUB_TOKEN is not set, then the client will do unauthenticated
 // GitHub requests.
 func New() *GitHub {
-	token := util.EnvDefault(TokenEnvKey, "")
+	token := env.Default(TokenEnvKey, "")
 	client, _ := NewWithToken(token) // nolint: errcheck
 	return client
 }
@@ -162,7 +163,7 @@ func NewWithToken(token string) (*GitHub, error) {
 }
 
 func NewEnterprise(baseURL, uploadURL string) (*GitHub, error) {
-	token := util.EnvDefault(TokenEnvKey, "")
+	token := env.Default(TokenEnvKey, "")
 	return NewEnterpriseWithToken(baseURL, uploadURL, token)
 }
 
