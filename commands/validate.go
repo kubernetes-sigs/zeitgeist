@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cmd
+package commands
 
 import (
 	"fmt"
@@ -28,64 +28,63 @@ import (
 	"sigs.k8s.io/zeitgeist/dependencies"
 )
 
-type ValidateOptions struct {
+type ValidateOpts struct {
 	local    bool
 	remote   bool
 	config   string
 	basePath string
 }
 
-var validateOpts = &ValidateOptions{}
-
 const defaultConfigFile = "dependencies.yaml"
 
-// validateCmd is a subcommand which invokes RunValidate()
-var validateCmd = &cobra.Command{
-	Use:           "validate",
-	Short:         "Check dependencies locally and against upstream versions",
-	SilenceUsage:  true,
-	SilenceErrors: true,
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return RunValidate(validateOpts)
-	},
-}
+func addValidate(topLevel *cobra.Command) {
+	vo := ValidateOpts{}
 
-func init() {
+	cmd := &cobra.Command{
+		Use:           "validate",
+		Short:         "Check dependencies locally and against upstream versions",
+		SilenceUsage:  true,
+		SilenceErrors: true,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunValidate(&vo)
+		},
+	}
+
 	// Submit types
-	validateCmd.PersistentFlags().BoolVar(
-		&validateOpts.local,
+	cmd.PersistentFlags().BoolVar(
+		&vo.local,
 		"local",
 		false,
 		"validate dependencies locally",
 	)
 
-	validateCmd.PersistentFlags().BoolVar(
-		&validateOpts.remote,
+	cmd.PersistentFlags().BoolVar(
+		&vo.remote,
 		"remote",
 		false,
 		"validate dependencies against specified upstreams",
 	)
 
-	validateCmd.PersistentFlags().StringVar(
-		&validateOpts.config,
+	cmd.PersistentFlags().StringVar(
+		&vo.config,
 		"config",
 		defaultConfigFile,
 		"location of zeitgeist configuration file",
 	)
 
-	validateCmd.PersistentFlags().StringVar(
-		&validateOpts.basePath,
+	cmd.PersistentFlags().StringVar(
+		&vo.basePath,
 		"base-path",
 		"",
 		"base path where will the start point to find the dependencies files to check. Defaults to where the program is called.",
 	)
 
-	rootCmd.AddCommand(validateCmd)
+	topLevel.AddCommand(cmd)
 }
 
-// RunValidate is the function invoked by 'krel gcbmgr', responsible for
-// submitting release jobs to GCB
-func RunValidate(opts *ValidateOptions) error {
+// RunValidate is the function invoked by 'addValidate', responsible for
+// validating dependencies in a specified configuration file.
+func RunValidate(opts *ValidateOpts) error {
 	if err := opts.SetAndValidate(); err != nil {
 		return errors.Wrap(err, "validating zeitgeist options")
 	}
@@ -107,7 +106,7 @@ func RunValidate(opts *ValidateOptions) error {
 }
 
 // SetAndValidate sets some default options and verifies if options are valid
-func (o *ValidateOptions) SetAndValidate() error {
+func (o *ValidateOpts) SetAndValidate() error {
 	logrus.Info("Validating zeitgeist options...")
 
 	if o.basePath != "" {
