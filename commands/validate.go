@@ -50,7 +50,7 @@ func runValidate(opts *options) error {
 	client := dependencies.NewClient()
 
 	if opts.remote {
-		updates, err := client.RemoteCheck(opts.config)
+		updates, err := client.RemoteCheck(opts.configFile)
 		if err != nil {
 			return errors.Wrap(err, "check remote dependencies")
 		}
@@ -60,5 +60,5 @@ func runValidate(opts *options) error {
 		}
 	}
 
-	return client.LocalCheck(opts.config, opts.basePath)
+	return client.LocalCheck(opts.configFile, opts.basePath)
 }

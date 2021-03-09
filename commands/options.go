@@ -24,11 +24,16 @@ import (
 )
 
 type options struct {
+	// configuration options
+	local  bool
+	remote bool
+
+	// path options
+	basePath   string
+	configFile string
+
+	// command options
 	logLevel string
-	local    bool
-	remote   bool
-	config   string
-	basePath string
 }
 
 // setAndValidate sets some default options and verifies if options are valid

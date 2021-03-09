@@ -60,7 +60,7 @@ func New() *cobra.Command {
 	)
 
 	cmd.PersistentFlags().StringVar(
-		&rootOpts.config,
+		&rootOpts.configFile,
 		"config",
 		defaultConfigFile,
 		"configuration file location",
