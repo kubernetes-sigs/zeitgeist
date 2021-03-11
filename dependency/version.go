@@ -39,6 +39,21 @@ const (
 	Random VersionScheme = "random"
 )
 
+type versionUpdateInfo struct {
+	name            string
+	current         Version
+	latest          Version
+	updateAvailable bool
+}
+
+// VersionUpdate represents the schema of the output format
+// The output format is dictated by exportOptions.outputFormat
+type VersionUpdate struct {
+	Name       string `yaml:"name" json:"name"`
+	Version    string `yaml:"version" json:"version"`
+	NewVersion string `yaml:"new_version" json:"new_version"`
+}
+
 // VersionSensitivity informs us on how to compare whether a version is more
 // recent than another, for example to only notify on new major versions
 // Only applicable to Semver versioning
