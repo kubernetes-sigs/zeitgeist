@@ -18,6 +18,7 @@ require (
 	golang.org/x/mod v0.4.1 // indirect
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
 	golang.org/x/oauth2 v0.0.0-20210112200429-01de73cf58bd
+	golang.org/x/tools v0.1.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	sigs.k8s.io/release-utils v0.2.0
 )

@@ -216,9 +216,69 @@ func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
 
 	updates := make([]string, 0)
 
-	for _, dep := range externalDeps.Dependencies {
-		log.Debugf("Examining dependency: %s", dep.Name)
+	versionUpdateInfos, err := c.checkUpstreamVersions(externalDeps.Dependencies)
+	if err != nil {
+		return nil, err
+	}
 
+	for _, vu := range versionUpdateInfos {
+		if vu.updateAvailable {
+			updates = append(
+				updates,
+				fmt.Sprintf(
+					"Update available for dependency %s: %s (current: %s)",
+					vu.name,
+					vu.latest.Version,
+					vu.current.Version,
+				),
+			)
+		} else {
+			log.Debugf(
+				"No update available for dependency %s: %s (latest: %s)\n",
+				vu.name,
+				vu.current.Version,
+				vu.latest.Version,
+			)
+		}
+	}
+
+	return updates, nil
+}
+
+func (c *Client) RemoteExport(dependencyFilePath string) ([]VersionUpdate, error) {
+	externalDeps, err := fromFile(dependencyFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	versionUpdates := []VersionUpdate{}
+
+	versionUpdatesInfos, err := c.checkUpstreamVersions(externalDeps.Dependencies)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, vui := range versionUpdatesInfos {
+		if vui.updateAvailable {
+			versionUpdates = append(versionUpdates, VersionUpdate{
+				Name:       vui.name,
+				Version:    vui.current.Version,
+				NewVersion: vui.latest.Version,
+			})
+		} else {
+			versionUpdates = append(versionUpdates, VersionUpdate{
+				Name:       vui.name,
+				Version:    vui.current.Version,
+				NewVersion: vui.current.Version,
+			})
+		}
+	}
+	return versionUpdates, nil
+}
+
+func (c *Client) checkUpstreamVersions(deps []*Dependency) ([]versionUpdateInfo, error) {
+	versionUpdates := []versionUpdateInfo{}
+	for _, dep := range deps {
 		if dep.Upstream == nil {
 			continue
 		}
@@ -283,25 +343,13 @@ func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
 			return nil, err
 		}
 
-		if updateAvailable {
-			updates = append(
-				updates,
-				fmt.Sprintf(
-					"Update available for dependency %s: %s (current: %s)",
-					dep.Name,
-					latestVersion.Version,
-					currentVersion.Version,
-				),
-			)
-		} else {
-			log.Debugf(
-				"No update available for dependency %s: %s (latest: %s)\n",
-				dep.Name,
-				currentVersion.Version,
-				latestVersion.Version,
-			)
-		}
+		versionUpdates = append(versionUpdates, versionUpdateInfo{
+			name:            dep.Name,
+			current:         currentVersion,
+			latest:          latestVersion,
+			updateAvailable: updateAvailable,
+		})
 	}
 
-	return updates, nil
+	return versionUpdates, nil
 }

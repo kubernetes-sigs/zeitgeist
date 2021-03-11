@@ -69,6 +69,28 @@ func TestDummyRemote(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestDummyRemoteExportWithoutUpdate(t *testing.T) {
+	client := NewClient()
+
+	updates, err := client.RemoteExport("../testdata/remote-dummy.yaml")
+	require.Nil(t, err)
+	require.NotEmpty(t, updates)
+	require.Equal(t, updates[0].Name, "example")
+	require.Equal(t, updates[0].Version, "1.0.0")
+	require.Equal(t, updates[0].NewVersion, "1.0.0")
+}
+
+func TestDummyRemoteExportWithUpdate(t *testing.T) {
+	client := NewClient()
+
+	updates, err := client.RemoteExport("../testdata/remote-dummy-with-update.yaml")
+	require.Nil(t, err)
+	require.NotEmpty(t, updates)
+	require.Equal(t, updates[0].Name, "example")
+	require.Equal(t, updates[0].Version, "0.0.1")
+	require.Equal(t, updates[0].NewVersion, "1.0.0")
+}
+
 func TestRemoteConstraint(t *testing.T) {
 	client := NewClient()
 

@@ -1,0 +1,6 @@
+dependencies:
+  - name: example
+    version: 0.0.1
+    upstream:
+      flavour: dummy
+      url: example/example
