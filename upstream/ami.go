@@ -66,7 +66,7 @@ func NewAWSClient() *ec2.EC2 {
 //
 // If images cannot be listed, or if no image matches the predicates, it will return an error instead.
 func (upstream AMI) LatestVersion() (string, error) {
-	log.Debugf("Using AMI upstream")
+	log.Debug("Using AMI upstream")
 
 	// Generate filters based on configuration
 	var filters []*ec2.Filter

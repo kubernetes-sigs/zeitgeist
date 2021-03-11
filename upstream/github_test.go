@@ -87,7 +87,7 @@ func TestBranchHappyPath(t *testing.T) {
 
 	latestVersion, err := gh.LatestVersion()
 	if err != nil {
-		t.Errorf("Faield github branch happy path test: %v", err)
+		t.Errorf("Faield github branch happy path test: %#v", err)
 	}
 
 	if latestVersion == "" {

@@ -52,7 +52,7 @@ type Github struct {
 //
 // To authenticate your requests, use the GITHUB_ACCESS_TOKEN environment variable.
 func (upstream Github) LatestVersion() (string, error) {
-	log.Debugf("Using GitHub flavour")
+	log.Debug("Using GitHub flavour")
 	return latestVersion(upstream)
 }
 
@@ -68,7 +68,7 @@ func latestRelease(upstream Github) (string, error) {
 
 	if !strings.Contains(upstream.URL, "/") {
 		return "", errors.Errorf(
-			"invalid github repo: %v\nGithub repo should be in the form owner/repo, e.g. kubernetes/kubernetes",
+			"invalid github repo: %s\nGithub repo should be in the form owner/repo e.g., kubernetes/kubernetes",
 			upstream.URL,
 		)
 	}
@@ -81,7 +81,7 @@ func latestRelease(upstream Github) (string, error) {
 
 	expectedRange, err := semver.ParseRange(semverConstraints)
 	if err != nil {
-		return "", errors.Errorf("invalid semver constraints range: %v", upstream.Constraints)
+		return "", errors.Errorf("invalid semver constraints range: %#v", upstream.Constraints)
 	}
 
 	splitURL := strings.Split(upstream.URL, "/")
@@ -102,26 +102,26 @@ func latestRelease(upstream Github) (string, error) {
 
 	for _, release := range releases {
 		if release.TagName == nil {
-			log.Debugf("Skipping release without TagName")
+			log.Debug("Skipping release without TagName")
 		}
 
 		tag := *release.TagName
 
 		if release.Draft != nil && *release.Draft {
-			log.Debugf("Skipping draft release: %v\n", tag)
+			log.Debugf("Skipping draft release: %s\n", tag)
 			continue
 		}
 
 		// Try to match semver and range
 		version, err := semver.Parse(strings.Trim(tag, "v"))
 		if err != nil {
-			log.Debugf("Error parsing version %v (%v) as semver, cannot validate semver constraints", tag, err)
+			log.Debugf("Error parsing version %s (%#v) as semver, cannot validate semver constraints", tag, err)
 		} else if !expectedRange(version) {
-			log.Debugf("Skipping release not matching range constraints (%v): %v\n", upstream.Constraints, tag)
+			log.Debugf("Skipping release not matching range constraints (%s): %s\n", upstream.Constraints, tag)
 			continue
 		}
 
-		log.Debugf("Found latest matching release: %v\n", version)
+		log.Debugf("Found latest matching release: %s\n", version.String())
 
 		return version.String(), nil
 	}
@@ -135,7 +135,7 @@ func latestCommit(upstream Github) (string, error) {
 
 	if !strings.Contains(upstream.URL, "/") {
 		return "", errors.Errorf(
-			"invalid github repo: %v\nGithub repo should be in the form owner/repo, e.g. kubernetes/kubernetes",
+			"invalid github repo: %s\nGithub repo should be in the form owner/repo e.g., kubernetes/kubernetes",
 			upstream.URL,
 		)
 	}
@@ -153,5 +153,5 @@ func latestCommit(upstream Github) (string, error) {
 			return *branch.GetCommit().SHA, nil
 		}
 	}
-	return "", errors.Errorf("branch '%v' not found", upstream.Branch)
+	return "", errors.Errorf("branch '%s' not found", upstream.Branch)
 }
