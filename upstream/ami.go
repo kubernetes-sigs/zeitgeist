@@ -31,12 +31,15 @@ import (
 //
 // See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html
 type AMI struct {
-	UpstreamBase `mapstructure:",squash"`
+	Base `mapstructure:",squash"`
+
 	// Either owner alias (e.g. "amazon") or owner id
 	Owner string
+
 	// Name predicate, as used in --filter
 	// Supports wilcards
 	Name string
+
 	// ServiceClient is the AWS client to talk to AWS API
 	ServiceClient ec2iface.EC2API
 }

@@ -16,7 +16,7 @@ limitations under the License.
 
 // Package upstream defines how to check version info in upstream repositories.
 //
-// Upstream types are identified by their _flavour_, represented as a string (see UpstreamFlavour).
+// Upstream types are identified by their _flavour_, represented as a string (see Flavour).
 //
 // Different Upstream types can have their own parameters, but they must:
 //
@@ -28,27 +28,30 @@ import (
 	"github.com/pkg/errors"
 )
 
-// UpstreamBase only contains a flavour. "Concrete" upstreams each implement their own fields.
-type UpstreamBase struct {
-	Flavour UpstreamFlavour `yaml:"flavour"`
+// Base only contains a flavour. "Concrete" upstreams each implement their own fields.
+type Base struct {
+	Flavour Flavour `yaml:"flavour"`
 }
 
 // LatestVersion will always return an error.
-// UpstreamBase is only used to determine which actual upstream needs to be called, so it cannot return a sensible value
-func (u *UpstreamBase) LatestVersion() (string, error) {
-	return "", errors.New("cannot determine latest version for UpstreamBase")
+// Base is only used to determine which actual upstream needs to be called, so it cannot return a sensible value
+func (u *Base) LatestVersion() (string, error) {
+	return "", errors.New("cannot determine latest version for Base")
 }
 
-// UpstreamFlavour is an enum of all supported upstreams and their string representation
-type UpstreamFlavour string
+// Flavour is an enum of all supported upstreams and their string representation
+type Flavour string
 
 const (
 	// GithubFlavour is for Github releases
-	GithubFlavour UpstreamFlavour = "github"
+	GithubFlavour Flavour = "github"
+
 	// GitLabFlavour is for GitLab releases
-	GitLabFlavour UpstreamFlavour = "gitlab"
+	GitLabFlavour Flavour = "gitlab"
+
 	// AMIFlavour is for Amazon Machine Images
-	AMIFlavour UpstreamFlavour = "ami"
+	AMIFlavour Flavour = "ami"
+
 	// DummyFlavour is for testing
-	DummyFlavour UpstreamFlavour = "dummy"
+	DummyFlavour Flavour = "dummy"
 )

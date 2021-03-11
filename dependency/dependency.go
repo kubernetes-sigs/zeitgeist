@@ -231,7 +231,7 @@ func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
 		var err error
 
 		// Cast the flavour from the currently unknown upstream type
-		flavour := upstream.UpstreamFlavour(up["flavour"])
+		flavour := upstream.Flavour(up["flavour"])
 		switch flavour {
 		case upstream.DummyFlavour:
 			var d upstream.Dummy

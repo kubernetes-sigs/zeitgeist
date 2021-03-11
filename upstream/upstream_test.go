@@ -24,8 +24,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func TestUpstreamBaseLatestVersion(t *testing.T) {
-	var u UpstreamBase
+func TestBaseLatestVersion(t *testing.T) {
+	var u Base
 
 	input := []byte("flavour: dummy")
 

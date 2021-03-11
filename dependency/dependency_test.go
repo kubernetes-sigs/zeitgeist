@@ -100,7 +100,7 @@ func TestFileDoesntExist(t *testing.T) {
 	require.NotNil(t, err)
 }
 
-func TestUnknownUpstreamFlavour(t *testing.T) {
+func TestUnknownFlavour(t *testing.T) {
 	client := NewClient()
 
 	_, err := client.RemoteCheck("../testdata/unknown-upstream.yaml")

@@ -27,14 +27,18 @@ import (
 
 // GitLab upstream representation
 type GitLab struct {
-	UpstreamBase `mapstructure:",squash"`
+	Base `mapstructure:",squash"`
+
 	// GitLab Server if is a self-hosted GitLab instead, default to gitlab.com
 	Server string
+
 	// GitLab URL, e.g. hashicorp/terraform or helm/helm
 	URL string
+
 	// Optional: semver constraints, e.g. < 2.0.0
 	// Will have no effect if the dependency does not follow Semver
 	Constraints string
+
 	// If branch is specified, the version should be a commit SHA
 	// Will look for new commits on the branch
 	Branch string
