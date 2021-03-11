@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package dependencies checks dependencies, locally or remotely
-package dependencies
+package dependency
 
 import (
 	"bufio"
@@ -32,7 +32,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 
-	"sigs.k8s.io/zeitgeist/upstreams"
+	"sigs.k8s.io/zeitgeist/upstream"
 )
 
 // Client holds any client that is needed
@@ -71,7 +71,7 @@ type RefPath struct {
 // NewClient returns all clients that can be used to the validation
 func NewClient() *Client {
 	return &Client{
-		AWSEC2Client: upstreams.NewAWSClient(),
+		AWSEC2Client: upstream.NewAWSClient(),
 	}
 }
 
@@ -224,47 +224,47 @@ func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
 			continue
 		}
 
-		upstream := dep.Upstream
+		up := dep.Upstream
 		latestVersion := Version{dep.Version, dep.Scheme}
 		currentVersion := Version{dep.Version, dep.Scheme}
 
 		var err error
 
 		// Cast the flavour from the currently unknown upstream type
-		flavour := upstreams.UpstreamFlavour(upstream["flavour"])
+		flavour := upstream.UpstreamFlavour(up["flavour"])
 		switch flavour {
-		case upstreams.DummyFlavour:
-			var d upstreams.Dummy
+		case upstream.DummyFlavour:
+			var d upstream.Dummy
 
-			decodeErr := mapstructure.Decode(upstream, &d)
+			decodeErr := mapstructure.Decode(up, &d)
 			if decodeErr != nil {
 				return nil, decodeErr
 			}
 
 			latestVersion.Version, err = d.LatestVersion()
-		case upstreams.GithubFlavour:
-			var gh upstreams.Github
+		case upstream.GithubFlavour:
+			var gh upstream.Github
 
-			decodeErr := mapstructure.Decode(upstream, &gh)
+			decodeErr := mapstructure.Decode(up, &gh)
 			if decodeErr != nil {
 				return nil, decodeErr
 			}
 
 			latestVersion.Version, err = gh.LatestVersion()
-		case upstreams.GitLabFlavour:
-			var gl upstreams.GitLab
+		case upstream.GitLabFlavour:
+			var gl upstream.GitLab
 
-			decodeErr := mapstructure.Decode(upstream, &gl)
+			decodeErr := mapstructure.Decode(up, &gl)
 			if decodeErr != nil {
 				log.Debug("errr decoding")
 				return nil, decodeErr
 			}
 
 			latestVersion.Version, err = gl.LatestVersion()
-		case upstreams.AMIFlavour:
-			var ami upstreams.AMI
+		case upstream.AMIFlavour:
+			var ami upstream.AMI
 
-			decodeErr := mapstructure.Decode(upstream, &ami)
+			decodeErr := mapstructure.Decode(up, &ami)
 			if decodeErr != nil {
 				return nil, decodeErr
 			}

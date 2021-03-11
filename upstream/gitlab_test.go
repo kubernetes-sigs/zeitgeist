@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,14 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package upstreams
+package upstream
 
-// Dummy upstream needs no parameters and always returns a latest version of 1.0.0. Can be used for testing.
-type Dummy struct {
-	UpstreamBase
-}
+import (
+	"testing"
 
-// LatestVersion always returns 1.0.0
-func (upstream Dummy) LatestVersion() (string, error) {
-	return "1.0.0", nil
+	"github.com/stretchr/testify/require"
+
+	"gopkg.in/yaml.v3"
+)
+
+func TestUnserialiseGitLab(t *testing.T) {
+	validYamls := []string{
+		"flavour: gitlab\nurl: helm/helm\nconstraints: <1.0.0",
+		"flavour: gitlab\nurl: helm/helm\nserver: https://mygitlab.com/\nconstraints: <1.0.0",
+	}
+
+	for _, valid := range validYamls {
+		var u GitLab
+
+		err := yaml.Unmarshal([]byte(valid), &u)
+		require.NoError(t, err)
+	}
 }

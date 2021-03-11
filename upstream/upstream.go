@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package upstreams defines how to check version info in upstream repositories.
+// Package upstream defines how to check version info in upstream repositories.
 //
 // Upstream types are identified by their _flavour_, represented as a string (see UpstreamFlavour).
 //
@@ -22,7 +22,7 @@ limitations under the License.
 //
 //	- Include the BaseUpstream type
 //	- Define a LatestVersion() function that returns the latest available version as a string
-package upstreams
+package upstream
 
 import (
 	"github.com/pkg/errors"
