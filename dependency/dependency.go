@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package dependencies checks dependencies, locally or remotely
-package dependencies
+package dependency
 
 import (
 	"bufio"
@@ -32,7 +32,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 
-	"sigs.k8s.io/zeitgeist/upstreams"
+	"sigs.k8s.io/zeitgeist/upstream"
 )
 
 // Client holds any client that is needed
@@ -71,7 +71,7 @@ type RefPath struct {
 // NewClient returns all clients that can be used to the validation
 func NewClient() *Client {
 	return &Client{
-		AWSEC2Client: upstreams.NewAWSClient(),
+		AWSEC2Client: upstream.NewAWSClient(),
 	}
 }
 
@@ -88,11 +88,11 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 
 	// Custom validation for the Dependency type
 	if d.Name == "" {
-		return errors.Errorf("Dependency has no `name`: %v", d)
+		return errors.Errorf("Dependency has no `name`: %#v", d)
 	}
 
 	if d.Version == "" {
-		return errors.Errorf("Dependency has no `version`: %v", d)
+		return errors.Errorf("Dependency has no `version`: %#v", d)
 	}
 
 	// Default scheme to Semver if unset
@@ -108,7 +108,7 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 		return errors.Errorf("unknown version scheme: %s", d.Scheme)
 	}
 
-	log.Debugf("Deserialised Dependency %v: %v", d.Name, d)
+	log.Debugf("Deserialised Dependency %s: %#v", d.Name, d)
 
 	return nil
 }
@@ -133,7 +133,7 @@ func fromFile(dependencyFilePath string) (*Dependencies, error) {
 //
 // Will return an error if the dependency cannot be found in the files it has defined, or if the version does not match
 func (c *Client) LocalCheck(dependencyFilePath, basePath string) error {
-	log.Debugf("Base path %s", basePath)
+	log.Debugf("Base path: %s", basePath)
 	externalDeps, err := fromFile(dependencyFilePath)
 	if err != nil {
 		return err
@@ -141,18 +141,17 @@ func (c *Client) LocalCheck(dependencyFilePath, basePath string) error {
 
 	var nonMatchingPaths []string
 	for _, dep := range externalDeps.Dependencies {
-		log.Debugf("Examining dependency: %v", dep.Name)
+		log.Debugf("Examining dependency: %s", dep.Name)
 
 		for _, refPath := range dep.RefPaths {
 			filePath := filepath.Join(basePath, refPath.Path)
 
+			log.Debugf("Examining file: %s", filePath)
+
 			file, err := os.Open(filePath)
 			if err != nil {
-				log.Errorf("Error opening %v: %v", filePath, err)
 				return err
 			}
-
-			log.Debugf("Examining file: %v", filePath)
 
 			match := refPath.Match
 			matcher := regexp.MustCompile(match)
@@ -168,7 +167,7 @@ func (c *Client) LocalCheck(dependencyFilePath, basePath string) error {
 				if matcher.MatchString(line) {
 					if strings.Contains(line, dep.Version) {
 						log.Debugf(
-							"Line %v matches expected regexp '%v' and version '%v': %v",
+							"Line %d matches expected regexp %q and version %q: %s",
 							lineNumber,
 							match,
 							dep.Version,
@@ -182,7 +181,7 @@ func (c *Client) LocalCheck(dependencyFilePath, basePath string) error {
 			}
 
 			if !found {
-				log.Debugf("Finished reading file %v, no match found.", filePath)
+				log.Debugf("Finished reading file %s, no match found.", filePath)
 
 				nonMatchingPaths = append(nonMatchingPaths, refPath.Path)
 			}
@@ -190,7 +189,7 @@ func (c *Client) LocalCheck(dependencyFilePath, basePath string) error {
 
 		if len(nonMatchingPaths) > 0 {
 			log.Errorf(
-				"%v indicates that %v should be at version %v, but the following files didn't match: %v",
+				"%s indicates that %s should be at version %s, but the following files didn't match: %s",
 				dependencyFilePath,
 				dep.Name,
 				dep.Version,
@@ -218,53 +217,52 @@ func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
 	updates := make([]string, 0)
 
 	for _, dep := range externalDeps.Dependencies {
-		log.Debugf("Examining dependency: %v", dep.Name)
+		log.Debugf("Examining dependency: %s", dep.Name)
 
 		if dep.Upstream == nil {
 			continue
 		}
 
-		upstream := dep.Upstream
+		up := dep.Upstream
 		latestVersion := Version{dep.Version, dep.Scheme}
 		currentVersion := Version{dep.Version, dep.Scheme}
 
 		var err error
 
 		// Cast the flavour from the currently unknown upstream type
-		flavour := upstreams.UpstreamFlavour(upstream["flavour"])
+		flavour := upstream.Flavour(up["flavour"])
 		switch flavour {
-		case upstreams.DummyFlavour:
-			var d upstreams.Dummy
+		case upstream.DummyFlavour:
+			var d upstream.Dummy
 
-			decodeErr := mapstructure.Decode(upstream, &d)
+			decodeErr := mapstructure.Decode(up, &d)
 			if decodeErr != nil {
 				return nil, decodeErr
 			}
 
 			latestVersion.Version, err = d.LatestVersion()
-		case upstreams.GithubFlavour:
-			var gh upstreams.Github
+		case upstream.GithubFlavour:
+			var gh upstream.Github
 
-			decodeErr := mapstructure.Decode(upstream, &gh)
+			decodeErr := mapstructure.Decode(up, &gh)
 			if decodeErr != nil {
 				return nil, decodeErr
 			}
 
 			latestVersion.Version, err = gh.LatestVersion()
-		case upstreams.GitLabFlavour:
-			var gl upstreams.GitLab
+		case upstream.GitLabFlavour:
+			var gl upstream.GitLab
 
-			decodeErr := mapstructure.Decode(upstream, &gl)
+			decodeErr := mapstructure.Decode(up, &gl)
 			if decodeErr != nil {
-				log.Debug("errr decoding")
 				return nil, decodeErr
 			}
 
 			latestVersion.Version, err = gl.LatestVersion()
-		case upstreams.AMIFlavour:
-			var ami upstreams.AMI
+		case upstream.AMIFlavour:
+			var ami upstream.AMI
 
-			decodeErr := mapstructure.Decode(upstream, &ami)
+			decodeErr := mapstructure.Decode(up, &ami)
 			if decodeErr != nil {
 				return nil, decodeErr
 			}
@@ -273,7 +271,7 @@ func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
 
 			latestVersion.Version, err = ami.LatestVersion()
 		default:
-			return nil, errors.Errorf("unknown upstream flavour '%v' for dependency %v", flavour, dep.Name)
+			return nil, errors.Errorf("unknown upstream flavour '%#v' for dependency %s", flavour, dep.Name)
 		}
 
 		if err != nil {
@@ -289,7 +287,7 @@ func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
 			updates = append(
 				updates,
 				fmt.Sprintf(
-					"Update available for dependency %v: %v (current: %v)",
+					"Update available for dependency %s: %s (current: %s)",
 					dep.Name,
 					latestVersion.Version,
 					currentVersion.Version,
@@ -297,7 +295,7 @@ func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
 			)
 		} else {
 			log.Debugf(
-				"No update available for dependency %v: %v (latest: %v)\n",
+				"No update available for dependency %s: %s (latest: %s)\n",
 				dep.Name,
 				currentVersion.Version,
 				latestVersion.Version,

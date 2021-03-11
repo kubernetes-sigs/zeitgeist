@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package upstreams
+package upstream
 
 import (
 	"sort"
@@ -31,12 +31,15 @@ import (
 //
 // See: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/AMIs.html
 type AMI struct {
-	UpstreamBase `mapstructure:",squash"`
+	Base `mapstructure:",squash"`
+
 	// Either owner alias (e.g. "amazon") or owner id
 	Owner string
+
 	// Name predicate, as used in --filter
 	// Supports wilcards
 	Name string
+
 	// ServiceClient is the AWS client to talk to AWS API
 	ServiceClient ec2iface.EC2API
 }
@@ -63,7 +66,7 @@ func NewAWSClient() *ec2.EC2 {
 //
 // If images cannot be listed, or if no image matches the predicates, it will return an error instead.
 func (upstream AMI) LatestVersion() (string, error) {
-	log.Debugf("Using AMI upstream")
+	log.Debug("Using AMI upstream")
 
 	// Generate filters based on configuration
 	var filters []*ec2.Filter

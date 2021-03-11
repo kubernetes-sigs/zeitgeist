@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package upstreams
+package upstream
 
 import (
 	"testing"
@@ -24,14 +24,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func TestUpstreamBaseLatestVersion(t *testing.T) {
-	var u UpstreamBase
+func TestDummy(t *testing.T) {
+	var u Dummy
 
 	input := []byte("flavour: dummy")
 
 	err := yaml.Unmarshal(input, &u)
 	require.NoError(t, err)
 
-	_, err = u.LatestVersion()
-	require.Error(t, err)
+	v, err := u.LatestVersion()
+	require.NoError(t, err)
+	require.Equal(t, v, "1.0.0")
 }

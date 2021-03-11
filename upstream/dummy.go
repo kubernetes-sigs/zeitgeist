@@ -14,25 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package upstreams
+package upstream
 
-import (
-	"testing"
+// Dummy upstream needs no parameters and always returns a latest version of 1.0.0. Can be used for testing.
+type Dummy struct {
+	Base
+}
 
-	"github.com/stretchr/testify/require"
-
-	"gopkg.in/yaml.v3"
-)
-
-func TestDummy(t *testing.T) {
-	var u Dummy
-
-	input := []byte("flavour: dummy")
-
-	err := yaml.Unmarshal(input, &u)
-	require.NoError(t, err)
-
-	v, err := u.LatestVersion()
-	require.NoError(t, err)
-	require.Equal(t, v, "1.0.0")
+// LatestVersion always returns 1.0.0
+func (upstream Dummy) LatestVersion() (string, error) {
+	return "1.0.0", nil
 }

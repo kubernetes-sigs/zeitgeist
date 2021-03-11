@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package upstreams
+package upstream
 
 import (
 	"strings"
@@ -27,14 +27,18 @@ import (
 
 // GitLab upstream representation
 type GitLab struct {
-	UpstreamBase `mapstructure:",squash"`
+	Base `mapstructure:",squash"`
+
 	// GitLab Server if is a self-hosted GitLab instead, default to gitlab.com
 	Server string
+
 	// GitLab URL, e.g. hashicorp/terraform or helm/helm
 	URL string
+
 	// Optional: semver constraints, e.g. < 2.0.0
 	// Will have no effect if the dependency does not follow Semver
 	Constraints string
+
 	// If branch is specified, the version should be a commit SHA
 	// Will look for new commits on the branch
 	Branch string
@@ -45,7 +49,7 @@ type GitLab struct {
 //
 // To authenticate your requests, use the GITLAB_TOKEN environment variable.
 func (upstream GitLab) LatestVersion() (string, error) { // nolint:gocritic
-	log.Debugf("Using GitLab flavour")
+	log.Debug("Using GitLab flavour")
 	return latestGitLabVersion(&upstream)
 }
 
@@ -71,7 +75,7 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 
 	if !strings.Contains(upstream.URL, "/") {
 		return "", errors.Errorf(
-			"invalid gitlab repo: %v\nGitLab repo should be in the form owner/repo, e.g. kubernetes/kubernetes",
+			"invalid gitlab repo: %s\nGitLab repo should be in the form owner/repo e.g., kubernetes/kubernetes",
 			upstream.URL,
 		)
 	}
@@ -84,7 +88,7 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 
 	expectedRange, err := semver.ParseRange(semverConstraints)
 	if err != nil {
-		return "", errors.Errorf("invalid semver constraints range: %v", upstream.Constraints)
+		return "", errors.Errorf("invalid semver constraints range: %#v", upstream.Constraints)
 	}
 
 	splitURL := strings.Split(upstream.URL, "/")
@@ -105,20 +109,20 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 
 	for _, release := range releases {
 		if release.TagName == "" {
-			log.Debugf("Skipping release without TagName")
+			log.Debug("Skipping release without TagName")
 		}
 
 		tag := release.TagName
 		// Try to match semver and range
 		version, err := semver.Parse(strings.Trim(tag, "v"))
 		if err != nil {
-			log.Debugf("Error parsing version %v (%v) as semver, cannot validate semver constraints", tag, err)
+			log.Debugf("Error parsing version %s (%#v) as semver, cannot validate semver constraints", tag, err)
 		} else if !expectedRange(version) {
-			log.Debugf("Skipping release not matching range constraints (%v): %v\n", upstream.Constraints, tag)
+			log.Debugf("Skipping release not matching range constraints (%s): %s\n", upstream.Constraints, tag)
 			continue
 		}
 
-		log.Debugf("Found latest matching release: %v\n", version)
+		log.Debugf("Found latest matching release: %s\n", version)
 
 		return version.String(), nil
 	}
@@ -153,5 +157,5 @@ func latestGitlabCommit(upstream *GitLab) (string, error) {
 			return branch.Commit.ID, nil
 		}
 	}
-	return "", errors.Errorf("branch '%v' not found", upstream.Branch)
+	return "", errors.Errorf("branch '%s' not found", upstream.Branch)
 }

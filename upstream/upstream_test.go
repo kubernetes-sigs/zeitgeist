@@ -1,5 +1,5 @@
 /*
-Copyright 2021 The Kubernetes Authors.
+Copyright 2020 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package upstreams
+package upstream
 
 import (
 	"testing"
@@ -24,16 +24,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func TestUnserialiseGitLab(t *testing.T) {
-	validYamls := []string{
-		"flavour: gitlab\nurl: helm/helm\nconstraints: <1.0.0",
-		"flavour: gitlab\nurl: helm/helm\nserver: https://mygitlab.com/\nconstraints: <1.0.0",
-	}
+func TestBaseLatestVersion(t *testing.T) {
+	var u Base
 
-	for _, valid := range validYamls {
-		var u GitLab
+	input := []byte("flavour: dummy")
 
-		err := yaml.Unmarshal([]byte(valid), &u)
-		require.NoError(t, err)
-	}
+	err := yaml.Unmarshal(input, &u)
+	require.NoError(t, err)
+
+	_, err = u.LatestVersion()
+	require.Error(t, err)
 }

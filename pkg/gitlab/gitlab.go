@@ -70,7 +70,7 @@ func New() *GitLab {
 	var err error
 	git, err = gitlab.NewClient(token)
 	if err != nil {
-		logrus.Errorf("failed to create the GitLab client: %v", err.Error())
+		logrus.Errorf("failed to create the GitLab client: %#v", err.Error())
 		return nil
 	}
 
@@ -89,7 +89,7 @@ func NewPrivate(baseURL string) *GitLab {
 	var err error
 	git, err = gitlab.NewClient(token, gitlab.WithBaseURL(baseURL+apiVersionPath))
 	if err != nil {
-		logrus.Errorf("failed to create the GitLab client: %v", err.Error())
+		logrus.Errorf("failed to create the GitLab client: %#v", err.Error())
 		return nil
 	}
 
@@ -137,7 +137,8 @@ func (g *GitLab) Releases(owner, repo string) ([]*gitlab.Release, error) {
 func (g *GitLab) Branches(owner, repo string) ([]*gitlab.Branch, error) {
 	branches, _, err := g.client.ListBranches(owner, repo, nil)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to retrieve Gitlab releases for %v/%v", owner, repo)
+		return nil, errors.Wrapf(err, "unable to retrieve GitLab releases for %s/%s", owner, repo)
 	}
+
 	return branches, nil
 }
