@@ -76,7 +76,7 @@ func latestRelease(upstream Github) (string, error) {
 	semverConstraints := upstream.Constraints
 	if semverConstraints == "" {
 		// If no range is passed, just use the broadest possible range
-		semverConstraints = ">= 0.0.0"
+		semverConstraints = DefaultSemVerConstraints
 	}
 
 	expectedRange, err := semver.ParseRange(semverConstraints)
