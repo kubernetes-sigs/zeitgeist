@@ -73,11 +73,11 @@ func highestSemanticImageTag(upstream *Container) (string, error) {
 			continue
 		}
 		if !expectedRange(version) {
-			log.Debugf("Skipping release not matching range constraints (%s): %s\n", upstream.Constraints, tag)
+			log.Debugf("Skipping release not matching range constraints (%s): %s", upstream.Constraints, tag)
 			continue
 		}
-		log.Debugf("Found latest matching tag: %v\n", version)
-		return version.String(), nil
+		log.Debugf("Found latest matching tag: %s", tag)
+		return tag, nil
 	}
 
 	return "", errors.Errorf("no potential tag found")
