@@ -68,14 +68,14 @@ func highestSemanticImageTag(upstream *Container) (string, error) {
 	for _, tag := range tags {
 		// Try to match semver and range
 		version, err := semver.Parse(strings.Trim(tag, "v"))
-		// Try to match semver and range
 		if err != nil {
-			log.Debugf("Error parsing version %v (%v) as semver, cannot validate semver constraints", tag, err)
-		} else if !expectedRange(version) {
-			log.Debugf("Skipping release not matching range constraints (%v): %v\n", upstream.Constraints, tag)
+			log.Debugf("Error parsing version %s (%v) as semver, cannot validate semver constraints", tag, err)
 			continue
 		}
-
+		if !expectedRange(version) {
+			log.Debugf("Skipping release not matching range constraints (%s): %s\n", upstream.Constraints, tag)
+			continue
+		}
 		log.Debugf("Found latest matching tag: %v\n", version)
 		return version.String(), nil
 	}
