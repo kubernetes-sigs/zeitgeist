@@ -68,7 +68,7 @@ func highestSemanticImageTag(upstream *Container) (string, error) {
 		orig   string         // original tag string
 		parsed semver.Version // parsed semver
 	}
-	var versions []semverWithOrig
+	versions := make([]semverWithOrig, 0, len(tags))
 	for _, tag := range tags {
 		parsed, err := semver.ParseTolerant(tag)
 		if err != nil {
