@@ -18,7 +18,6 @@ package upstream
 
 import (
 	"sort"
-	"strings"
 
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
@@ -62,22 +61,38 @@ func highestSemanticImageTag(upstream *Container) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "retrieving Container tags")
 	}
+	log.Debugf("Found %d tags for %s...", len(tags), upstream.Registry)
 
-	sort.Sort(sort.Reverse(sort.StringSlice(tags)))
-
+	// parse semvers first so we can safely sort
+	type semverWithOrig struct {
+		orig   string         // original tag string
+		parsed semver.Version // parsed semver
+	}
+	versions := make([]semverWithOrig, 0, len(tags))
 	for _, tag := range tags {
-		// Try to match semver and range
-		version, err := semver.Parse(strings.Trim(tag, "v"))
-		// Try to match semver and range
+		parsed, err := semver.ParseTolerant(tag)
 		if err != nil {
-			log.Debugf("Error parsing version %v (%v) as semver, cannot validate semver constraints", tag, err)
-		} else if !expectedRange(version) {
-			log.Debugf("Skipping release not matching range constraints (%v): %v\n", upstream.Constraints, tag)
+			log.Debugf("Error parsing version %s (%v) as semver", tag, err)
 			continue
 		}
+		versions = append(versions, semverWithOrig{
+			orig:   tag,
+			parsed: parsed,
+		})
+	}
+	// reverse sort, highest first
+	sort.Slice(versions, func(i, j int) bool {
+		return versions[j].parsed.LT(versions[i].parsed)
+	})
 
-		log.Debugf("Found latest matching tag: %v\n", version)
-		return version.String(), nil
+	// find first version matching constraints
+	for _, version := range versions {
+		if !expectedRange(version.parsed) {
+			log.Debugf("Skipping release not matching range constraints (%s): %s", upstream.Constraints, version.parsed.String())
+			continue
+		}
+		log.Debugf("Found latest matching tag: %s", version.orig)
+		return version.orig, nil
 	}
 
 	return "", errors.Errorf("no potential tag found")

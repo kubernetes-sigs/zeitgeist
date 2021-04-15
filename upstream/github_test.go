@@ -82,7 +82,7 @@ func TestNonExistentBranch(t *testing.T) {
 func TestBranchHappyPath(t *testing.T) {
 	gh := Github{
 		URL:    "helm/helm",
-		Branch: "master",
+		Branch: "main",
 	}
 
 	latestVersion, err := gh.LatestVersion()
