@@ -154,7 +154,10 @@ func (c *Client) LocalCheck(dependencyFilePath, basePath string) error {
 			}
 
 			match := refPath.Match
-			matcher := regexp.MustCompile(match)
+			matcher, err := regexp.Compile(match)
+			if err != nil {
+				return errors.Wrap(err, "compiling regex")
+			}
 			scanner := bufio.NewScanner(file)
 
 			var found bool
