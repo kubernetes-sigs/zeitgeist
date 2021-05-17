@@ -1,0 +1,6 @@
+dependencies:
+- name: terraform
+  version: 0.10.0
+  refPaths:
+  - path: Dockerfile
+    match: (

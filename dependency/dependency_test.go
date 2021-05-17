@@ -115,6 +115,14 @@ func TestLocalOutOfSync(t *testing.T) {
 	require.NotNil(t, err)
 }
 
+func TestLocalInvalid(t *testing.T) {
+	client := NewClient()
+
+	err := client.LocalCheck("../testdata/local-invalid.yaml", "../testdata")
+	require.NotNil(t, err)
+	require.Contains(t, err.Error(), "compiling regex")
+}
+
 func TestFileDoesntExist(t *testing.T) {
 	client := NewClient()
 
