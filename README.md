@@ -2,7 +2,6 @@
 
 ([/ˈzaɪtɡaɪst/](https://en.wikipedia.org/wiki/Help:IPA/English)) is a language-agnostic dependency checker that keeps track of external dependencies across your project and ensure they're up-to-date.
 
-[![CircleCI](https://circleci.com/gh/Pluies/zeitgeist.svg?style=shield)](https://circleci.com/gh/Pluies/zeitgeist)
 [![Go Report Card](https://goreportcard.com/badge/sigs.k8s.io/zeitgeist)](https://goreportcard.com/report/sigs.k8s.io/zeitgeist)
 [![GoDoc](https://godoc.org/sigs.k8s.io/zeitgeist?status.svg)](https://godoc.org/sigs.k8s.io/zeitgeist)
 
