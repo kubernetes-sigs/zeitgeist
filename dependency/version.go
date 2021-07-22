@@ -17,8 +17,11 @@ limitations under the License.
 package dependency
 
 import (
+	"strings"
+
 	"github.com/blang/semver"
 	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 // Version is the internal representation of a Version as a string and a scheme
@@ -91,13 +94,15 @@ func (a Version) MoreSensitivelyRecentThan(b Version, sensitivity VersionSensiti
 
 	switch a.Scheme {
 	case Semver:
-		aSemver, err := semver.Parse(a.Version)
+		aSemver, err := semver.Parse(strings.TrimPrefix(a.Version, "v"))
 		if err != nil {
+			log.Debugf("Failed to semver-parse %s", a.Version)
 			return false, err
 		}
 
-		bSemver, err := semver.Parse(b.Version)
+		bSemver, err := semver.Parse(strings.TrimPrefix(b.Version, "v"))
 		if err != nil {
+			log.Debugf("Failed to semver-parse %s", b.Version)
 			return false, err
 		}
 

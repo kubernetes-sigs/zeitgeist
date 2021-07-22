@@ -51,8 +51,13 @@ const (
 
 	// AMIFlavour is for Amazon Machine Images
 	AMIFlavour Flavour = "ami"
+
+	// HelmFlavour is for Helm Charts
+	HelmFlavour Flavour = "helm"
+
 	// ContainerFlavour is for Container Images
 	ContainerFlavour Flavour = "container"
+
 	// DummyFlavour is for testing
 	DummyFlavour Flavour = "dummy"
 

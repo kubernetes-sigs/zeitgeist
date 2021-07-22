@@ -93,7 +93,7 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 
 	splitURL := strings.Split(upstream.URL, "/")
 	owner := splitURL[0]
-	repo := splitURL[1]
+	repo := strings.Join(splitURL[1:], "/")
 
 	// We'll need to fetch all releases, as GitLab doesn't provide sorting options.
 	// If we don't do that, we risk running into the case where for example:
@@ -146,7 +146,7 @@ func latestGitlabCommit(upstream *GitLab) (string, error) {
 
 	splitURL := strings.Split(upstream.URL, "/")
 	owner := splitURL[0]
-	repo := splitURL[1]
+	repo := strings.Join(splitURL[1:], "/")
 
 	branches, err := client.Branches(owner, repo)
 	if err != nil {

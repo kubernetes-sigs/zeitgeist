@@ -322,6 +322,15 @@ func (c *Client) checkUpstreamVersions(deps []*Dependency) ([]versionUpdateInfo,
 			}
 
 			latestVersion.Version, err = gl.LatestVersion()
+		case upstream.HelmFlavour:
+			var h upstream.Helm
+
+			decodeErr := mapstructure.Decode(up, &h)
+			if decodeErr != nil {
+				return nil, decodeErr
+			}
+
+			latestVersion.Version, err = h.LatestVersion()
 		case upstream.AMIFlavour:
 			var ami upstream.AMI
 
