@@ -19,8 +19,8 @@ package upstream
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -85,32 +85,34 @@ func TestInvalidHelmValues(t *testing.T) {
 
 // Now onto tests that connect to a "real" Helm repo!
 
-// Set up a local webserver to serve the Helm repo index
+// We need to set up a local webserver to serve the Helm repo index
 // (As far as I can tell, it can't read directly from a file)
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	index, err := ioutil.ReadFile("../testdata/helm-repo/index.yaml")
-	if err != nil {
-		panic("Cannot open helm repo test file")
+// We do that by instantiating an httptest server in each test that requires it
+func helmHandler(rw http.ResponseWriter, req *http.Request) {
+	url := req.URL.String()
+	switch url {
+	case "/":
+		fmt.Fprint(rw, "zeitgeist testing server")
+	case "/index.yaml":
+		index, err := ioutil.ReadFile("../testdata/helm-repo/index.yaml")
+		if err != nil {
+			panic("Cannot open helm repo test file")
+		}
+		fmt.Fprint(rw, string(index))
+	case "/broken-repo/index.yaml":
+		fmt.Fprint(rw, "bad yaml here } !")
+	default:
+		rw.WriteHeader(404)
 	}
-	fmt.Fprint(w, string(index))
-}
-
-func brokenIndexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "no yaml here! }")
-}
-
-func init() {
-	http.HandleFunc("/", http.NotFound)
-	http.HandleFunc("/index.yaml", indexHandler)
-	http.HandleFunc("/broken-repo/index.yaml", brokenIndexHandler)
-	http.HandleFunc("/not-a-repo/index.yaml", http.NotFound)
-	go log.Fatal(http.ListenAndServe(":13182", nil))
 }
 
 // Negative tests
 func TestHelmRepoNotFoundLocal(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(helmHandler))
+	defer server.Close()
+
 	h := Helm{
-		Repo:  "http://localhost:13182/not-a-repo/",
+		Repo:  server.URL + "/not-a-repo/",
 		Chart: "dependency",
 	}
 
@@ -120,8 +122,11 @@ func TestHelmRepoNotFoundLocal(t *testing.T) {
 }
 
 func TestHelmBrokenRepoLocal(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(helmHandler))
+	defer server.Close()
+
 	h := Helm{
-		Repo:  "http://localhost:13182/broken-repo/",
+		Repo:  server.URL + "/broken-repo/",
 		Chart: "dependency",
 	}
 
@@ -131,8 +136,11 @@ func TestHelmBrokenRepoLocal(t *testing.T) {
 }
 
 func TestHelmChartNotFoundLocal(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(helmHandler))
+	defer server.Close()
+
 	h := Helm{
-		Repo:  "http://localhost:13182/",
+		Repo:  server.URL,
 		Chart: "chart-doesnt-exist",
 	}
 
@@ -142,8 +150,11 @@ func TestHelmChartNotFoundLocal(t *testing.T) {
 }
 
 func TestHelmUnsatisfiableConstraintLocal(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(helmHandler))
+	defer server.Close()
+
 	h := Helm{
-		Repo:        "http://localhost:13182/",
+		Repo:        server.URL,
 		Chart:       "dependency",
 		Constraints: "> 5.0.0",
 	}
@@ -155,8 +166,11 @@ func TestHelmUnsatisfiableConstraintLocal(t *testing.T) {
 
 // Happy tests
 func TestHelmHappyPathLocal(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(helmHandler))
+	defer server.Close()
+
 	h := Helm{
-		Repo:  "http://localhost:13182/",
+		Repo:  server.URL,
 		Chart: "dependency",
 	}
 
@@ -166,7 +180,7 @@ func TestHelmHappyPathLocal(t *testing.T) {
 	require.Equal(t, latestVersion, "0.2.0")
 
 	h2 := Helm{
-		Repo:  "http://localhost:13182/",
+		Repo:  server.URL,
 		Chart: "dependency-two",
 	}
 
@@ -177,8 +191,11 @@ func TestHelmHappyPathLocal(t *testing.T) {
 }
 
 func TestHelmHappyPathWithConstraintLocal(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(helmHandler))
+	defer server.Close()
+
 	h := Helm{
-		Repo:        "http://localhost:13182/",
+		Repo:        server.URL,
 		Chart:       "dependency",
 		Constraints: "< 0.2.0",
 	}
