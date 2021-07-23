@@ -7,7 +7,9 @@
 
 - [Rationale](#rationale)
 - [What is Zeitgeist](#what-is-zeitgeist)
+- [Installation](#installation)
 - [Supported upstreams](#supported-upstreams)
+- [Supported version schemes](#supported-version-schemes)
 - [When is Zeitgeist _not_ suggested](#when-is-zeitgeist-not-suggested)
 - [Naming](#naming)
 - [Releasing](#releasing)
@@ -67,9 +69,18 @@ Use `zeitgeist validate` to verify that the dependency version is correct in all
 
 ![zeigeist validate](/docs/validate.png)
 
-### Supported upstreams
+## Installation
 
-Zeitgeist currently supports the following upstreams:
+You will need to build Zeitgeist from source (for now at least!).
+
+Clone the repository and run `go build` will give you the `zeitgeist` binary:
+```bash
+git clone https://github.com/kubernetes-sigs/zeitgeist.git
+cd zeitgeist/
+go build
+```
+
+## Supported upstreams
 
 **Github**
 
@@ -192,7 +203,7 @@ export REGISTRY_USERNAME=<YOUR_REGISTRY_USERNAME>
 export REGISTRY_USER_PASSWORD=<YOUR_REGISTRY_TOKEN_PASSWORD>
 ```
 
-### Supported version schemes
+## Supported version schemes
 
 Zeitgeist supports several version schemes:
 - `semver`: [SemVer](https://semver.org/) v2, default
