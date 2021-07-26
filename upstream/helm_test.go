@@ -63,23 +63,32 @@ func TestInvalidHelmValues(t *testing.T) {
 	_, err = h1.LatestVersion()
 	require.Error(t, err)
 
-	invalidConstraint := "invalid-constraint"
+	invalidProtocol := "ftp://repo.example.com"
 	h2 := Helm{
-		Repo:        "http://example.com/test",
-		Chart:       "example",
-		Constraints: invalidConstraint,
+		Repo:  invalidProtocol,
+		Chart: "example",
 	}
 
 	_, err = h2.LatestVersion()
 	require.Error(t, err)
 
-	emptyChartName := ""
+	invalidConstraint := "invalid-constraint"
 	h3 := Helm{
+		Repo:        "http://example.com/test",
+		Chart:       "example",
+		Constraints: invalidConstraint,
+	}
+
+	_, err = h3.LatestVersion()
+	require.Error(t, err)
+
+	emptyChartName := ""
+	h4 := Helm{
 		Repo:  "http://example.com/test",
 		Chart: emptyChartName,
 	}
 
-	_, err = h3.LatestVersion()
+	_, err = h4.LatestVersion()
 	require.Error(t, err)
 }
 

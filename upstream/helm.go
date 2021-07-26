@@ -18,6 +18,7 @@ package upstream
 
 import (
 	"io/ioutil"
+	"net/url"
 	"os"
 	"strings"
 
@@ -55,15 +56,21 @@ func (upstream Helm) LatestVersion() (string, error) {
 func latestChartVersion(upstream Helm) (string, error) {
 	// Sanity checking
 	if upstream.Repo == "" {
-		return "", errors.Errorf("Invalid helm upstream: missing repo argument")
+		return "", errors.Errorf("invalid helm upstream: missing repo argument")
 	}
 
 	if upstream.Chart == "" {
-		return "", errors.Errorf("Invalid helm upstream: missing chart argument")
+		return "", errors.Errorf("invalid helm upstream: missing chart argument")
 	}
-
-	if !strings.Contains(upstream.Repo, "//") {
-		return "", errors.Errorf("invalid helm repo: %s\nHelm repo should be a URL", upstream.Repo)
+	parsedRepo, err := url.Parse(upstream.Repo)
+	if err != nil {
+		return "", errors.Errorf("invalid helm repo url: %s", upstream.Repo)
+	}
+	s := parsedRepo.Scheme
+	if s != "http" && s != "https" && s != "oci" {
+		// We currently only support http-based and oci repos (Helm defaults)
+		// Helm allows custom handlers via plugins, but I've never seen it in practice - could be added later if needed
+		return "", errors.Errorf("invalid helm repo: %s, only http, https and oci are supported", upstream.Repo)
 	}
 
 	var useSemverConstraints bool
@@ -75,7 +82,7 @@ func latestChartVersion(upstream Helm) (string, error) {
 		useSemverConstraints = true
 		validatedExpectedRange, err := semver.ParseRange(semverConstraints)
 		if err != nil {
-			return "", errors.Errorf("Invalid semver constraints range: %#v", upstream.Constraints)
+			return "", errors.Errorf("invalid semver constraints range: %#v", upstream.Constraints)
 		}
 		expectedRange = validatedExpectedRange
 	}
@@ -84,7 +91,7 @@ func latestChartVersion(upstream Helm) (string, error) {
 	// Helm expects a cache directory, so we create a temporary one
 	cacheDir, err := ioutil.TempDir("", "zeitgeist-helm-cache")
 	if err != nil {
-		log.Errorf("Failed to create temporary directory for Helm cache")
+		log.Errorf("failed to create temporary directory for Helm cache")
 		return "", err
 	}
 	defer os.RemoveAll(cacheDir)
@@ -99,27 +106,27 @@ func latestChartVersion(upstream Helm) (string, error) {
 	}
 	re, err := repo.NewChartRepository(&cfg, getter.All(&settings))
 	if err != nil {
-		log.Errorf("Failed to instantiate the Helm Chart Repository")
+		log.Errorf("failed to instantiate the Helm Chart Repository")
 		return "", err
 	}
 
 	log.Debugf("Downloading repo index for %s...", upstream.Repo)
 	indexFile, err := re.DownloadIndexFile()
 	if err != nil {
-		log.Errorf("Failed to download index file for repo %s", upstream.Repo)
+		log.Errorf("failed to download index file for repo %s", upstream.Repo)
 		return "", err
 	}
 
 	log.Debugf("Loading repo index for %s...", upstream.Repo)
 	index, err := repo.LoadIndexFile(indexFile)
 	if err != nil {
-		log.Errorf("Failed to load index file for repo %s", upstream.Repo)
+		log.Errorf("failed to load index file for repo %s", upstream.Repo)
 		return "", err
 	}
 
 	chartVersions := index.Entries[upstream.Chart]
 	if chartVersions == nil {
-		return "", errors.Errorf("No chart for %s found in repository %s", upstream.Chart, upstream.Repo)
+		return "", errors.Errorf("no chart for %s found in repository %s", upstream.Chart, upstream.Repo)
 	}
 
 	// Iterate over versions and get the first newer version
@@ -144,5 +151,5 @@ func latestChartVersion(upstream Helm) (string, error) {
 	}
 
 	// No latest version found – no versions? Only prereleases?
-	return "", errors.Errorf("No potential version found")
+	return "", errors.Errorf("no potential version found")
 }
