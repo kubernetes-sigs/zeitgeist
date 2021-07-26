@@ -1,0 +1,14 @@
+# This is an exmaple config file that you may have in a project
+# You can keep track of dependencies with Zeitgeist!
+
+# When given a string, like "terraform", zeitgeist will search for the string in the given file, and extract the version
+terraform_version: 0.15.3
+GL_VERSION: v14.0.1
+
+docker-dind: 19.03.15
+
+# If your line is hard to match, you can specify it via a comment - Zeitgeist will extract the version regardless of where it is on the line
+version: 0.20.1 # kubernetes
+other_deps:
+  - ami-09bbefc07310f7914 # zeitgeist:aws-eks-ami
+  - linkerd-2.10.0

@@ -1,0 +1,80 @@
+apiVersion: v2
+entries:
+  dependency:
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    home: https://github.com/kubernetes-sigs/zeitgeist
+    maintainers:
+    - email: example@example.com
+      name: example
+    name: dependency
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-0.2.0/dependency-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    name: dependency
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-0.1.2/dependency-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    name: dependency
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-0.1.1/dependency-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    name: dependency
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-0.1.0/dependency-0.1.0.tgz
+    version: 0.1.0
+  dependency-two:
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    home: https://github.com/kubernetes-sigs/zeitgeist
+    maintainers:
+    - email: example@example.com
+      name: example
+    name: dependency-two
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-two-2.0.0/dependency-two-2.0.0.tgz
+    version: 2.0.0
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    home: https://github.com/kubernetes-sigs/zeitgeist
+    maintainers:
+    - email: example@example.com
+      name: example
+    name: dependency-two
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-two-1.5.1/dependency-two-1.5.1.tgz
+    version: 1.5.1
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    name: dependency-two
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-two-1.5.0/dependency-two-1.5.0.tgz
+    version: 1.5.0
+generated: "2021-01-01T00:00:00Z"
