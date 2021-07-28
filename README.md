@@ -203,6 +203,22 @@ export REGISTRY_USERNAME=<YOUR_REGISTRY_USERNAME>
 export REGISTRY_USER_PASSWORD=<YOUR_REGISTRY_TOKEN_PASSWORD>
 ```
 
+**EKS**
+
+The [EKS](upstream/eks.go) checks for updates to [Elastic Kubernetes Service](https://aws.amazon.com/eks/), Amazon's managed Kubernetes offering.
+
+Example:
+```yaml
+dependencies:
+- name: eks
+  version: 1.13.0
+  upstream:
+    flavour: eks
+  refPaths:
+  - path: testdata/zeitgeist-example/a-config-file.yaml
+    match: eks
+```
+
 ## Supported version schemes
 
 Zeitgeist supports several version schemes:
@@ -241,7 +257,7 @@ Zeitgeist is inspired by [Kubernetes' script to manage external dependencies](ht
 
 - [x] Find a good name for the project
 - [x] Support `helm` upstream
-- [ ] Support `eks` upstream
+- [x] Support `eks` upstream
 - [x] Support `ami` upstream
 - [x] support `docker` upstream
 - [x] Cleanly separate various upstreams to make it easy to add new upstreams

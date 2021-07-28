@@ -352,6 +352,15 @@ func (c *Client) checkUpstreamVersions(deps []*Dependency) ([]versionUpdateInfo,
 			}
 
 			latestVersion.Version, err = ct.LatestVersion()
+		case upstream.EKSFlavour:
+			var eks upstream.EKS
+
+			decodeErr := mapstructure.Decode(up, &eks)
+			if decodeErr != nil {
+				return nil, decodeErr
+			}
+
+			latestVersion.Version, err = eks.LatestVersion()
 		default:
 			return nil, errors.Errorf("unknown upstream flavour '%#v' for dependency %s", flavour, dep.Name)
 		}

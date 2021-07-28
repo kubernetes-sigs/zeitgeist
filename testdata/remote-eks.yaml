@@ -1,0 +1,16 @@
+dependencies:
+- name: eks
+  version: 1.16.0
+  upstream:
+    flavour: eks
+  refPaths:
+  - path: remote-eks.yaml
+    match: version
+- name: eks-with-constraint
+  version: 1.16.0
+  upstream:
+    flavour: eks
+    constraints: "< 1.18.0"
+  refPaths:
+  - path: remote-eks.yaml
+    match: version
