@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2021 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ limitations under the License.
 package upstream
 
 import (
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -42,7 +41,7 @@ type EKS struct {
 // Retrieves all available EKS versions from the parsing HTML from AWS's documentation page
 // This feels brittle and wrong, but AFAIK there is no better way to do this
 func (upstream EKS) LatestVersion() (string, error) {
-	log.Debugf("Using EKS upstream")
+	log.Debug("Using EKS upstream")
 
 	semverConstraints := upstream.Constraints
 	if semverConstraints == "" {
@@ -55,7 +54,7 @@ func (upstream EKS) LatestVersion() (string, error) {
 		return "", errors.Errorf("invalid semver constraints range: %v", upstream.Constraints)
 	}
 
-	docsURL := "https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html"
+	const docsURL = "https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html"
 	log.Debugf("Retrieving EKS releases from  %s...", docsURL)
 
 	resp, err := http.Get(docsURL)
@@ -77,14 +76,14 @@ func (upstream EKS) LatestVersion() (string, error) {
 		if err != nil {
 			log.Debugf("Error parsing version %v (%v) as semver, cannot validate semver constraints", versionString, err)
 		} else if !expectedRange(version) {
-			log.Debugf("Skipping version not matching range constraints (%v): %v\n", upstream.Constraints, versionString)
+			log.Debugf("Skipping version not matching range constraints (%v): %v", upstream.Constraints, versionString)
 			continue
 		}
 
-		log.Debugf("Found latest matching release: %v\n", version)
+		log.Debugf("Found latest matching release: %v", version)
 
 		return version.String(), nil
 	}
 
-	return "", fmt.Errorf("no matching EKS version found")
+	return "", errors.New("no matching EKS version found")
 }
