@@ -23,7 +23,7 @@ import (
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
-	"sigs.k8s.io/zeitgeist/internal/github"
+	"sigs.k8s.io/release-sdk/github"
 )
 
 // Github upstream representation
