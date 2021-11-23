@@ -1567,8 +1567,8 @@ sigs.k8s.io/kustomize/cmd/config v0.9.13/go.mod h1:7547FLF8W/lTaDf0BDqFTbZxM9zqw
 sigs.k8s.io/kustomize/kustomize/v4 v4.2.0/go.mod h1:MOkR6fmhwG7hEDRXBYELTi5GSFcLwfqwzTRHW3kv5go=
 sigs.k8s.io/kustomize/kyaml v0.11.0 h1:9KhiCPKaVyuPcgOLJXkvytOvjMJLoxpjodiycb4gHsA=
 sigs.k8s.io/kustomize/kyaml v0.11.0/go.mod h1:GNMwjim4Ypgp/MueD3zXHLRJEjz7RvtPae0AwlvEMFM=
-sigs.k8s.io/release-sdk v0.3.0 h1:QFZByTk6XifExaIWajFTrN6QapOwewCuG7zYrboAG+k=
-sigs.k8s.io/release-sdk v0.3.0/go.mod h1:m7EwAKZb9Hua+b8pXnJLMJ/5WY/Fs1CeqxBZYXx0u0A=
+sigs.k8s.io/release-sdk v0.5.0 h1:+1QwF6/7WvFXU5GWUcx7/bK9Ju4o/xybVZbPuIDD+rk=
+sigs.k8s.io/release-sdk v0.5.0/go.mod h1:m7EwAKZb9Hua+b8pXnJLMJ/5WY/Fs1CeqxBZYXx0u0A=
 sigs.k8s.io/release-utils v0.3.0 h1:cyNeXvm+2lPn67f4MWmq9xapZDAI5hekpT7iQPRxta4=
 sigs.k8s.io/release-utils v0.3.0/go.mod h1:J9xpziRNRI4mAeMZxPRryDodQMoMudMu6yC1aViFHU4=
 sigs.k8s.io/structured-merge-diff/v4 v4.0.2/go.mod h1:bJZC9H9iH24zzfZ/41RGcq60oK1F7G282QMXDPYydCw=
