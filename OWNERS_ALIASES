@@ -2,22 +2,26 @@
 
 aliases:
   sig-release-leads:
-    - alejandrox1
-    - justaugustus
-    - saschagrunert
-    - tpepper
+    - cpanato # SIG Technical Lead
+    - jeremyrickard # SIG Technical Lead
+    - justaugustus # SIG Chair
+    - puerco # SIG Technical Lead
+    - saschagrunert # SIG Chair
   zeitgeist-approvers:
-    - alejandrox1 # subproject owner
+    - cpanato # Release Manager
     - justaugustus # subproject owner / Release Manager
     - Pluies # subproject owner
+    - puerco # Release Manager
     - saschagrunert # subproject owner / Release Manager
-    - tpepper # subproject owner / Release Manager
   zeitgeist-reviewers:
     - cpanato # Release Manager
-    - hasheddan # Release Manager
+    - puerco # Release Manager
+    - saschagrunert # subproject owner / Release Manager
+    - justaugustus # subproject owner / Release Manager
     - n3wscott
-    - saschagrunert # Release Manager
-  
+    - Verolop # Release Manager
+    - xmudrii # Release Manager
+
   # TODO: This alias, along with the buoy subdirectory, can be safely removed
   #       once buoy has been integrated with zeitgeist.
   buoy-owners: # formerly https://github.com/n3wscott/buoy
