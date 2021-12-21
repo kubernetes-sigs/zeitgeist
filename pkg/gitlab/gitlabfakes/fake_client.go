@@ -26,6 +26,21 @@ type FakeClient struct {
 		result2 *gitlaba.Response
 		result3 error
 	}
+	ListProjectsStub        func(*gitlaba.ListProjectsOptions) ([]*gitlaba.Project, *gitlaba.Response, error)
+	listProjectsMutex       sync.RWMutex
+	listProjectsArgsForCall []struct {
+		arg1 *gitlaba.ListProjectsOptions
+	}
+	listProjectsReturns struct {
+		result1 []*gitlaba.Project
+		result2 *gitlaba.Response
+		result3 error
+	}
+	listProjectsReturnsOnCall map[int]struct {
+		result1 []*gitlaba.Project
+		result2 *gitlaba.Response
+		result3 error
+	}
 	ListReleasesStub        func(string, string, *gitlaba.ListReleasesOptions) ([]*gitlaba.Release, *gitlaba.Response, error)
 	listReleasesMutex       sync.RWMutex
 	listReleasesArgsForCall []struct {
@@ -116,6 +131,73 @@ func (fake *FakeClient) ListBranchesReturnsOnCall(i int, result1 []*gitlaba.Bran
 	}{result1, result2, result3}
 }
 
+func (fake *FakeClient) ListProjects(arg1 *gitlaba.ListProjectsOptions) ([]*gitlaba.Project, *gitlaba.Response, error) {
+	fake.listProjectsMutex.Lock()
+	ret, specificReturn := fake.listProjectsReturnsOnCall[len(fake.listProjectsArgsForCall)]
+	fake.listProjectsArgsForCall = append(fake.listProjectsArgsForCall, struct {
+		arg1 *gitlaba.ListProjectsOptions
+	}{arg1})
+	stub := fake.ListProjectsStub
+	fakeReturns := fake.listProjectsReturns
+	fake.recordInvocation("ListProjects", []interface{}{arg1})
+	fake.listProjectsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeClient) ListProjectsCallCount() int {
+	fake.listProjectsMutex.RLock()
+	defer fake.listProjectsMutex.RUnlock()
+	return len(fake.listProjectsArgsForCall)
+}
+
+func (fake *FakeClient) ListProjectsCalls(stub func(*gitlaba.ListProjectsOptions) ([]*gitlaba.Project, *gitlaba.Response, error)) {
+	fake.listProjectsMutex.Lock()
+	defer fake.listProjectsMutex.Unlock()
+	fake.ListProjectsStub = stub
+}
+
+func (fake *FakeClient) ListProjectsArgsForCall(i int) *gitlaba.ListProjectsOptions {
+	fake.listProjectsMutex.RLock()
+	defer fake.listProjectsMutex.RUnlock()
+	argsForCall := fake.listProjectsArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeClient) ListProjectsReturns(result1 []*gitlaba.Project, result2 *gitlaba.Response, result3 error) {
+	fake.listProjectsMutex.Lock()
+	defer fake.listProjectsMutex.Unlock()
+	fake.ListProjectsStub = nil
+	fake.listProjectsReturns = struct {
+		result1 []*gitlaba.Project
+		result2 *gitlaba.Response
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeClient) ListProjectsReturnsOnCall(i int, result1 []*gitlaba.Project, result2 *gitlaba.Response, result3 error) {
+	fake.listProjectsMutex.Lock()
+	defer fake.listProjectsMutex.Unlock()
+	fake.ListProjectsStub = nil
+	if fake.listProjectsReturnsOnCall == nil {
+		fake.listProjectsReturnsOnCall = make(map[int]struct {
+			result1 []*gitlaba.Project
+			result2 *gitlaba.Response
+			result3 error
+		})
+	}
+	fake.listProjectsReturnsOnCall[i] = struct {
+		result1 []*gitlaba.Project
+		result2 *gitlaba.Response
+		result3 error
+	}{result1, result2, result3}
+}
+
 func (fake *FakeClient) ListReleases(arg1 string, arg2 string, arg3 *gitlaba.ListReleasesOptions) ([]*gitlaba.Release, *gitlaba.Response, error) {
 	fake.listReleasesMutex.Lock()
 	ret, specificReturn := fake.listReleasesReturnsOnCall[len(fake.listReleasesArgsForCall)]
@@ -190,6 +272,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.listBranchesMutex.RLock()
 	defer fake.listBranchesMutex.RUnlock()
+	fake.listProjectsMutex.RLock()
+	defer fake.listProjectsMutex.RUnlock()
 	fake.listReleasesMutex.RLock()
 	defer fake.listReleasesMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

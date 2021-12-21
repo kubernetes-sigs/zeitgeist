@@ -46,6 +46,9 @@ type gitlabClient struct {
 //go:generate go run github.com/maxbrunsfeld/counterfeiter/v6 -generate
 //counterfeiter:generate . Client
 type Client interface {
+	ListProjects(
+		opt *gitlab.ListProjectsOptions,
+	) ([]*gitlab.Project, *gitlab.Response, error)
 	ListReleases(
 		string, string, *gitlab.ListReleasesOptions,
 	) ([]*gitlab.Release, *gitlab.Response, error)
@@ -113,6 +116,12 @@ func (g *gitlabClient) ListBranches(
 	return branches, resp, err
 }
 
+func (g *gitlabClient) ListProjects(opt *gitlab.ListProjectsOptions,
+) ([]*gitlab.Project, *gitlab.Response, error) {
+	projects, resp, err := g.Projects.ListProjects(opt)
+	return projects, resp, err
+}
+
 // SetClient can be used to manually set the internal GitLab client
 func (g *GitLab) SetClient(client Client) {
 	g.client = client
@@ -141,4 +150,28 @@ func (g *GitLab) Branches(owner, repo string) ([]*gitlab.Branch, error) {
 	}
 
 	return branches, nil
+}
+
+// GetRepository returns the Repository information for the provided `owner` and
+// `repo`.
+func (g *GitLab) GetRepository(owner, repo string) (*gitlab.Project, error) {
+	opt := &gitlab.ListProjectsOptions{
+		SearchNamespaces: gitlab.Bool(true),
+		Search:           gitlab.String(fmt.Sprintf("%s/%s", owner, repo)),
+	}
+
+	projects, _, err := g.client.ListProjects(opt)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to retrieve GitLab projects for %s/%s", owner, repo)
+	}
+
+	if len(projects) > 1 {
+		return nil, fmt.Errorf("expected one project got %d", len(projects))
+	}
+
+	if len(projects) == 0 {
+		return nil, fmt.Errorf("no project found")
+	}
+
+	return projects[0], nil
 }
