@@ -40,6 +40,9 @@ test-docker: ## Runs unit testing in Docker
 	docker build -f Dockerfile-tests -t zeitgeist-tests .
 	docker run --rm --entrypoint cat zeitgeist-tests coverage.out > coverage.out
 
+generate: ## Generate go code for the fake clients
+	go generate ./...
+
 verify: verify-boilerplate verify-golangci-lint verify-go-mod  ## Runs verification scripts to ensure correct execution
 
 verify-boilerplate: ## Runs the file header check

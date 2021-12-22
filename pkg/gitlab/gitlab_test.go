@@ -174,3 +174,44 @@ func TestReleasesSuccessNoPreReleases(t *testing.T) {
 	require.Equal(t, tag2, res[1].TagName)
 	require.Equal(t, tag3, res[2].TagName)
 }
+
+func TestListProjects(t *testing.T) {
+	// Given
+	sut, client := newSUT()
+	client.ListProjectsReturns([]*gogitlab.Project{
+		{ID: 1, Name: "honk"},
+	}, nil, nil)
+
+	// When
+	res, err := sut.GetRepository("honkcorp", "honk")
+	// Then
+	require.NoError(t, err)
+	require.Equal(t, "honk", res.Name)
+}
+
+func TestListProjectsNoProjects(t *testing.T) {
+	// Given
+	sut, client := newSUT()
+	client.ListProjectsReturns([]*gogitlab.Project{}, nil, nil)
+
+	// When
+	_, err := sut.GetRepository("honkcorp", "honk")
+	// Then
+	require.Error(t, err)
+	require.EqualError(t, err, "no project found")
+}
+
+func TestListProjectsMoreProjects(t *testing.T) {
+	// Given
+	sut, client := newSUT()
+	client.ListProjectsReturns([]*gogitlab.Project{
+		{ID: 1, Name: "honk"},
+		{ID: 3, Name: "honk"},
+	}, nil, nil)
+
+	// When
+	_, err := sut.GetRepository("honkcorp", "honk")
+	// Then
+	require.Error(t, err)
+	require.EqualError(t, err, "expected one project got 2")
+}

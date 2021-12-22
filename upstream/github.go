@@ -88,6 +88,16 @@ func latestRelease(upstream Github) (string, error) {
 	owner := splitURL[0]
 	repo := splitURL[1]
 
+	log.Debugf("Retrieving repository information for %s/%s...", owner, repo)
+	repoInfo, err := client.GetRepository(owner, repo)
+	if err != nil {
+		return "", errors.Wrap(err, "retrieving GitHub repository")
+	}
+
+	if repoInfo.GetArchived() {
+		log.Warnf("GitHub repository %s/%s is archived", owner, repo)
+	}
+
 	// We'll need to fetch all releases, as Github doesn't provide sorting options.
 	// If we don't do that, we risk running into the case where for example:
 	// - Version 1.0.0 and 2.0.0 exist

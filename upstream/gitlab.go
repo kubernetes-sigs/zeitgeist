@@ -148,6 +148,16 @@ func latestGitlabCommit(upstream *GitLab) (string, error) {
 	owner := splitURL[0]
 	repo := strings.Join(splitURL[1:], "/")
 
+	log.Debugf("Retrieving repository information for %s/%s...", owner, repo)
+	repoInfo, err := client.GetRepository(owner, repo)
+	if err != nil {
+		return "", errors.Wrap(err, "retrieving GitLab repository")
+	}
+
+	if repoInfo.Archived {
+		log.Warnf("GitLab repository %s/%s is archived", owner, repo)
+	}
+
 	branches, err := client.Branches(owner, repo)
 	if err != nil {
 		return "", errors.Wrap(err, "retrieving GitLab branches")
