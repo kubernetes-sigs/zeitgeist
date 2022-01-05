@@ -3,7 +3,7 @@ module sigs.k8s.io/zeitgeist
 go 1.17
 
 require (
-	github.com/aws/aws-sdk-go v1.42.26
+	github.com/aws/aws-sdk-go v1.42.27
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/google/go-containerregistry v0.7.1-0.20211118220127-abdc633f8305
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.4.1
@@ -97,7 +97,7 @@ require (
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/mod v0.5.0 // indirect
-	golang.org/x/net v0.0.0-20211209124913-491a49abca63 // indirect
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d // indirect
