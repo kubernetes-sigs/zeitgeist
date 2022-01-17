@@ -15,7 +15,7 @@ require (
 	github.com/xanzy/go-gitlab v0.54.3
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	helm.sh/helm/v3 v3.7.2
-	sigs.k8s.io/release-sdk v0.5.0
+	sigs.k8s.io/release-sdk v0.6.0
 	sigs.k8s.io/release-utils v0.3.0
 )
 
