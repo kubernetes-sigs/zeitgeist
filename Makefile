@@ -22,7 +22,6 @@ COLOR:=\\033[36m
 NOCOLOR:=\\033[0m
 
 # Set version variables for LDFLAGS
-GIT_TAG ?= dirty-tag
 GIT_VERSION ?= $(shell git describe --tags --always --dirty)
 GIT_HASH ?= $(shell git rev-parse HEAD)
 DATE_FMT = +%Y-%m-%dT%H:%M:%SZ
@@ -43,8 +42,19 @@ LDFLAGS=-buildid= -X sigs.k8s.io/release-utils/version.gitVersion=$(GIT_VERSION)
         -X sigs.k8s.io/release-utils/version.gitTreeState=$(GIT_TREESTATE) \
         -X sigs.k8s.io/release-utils/version.buildDate=$(BUILD_DATE)
 
+KO_DOCKER_REPO ?= ghcr.io/kubernetes-sigs
+
 build: ## Build zeitgeist
 	go build -trimpath -ldflags "$(LDFLAGS)"
+
+ko-local: ## Build zeitgeist image locally (does not push it)
+	LDFLAGS="$(LDFLAGS)" \
+	ko build --local --tags $(GIT_VERSION),latest --base-import-paths --platform=all .
+
+.PHONY: snapshot
+snapshot: ## Build zeitgeist binaries with goreleaser in snapshot mode
+	LDFLAGS="$(LDFLAGS)" GIT_HASH=$(GIT_HASH) GIT_VERSION=$(GIT_VERSION) \
+	goreleaser release --rm-dist --snapshot --skip-sign --skip-publish
 
 lint:
 	test -z $(shell go fmt .) || (echo "Linting failed !" && exit 8)
@@ -57,10 +67,6 @@ test: ## Runs unit testing
 
 test-results: test
 	go tool cover -html=coverage.out
-
-test-docker: ## Runs unit testing in Docker
-	docker build -f Dockerfile-tests -t zeitgeist-tests .
-	docker run --rm --entrypoint cat zeitgeist-tests coverage.out > coverage.out
 
 generate: ## Generate go code for the fake clients
 	go generate ./...
@@ -75,6 +81,25 @@ verify-go-mod: ## Runs the go module linter
 
 verify-golangci-lint: ## Runs all golang linters
 	./hack/verify-golangci-lint.sh
+
+## Release
+
+.PHONY: goreleaser
+goreleaser: ## Build zeitgeist binaries with goreleaser
+	LDFLAGS="$(LDFLAGS)" GIT_HASH=$(GIT_HASH) GIT_VERSION=$(GIT_VERSION) \
+	goreleaser release --rm-dist
+
+.PHONY: ko-release
+ko-release: ## Build zeitgeist image
+	LDFLAGS="$(LDFLAGS)" GIT_HASH=$(GIT_HASH) GIT_VERSION=$(GIT_VERSION) \
+	ko build --base-import-paths \
+	--platform=all --tags $(GIT_VERSION),$(GIT_HASH),latest --image-refs imagerefs .
+
+imagerefs := $(shell cat imagerefs testimagerefs)
+sign-refs := $(foreach ref,$(imagerefs),$(ref))
+.PHONY: sign-images
+sign-images:
+	cosign sign -a GIT_TAG=$(GIT_VERSION) -a GIT_HASH=$(GIT_HASH) $(sign-refs)
 
 ##@ Helpers
 
