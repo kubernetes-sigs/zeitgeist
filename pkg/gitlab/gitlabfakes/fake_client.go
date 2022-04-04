@@ -58,6 +58,23 @@ type FakeClient struct {
 		result2 *gitlaba.Response
 		result3 error
 	}
+	ListTagsStub        func(string, string, *gitlaba.ListTagsOptions) ([]*gitlaba.Tag, *gitlaba.Response, error)
+	listTagsMutex       sync.RWMutex
+	listTagsArgsForCall []struct {
+		arg1 string
+		arg2 string
+		arg3 *gitlaba.ListTagsOptions
+	}
+	listTagsReturns struct {
+		result1 []*gitlaba.Tag
+		result2 *gitlaba.Response
+		result3 error
+	}
+	listTagsReturnsOnCall map[int]struct {
+		result1 []*gitlaba.Tag
+		result2 *gitlaba.Response
+		result3 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -267,6 +284,75 @@ func (fake *FakeClient) ListReleasesReturnsOnCall(i int, result1 []*gitlaba.Rele
 	}{result1, result2, result3}
 }
 
+func (fake *FakeClient) ListTags(arg1 string, arg2 string, arg3 *gitlaba.ListTagsOptions) ([]*gitlaba.Tag, *gitlaba.Response, error) {
+	fake.listTagsMutex.Lock()
+	ret, specificReturn := fake.listTagsReturnsOnCall[len(fake.listTagsArgsForCall)]
+	fake.listTagsArgsForCall = append(fake.listTagsArgsForCall, struct {
+		arg1 string
+		arg2 string
+		arg3 *gitlaba.ListTagsOptions
+	}{arg1, arg2, arg3})
+	stub := fake.ListTagsStub
+	fakeReturns := fake.listTagsReturns
+	fake.recordInvocation("ListTags", []interface{}{arg1, arg2, arg3})
+	fake.listTagsMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2, ret.result3
+	}
+	return fakeReturns.result1, fakeReturns.result2, fakeReturns.result3
+}
+
+func (fake *FakeClient) ListTagsCallCount() int {
+	fake.listTagsMutex.RLock()
+	defer fake.listTagsMutex.RUnlock()
+	return len(fake.listTagsArgsForCall)
+}
+
+func (fake *FakeClient) ListTagsCalls(stub func(string, string, *gitlaba.ListTagsOptions) ([]*gitlaba.Tag, *gitlaba.Response, error)) {
+	fake.listTagsMutex.Lock()
+	defer fake.listTagsMutex.Unlock()
+	fake.ListTagsStub = stub
+}
+
+func (fake *FakeClient) ListTagsArgsForCall(i int) (string, string, *gitlaba.ListTagsOptions) {
+	fake.listTagsMutex.RLock()
+	defer fake.listTagsMutex.RUnlock()
+	argsForCall := fake.listTagsArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeClient) ListTagsReturns(result1 []*gitlaba.Tag, result2 *gitlaba.Response, result3 error) {
+	fake.listTagsMutex.Lock()
+	defer fake.listTagsMutex.Unlock()
+	fake.ListTagsStub = nil
+	fake.listTagsReturns = struct {
+		result1 []*gitlaba.Tag
+		result2 *gitlaba.Response
+		result3 error
+	}{result1, result2, result3}
+}
+
+func (fake *FakeClient) ListTagsReturnsOnCall(i int, result1 []*gitlaba.Tag, result2 *gitlaba.Response, result3 error) {
+	fake.listTagsMutex.Lock()
+	defer fake.listTagsMutex.Unlock()
+	fake.ListTagsStub = nil
+	if fake.listTagsReturnsOnCall == nil {
+		fake.listTagsReturnsOnCall = make(map[int]struct {
+			result1 []*gitlaba.Tag
+			result2 *gitlaba.Response
+			result3 error
+		})
+	}
+	fake.listTagsReturnsOnCall[i] = struct {
+		result1 []*gitlaba.Tag
+		result2 *gitlaba.Response
+		result3 error
+	}{result1, result2, result3}
+}
+
 func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
@@ -276,6 +362,8 @@ func (fake *FakeClient) Invocations() map[string][][]interface{} {
 	defer fake.listProjectsMutex.RUnlock()
 	fake.listReleasesMutex.RLock()
 	defer fake.listReleasesMutex.RUnlock()
+	fake.listTagsMutex.RLock()
+	defer fake.listTagsMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

@@ -215,3 +215,28 @@ func TestListProjectsMoreProjects(t *testing.T) {
 	require.Error(t, err)
 	require.EqualError(t, err, "expected one project got 2")
 }
+
+func TestListTags(t *testing.T) {
+	// Given
+	var (
+		tag1 = "v1.18.0"
+		tag2 = "v1.17.0"
+		tag3 = "v1.16.0"
+	)
+	sut, client := newSUT()
+	client.ListTagsReturns([]*gogitlab.Tag{
+		{Name: tag1},
+		{Name: tag2},
+		{Name: tag3},
+	}, nil, nil)
+
+	// When
+	res, err := sut.ListTags("", "")
+
+	// Then
+	require.Nil(t, err)
+	require.Len(t, res, 3)
+	require.Equal(t, tag1, res[0].Name)
+	require.Equal(t, tag2, res[1].Name)
+	require.Equal(t, tag3, res[2].Name)
+}

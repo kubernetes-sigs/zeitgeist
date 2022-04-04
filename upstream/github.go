@@ -98,6 +98,7 @@ func latestRelease(upstream Github) (string, error) {
 		log.Warnf("GitHub repository %s/%s is archived", owner, repo)
 	}
 
+	var tags []string
 	// We'll need to fetch all releases, as Github doesn't provide sorting options.
 	// If we don't do that, we risk running into the case where for example:
 	// - Version 1.0.0 and 2.0.0 exist
@@ -110,18 +111,32 @@ func latestRelease(upstream Github) (string, error) {
 		return "", errors.Wrap(err, "retrieving GitHub releases")
 	}
 
-	for _, release := range releases {
-		if release.TagName == nil {
-			log.Debug("Skipping release without TagName")
+	// if there is no releases we will try to get the tags, the project might just use tags to release.
+	if len(releases) == 0 {
+		gitHubTags, err := client.ListTags(owner, repo)
+		if err != nil {
+			return "", errors.Wrap(err, "retrieving GitHub tags")
 		}
 
-		tag := *release.TagName
-
-		if release.Draft != nil && *release.Draft {
-			log.Debugf("Skipping draft release: %s\n", tag)
-			continue
+		for _, tag := range gitHubTags {
+			tags = append(tags, tag.GetName())
 		}
+	} else {
+		for _, release := range releases {
+			if release.TagName == nil {
+				log.Debug("Skipping release without TagName")
+			}
 
+			if release.Draft != nil && *release.Draft {
+				log.Debugf("Skipping draft release: %s\n", release.GetTagName())
+				continue
+			}
+
+			tags = append(tags, release.GetTagName())
+		}
+	}
+
+	for _, tag := range tags {
 		// Try to match semver and range
 		version, err := semver.Parse(strings.Trim(tag, "v"))
 		if err != nil {
@@ -132,7 +147,6 @@ func latestRelease(upstream Github) (string, error) {
 		}
 
 		log.Debugf("Found latest matching release: %s\n", version.String())
-
 		return version.String(), nil
 	}
 
