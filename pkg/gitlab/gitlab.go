@@ -55,6 +55,9 @@ type Client interface {
 	ListBranches(
 		string, string, *gitlab.ListBranchesOptions,
 	) ([]*gitlab.Branch, *gitlab.Response, error)
+	ListTags(
+		string, string, *gitlab.ListTagsOptions,
+	) ([]*gitlab.Tag, *gitlab.Response, error)
 }
 
 // New creates a new default GitLab client. Tokens set via the $GITLAB_TOKEN
@@ -122,6 +125,13 @@ func (g *gitlabClient) ListProjects(opt *gitlab.ListProjectsOptions,
 	return projects, resp, err
 }
 
+func (g *gitlabClient) ListTags(owner, repo string, opt *gitlab.ListTagsOptions,
+) ([]*gitlab.Tag, *gitlab.Response, error) {
+	project := fmt.Sprintf("%s/%s", owner, repo)
+	tags, resp, err := g.Tags.ListTags(project, opt)
+	return tags, resp, err
+}
+
 // SetClient can be used to manually set the internal GitLab client
 func (g *GitLab) SetClient(client Client) {
 	g.client = client
@@ -174,4 +184,17 @@ func (g *GitLab) GetRepository(owner, repo string) (*gitlab.Project, error) {
 	}
 
 	return projects[0], nil
+}
+
+// ListTags returns a list of GitLab tags for the provided `owner` and
+// `repo`.
+func (g *GitLab) ListTags(owner, repo string) ([]*gitlab.Tag, error) {
+	opt := &gitlab.ListTagsOptions{}
+
+	tags, _, err := g.client.ListTags(owner, repo, opt)
+	if err != nil {
+		return nil, errors.Wrapf(err, "unable to retrieve GitLab tags for %s/%s", owner, repo)
+	}
+
+	return tags, nil
 }

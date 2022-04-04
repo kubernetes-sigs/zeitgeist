@@ -95,6 +95,7 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 	owner := splitURL[0]
 	repo := strings.Join(splitURL[1:], "/")
 
+	var tags []string
 	// We'll need to fetch all releases, as GitLab doesn't provide sorting options.
 	// If we don't do that, we risk running into the case where for example:
 	// - Version 1.0.0 and 2.0.0 exist
@@ -107,12 +108,26 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 		return "", errors.Wrap(err, "retrieving GitLab releases")
 	}
 
-	for _, release := range releases {
-		if release.TagName == "" {
-			log.Debug("Skipping release without TagName")
+	if len(releases) == 0 {
+		gitLabTags, err := client.ListTags(owner, repo)
+		if err != nil {
+			return "", errors.Wrap(err, "retrieving GitLab tags")
 		}
 
-		tag := release.TagName
+		for _, tag := range gitLabTags {
+			tags = append(tags, tag.Name)
+		}
+	} else {
+		for _, release := range releases {
+			if release.TagName == "" {
+				log.Debug("Skipping release without TagName")
+			}
+
+			tags = append(tags, release.TagName)
+		}
+	}
+
+	for _, tag := range tags {
 		// Try to match semver and range
 		version, err := semver.Parse(strings.Trim(tag, "v"))
 		if err != nil {
