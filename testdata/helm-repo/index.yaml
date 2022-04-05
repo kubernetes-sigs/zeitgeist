@@ -77,4 +77,45 @@ entries:
     urls:
     - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-two-1.5.0/dependency-two-1.5.0.tgz
     version: 1.5.0
+  dependency-three:
+  - apiVersion: v2
+    appVersion: "1.0"
+    annotations:
+      artifacthub.io/prerelease: "true"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    name: dependency-three
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-three-invalid_semver-pre/dependency-three-invalid_semver-pre.tgz
+    version: invalid_semver-pre
+  - apiVersion: v2
+    appVersion: "1.0"
+    annotations:
+      artifacthub.io/prerelease: "true"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    name: dependency-three
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-three-0.2.0-beta.0/dependency-three-0.2.0-beta.0.tgz
+    version: 0.2.0-beta.0
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    name: dependency-three
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-three-0.2.0-alpha.0/dependency-three-0.2.0-alpha.0.tgz
+    version: 0.2.0-alpha.0
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    name: dependency-three
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-three-0.1.0/dependency-three-0.1.0.tgz
+    version: 0.1.0
 generated: "2021-01-01T00:00:00Z"

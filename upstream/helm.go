@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/blang/semver"
@@ -135,14 +136,21 @@ func latestChartVersion(upstream Helm) (string, error) {
 	for _, chartVersion := range chartVersions {
 		chartVersionStr := strings.TrimPrefix(chartVersion.Version, "v")
 
-		if useSemverConstraints {
-			version, err := semver.Parse(chartVersionStr)
-			if err != nil {
-				log.Debugf("Error parsing version %s (%#v) as semver, cannot validate semver constraints", chartVersionStr, err)
-			} else if !expectedRange(version) {
-				log.Debugf("Skipping release not matching range constraints (%s): %s\n", upstream.Constraints, chartVersionStr)
-				continue
-			}
+		prerelease, err := strconv.ParseBool(chartVersion.Annotations["artifacthub.io/prerelease"])
+		if err == nil && prerelease {
+			log.Debugf("Skipping annotated prerelease: %s\n", chartVersionStr)
+			continue
+		}
+
+		version, err := semver.Parse(chartVersionStr)
+		if err != nil {
+			log.Debugf("Error parsing version %s (%#v) as semver, cannot validate semver constraints", chartVersionStr, err)
+		} else if len(version.Pre) > 0 {
+			log.Debugf("Skipping semver prerelease: %s\n", chartVersionStr)
+			continue
+		} else if useSemverConstraints && !expectedRange(version) {
+			log.Debugf("Skipping release not matching range constraints (%s): %s\n", upstream.Constraints, chartVersionStr)
+			continue
 		}
 
 		log.Debugf("Found latest matching release: %s\n", chartVersionStr)
