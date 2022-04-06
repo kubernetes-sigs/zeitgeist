@@ -214,3 +214,18 @@ func TestHelmHappyPathWithConstraintLocal(t *testing.T) {
 	require.NotEmpty(t, latestVersion)
 	require.Equal(t, latestVersion, "0.1.2")
 }
+
+func TestHelmHappyPathWithPrelease(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(helmHandler))
+	defer server.Close()
+
+	h := Helm{
+		Repo:  server.URL,
+		Chart: "dependency-three",
+	}
+
+	latestVersion, err := h.LatestVersion()
+	require.NoError(t, err)
+	require.NotEmpty(t, latestVersion)
+	require.Equal(t, latestVersion, "0.1.0")
+}
