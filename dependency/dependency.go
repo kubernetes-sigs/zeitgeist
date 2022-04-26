@@ -269,11 +269,12 @@ func (c *Client) RemoteExport(dependencyFilePath string) ([]VersionUpdate, error
 				NewVersion: vui.latest.Version,
 			})
 		} else {
-			versionUpdates = append(versionUpdates, VersionUpdate{
-				Name:       vui.name,
-				Version:    vui.current.Version,
-				NewVersion: vui.current.Version,
-			})
+			log.Debugf(
+				"No update available for dependency %s: %s (latest: %s)\n",
+				vui.name,
+				vui.current.Version,
+				vui.latest.Version,
+			)
 		}
 	}
 	return versionUpdates, nil
