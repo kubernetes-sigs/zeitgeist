@@ -60,7 +60,7 @@ func TestEKSHappyPath(t *testing.T) {
 
 func TestEKSHappyPathWithConstraint(t *testing.T) {
 	e := EKS{
-		Constraints: "> 1.16.0",
+		Constraints: "> 1.19.0",
 	}
 
 	latestVersion, err := e.LatestVersion()
