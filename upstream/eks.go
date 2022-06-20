@@ -67,8 +67,9 @@ func (upstream EKS) LatestVersion() (string, error) {
 		return "", err
 	}
 
-	// Versions are listed as semver within a `<p>` tag
-	r := regexp.MustCompile(`<p>([0-9]+.[0-9]+.[0-9]+)</p>`)
+	// fmt.Println(string(body))
+	// Versions are listed as semver within a `<p><code class="code">` tag
+	r := regexp.MustCompile(`<p><code class="code">([0-9]+.[0-9]+.[0-9]+)</code></p>`)
 	matches := r.FindAllSubmatch(body, -1)
 	for _, match := range matches {
 		versionString := string(match[1])
