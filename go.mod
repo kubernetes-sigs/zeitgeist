@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/aws/aws-sdk-go v1.44.39
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/google/go-containerregistry v0.9.0
+	github.com/google/go-containerregistry v0.10.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.5.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/pkg/errors v0.9.1
@@ -100,8 +100,8 @@ require (
 	go.starlark.net v0.0.0-20200306205701-8dd3e2ee1dd5 // indirect
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
-	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
-	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
+	golang.org/x/net v0.0.0-20220524220425-1d687d428aca // indirect
+	golang.org/x/oauth2 v0.0.0-20220524215830-622c5d57e401 // indirect
 	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29 // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
