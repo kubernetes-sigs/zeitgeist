@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -158,7 +157,7 @@ func outputFile(opts *exportOptions, updates []dependency.VersionUpdate) error {
 
 	f, err := os.Create(outputFile)
 	if err != nil {
-		return errors.Wrapf(err, "failed to open output file")
+		return fmt.Errorf("failed to open output file: %w", err)
 	}
 	defer f.Close()
 
@@ -177,7 +176,7 @@ func outputFile(opts *exportOptions, updates []dependency.VersionUpdate) error {
 	}
 
 	if _, err := f.Write(b); err != nil {
-		return errors.Wrapf(err, "failed to write output")
+		return fmt.Errorf("failed to write output: %w", err)
 	}
 	return nil
 }

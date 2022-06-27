@@ -17,6 +17,8 @@ limitations under the License.
 package upstream
 
 import (
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/url"
 	"os"
@@ -24,7 +26,6 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"helm.sh/helm/v3/pkg/cli"
@@ -57,21 +58,21 @@ func (upstream Helm) LatestVersion() (string, error) {
 func latestChartVersion(upstream Helm) (string, error) {
 	// Sanity checking
 	if upstream.Repo == "" {
-		return "", errors.Errorf("invalid helm upstream: missing repo argument")
+		return "", errors.New("invalid helm upstream: missing repo argument")
 	}
 
 	if upstream.Chart == "" {
-		return "", errors.Errorf("invalid helm upstream: missing chart argument")
+		return "", errors.New("invalid helm upstream: missing chart argument")
 	}
 	parsedRepo, err := url.Parse(upstream.Repo)
 	if err != nil {
-		return "", errors.Errorf("invalid helm repo url: %s", upstream.Repo)
+		return "", fmt.Errorf("invalid helm repo url: %s: %w", upstream.Repo, err)
 	}
 	s := parsedRepo.Scheme
 	if s != "http" && s != "https" && s != "oci" {
 		// We currently only support http-based and oci repos (Helm defaults)
 		// Helm allows custom handlers via plugins, but I've never seen it in practice - could be added later if needed
-		return "", errors.Errorf("invalid helm repo: %s, only http, https and oci are supported", upstream.Repo)
+		return "", fmt.Errorf("invalid helm repo: %s, only http, https and oci are supported", upstream.Repo)
 	}
 
 	var useSemverConstraints bool
@@ -83,7 +84,7 @@ func latestChartVersion(upstream Helm) (string, error) {
 		useSemverConstraints = true
 		validatedExpectedRange, err := semver.ParseRange(semverConstraints)
 		if err != nil {
-			return "", errors.Errorf("invalid semver constraints range: %#v", upstream.Constraints)
+			return "", fmt.Errorf("invalid semver constraints range: %#v: %w", upstream.Constraints, err)
 		}
 		expectedRange = validatedExpectedRange
 	}
@@ -127,7 +128,7 @@ func latestChartVersion(upstream Helm) (string, error) {
 
 	chartVersions := index.Entries[upstream.Chart]
 	if chartVersions == nil {
-		return "", errors.Errorf("no chart for %s found in repository %s", upstream.Chart, upstream.Repo)
+		return "", fmt.Errorf("no chart for %s found in repository %s", upstream.Chart, upstream.Repo)
 	}
 
 	// Iterate over versions and get the first newer version
@@ -159,5 +160,5 @@ func latestChartVersion(upstream Helm) (string, error) {
 	}
 
 	// No latest version found – no versions? Only prereleases?
-	return "", errors.Errorf("no potential version found")
+	return "", errors.New("no potential version found")
 }

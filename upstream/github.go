@@ -17,10 +17,11 @@ limitations under the License.
 package upstream
 
 import (
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/blang/semver"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"sigs.k8s.io/release-sdk/github"
@@ -67,7 +68,7 @@ func latestRelease(upstream Github) (string, error) {
 	client := github.New()
 
 	if !strings.Contains(upstream.URL, "/") {
-		return "", errors.Errorf(
+		return "", fmt.Errorf(
 			"invalid github repo: %s\nGithub repo should be in the form owner/repo e.g., kubernetes/kubernetes",
 			upstream.URL,
 		)
@@ -81,7 +82,7 @@ func latestRelease(upstream Github) (string, error) {
 
 	expectedRange, err := semver.ParseRange(semverConstraints)
 	if err != nil {
-		return "", errors.Errorf("invalid semver constraints range: %#v", upstream.Constraints)
+		return "", fmt.Errorf("invalid semver constraints range: %#v: %w", upstream.Constraints, err)
 	}
 
 	splitURL := strings.Split(upstream.URL, "/")
@@ -91,7 +92,7 @@ func latestRelease(upstream Github) (string, error) {
 	log.Debugf("Retrieving repository information for %s/%s...", owner, repo)
 	repoInfo, err := client.GetRepository(owner, repo)
 	if err != nil {
-		return "", errors.Wrap(err, "retrieving GitHub repository")
+		return "", fmt.Errorf("retrieving GitHub repository: %w", err)
 	}
 
 	if repoInfo.GetArchived() {
@@ -108,14 +109,14 @@ func latestRelease(upstream Github) (string, error) {
 	log.Debugf("Retrieving releases for %s/%s...", owner, repo)
 	releases, err := client.Releases(owner, repo, false)
 	if err != nil {
-		return "", errors.Wrap(err, "retrieving GitHub releases")
+		return "", fmt.Errorf("retrieving GitHub releases: %w", err)
 	}
 
 	// if there is no releases we will try to get the tags, the project might just use tags to release.
 	if len(releases) == 0 {
 		gitHubTags, err := client.ListTags(owner, repo)
 		if err != nil {
-			return "", errors.Wrap(err, "retrieving GitHub tags")
+			return "", fmt.Errorf("retrieving GitHub tags: %w", err)
 		}
 
 		for _, tag := range gitHubTags {
@@ -151,14 +152,14 @@ func latestRelease(upstream Github) (string, error) {
 	}
 
 	// No latest version found – no versions? Only prereleases?
-	return "", errors.Errorf("no potential version found")
+	return "", errors.New("no potential version found")
 }
 
 func latestCommit(upstream Github) (string, error) {
 	client := github.New()
 
 	if !strings.Contains(upstream.URL, "/") {
-		return "", errors.Errorf(
+		return "", fmt.Errorf(
 			"invalid github repo: %s\nGithub repo should be in the form owner/repo e.g., kubernetes/kubernetes",
 			upstream.URL,
 		)
@@ -170,12 +171,12 @@ func latestCommit(upstream Github) (string, error) {
 
 	branches, err := client.ListBranches(owner, repo)
 	if err != nil {
-		return "", errors.Wrap(err, "retrieving GitHub branches")
+		return "", fmt.Errorf("retrieving GitHub branches: %w", err)
 	}
 	for _, branch := range branches {
 		if branch.GetName() == upstream.Branch {
 			return *branch.GetCommit().SHA, nil
 		}
 	}
-	return "", errors.Errorf("branch '%s' not found", upstream.Branch)
+	return "", fmt.Errorf("branch '%s' not found", upstream.Branch)
 }

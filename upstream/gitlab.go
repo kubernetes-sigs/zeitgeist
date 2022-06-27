@@ -17,10 +17,11 @@ limitations under the License.
 package upstream
 
 import (
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/blang/semver"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"sigs.k8s.io/zeitgeist/pkg/gitlab"
 )
@@ -74,7 +75,7 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 	}
 
 	if !strings.Contains(upstream.URL, "/") {
-		return "", errors.Errorf(
+		return "", fmt.Errorf(
 			"invalid gitlab repo: %s\nGitLab repo should be in the form owner/repo e.g., kubernetes/kubernetes",
 			upstream.URL,
 		)
@@ -88,7 +89,7 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 
 	expectedRange, err := semver.ParseRange(semverConstraints)
 	if err != nil {
-		return "", errors.Errorf("invalid semver constraints range: %#v", upstream.Constraints)
+		return "", fmt.Errorf("invalid semver constraints range: %#v: %w", upstream.Constraints, err)
 	}
 
 	splitURL := strings.Split(upstream.URL, "/")
@@ -105,13 +106,13 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 	log.Debugf("Retrieving releases for %s/%s...", owner, repo)
 	releases, err := client.Releases(owner, repo)
 	if err != nil {
-		return "", errors.Wrap(err, "retrieving GitLab releases")
+		return "", fmt.Errorf("retrieving GitLab releases: %w", err)
 	}
 
 	if len(releases) == 0 {
 		gitLabTags, err := client.ListTags(owner, repo)
 		if err != nil {
-			return "", errors.Wrap(err, "retrieving GitLab tags")
+			return "", fmt.Errorf("retrieving GitLab tags: %w", err)
 		}
 
 		for _, tag := range gitLabTags {
@@ -143,7 +144,7 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 	}
 
 	// No latest version found – no versions? Only prereleases?
-	return "", errors.Errorf("no potential version found")
+	return "", errors.New("no potential version found")
 }
 
 func latestGitlabCommit(upstream *GitLab) (string, error) {
@@ -166,7 +167,7 @@ func latestGitlabCommit(upstream *GitLab) (string, error) {
 	log.Debugf("Retrieving repository information for %s/%s...", owner, repo)
 	repoInfo, err := client.GetRepository(owner, repo)
 	if err != nil {
-		return "", errors.Wrap(err, "retrieving GitLab repository")
+		return "", fmt.Errorf("retrieving GitLab repository: %w", err)
 	}
 
 	if repoInfo.Archived {
@@ -175,12 +176,12 @@ func latestGitlabCommit(upstream *GitLab) (string, error) {
 
 	branches, err := client.Branches(owner, repo)
 	if err != nil {
-		return "", errors.Wrap(err, "retrieving GitLab branches")
+		return "", fmt.Errorf("retrieving GitLab branches: %w", err)
 	}
 	for _, branch := range branches {
 		if branch.Name == upstream.Branch {
 			return branch.Commit.ID, nil
 		}
 	}
-	return "", errors.Errorf("branch '%s' not found", upstream.Branch)
+	return "", fmt.Errorf("branch '%s' not found", upstream.Branch)
 }

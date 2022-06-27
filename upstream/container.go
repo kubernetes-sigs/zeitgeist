@@ -17,10 +17,11 @@ limitations under the License.
 package upstream
 
 import (
+	"errors"
+	"fmt"
 	"sort"
 
 	"github.com/blang/semver"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 
 	"sigs.k8s.io/zeitgeist/pkg/container"
@@ -53,13 +54,13 @@ func highestSemanticImageTag(upstream *Container) (string, error) {
 	}
 	expectedRange, err := semver.ParseRange(semverConstraints)
 	if err != nil {
-		return "", errors.Errorf("invalid semver constraints range: %v", upstream.Constraints)
+		return "", fmt.Errorf("invalid semver constraints range: %v: %w", upstream.Constraints, err)
 	}
 
 	log.Debugf("Retrieving tags for %s...", upstream.Registry)
 	tags, err := client.ListTags(upstream.Registry)
 	if err != nil {
-		return "", errors.Wrap(err, "retrieving Container tags")
+		return "", fmt.Errorf("retrieving Container tags: %w", err)
 	}
 	log.Debugf("Found %d tags for %s...", len(tags), upstream.Registry)
 
@@ -95,5 +96,5 @@ func highestSemanticImageTag(upstream *Container) (string, error) {
 		return version.orig, nil
 	}
 
-	return "", errors.Errorf("no potential tag found")
+	return "", errors.New("no potential tag found")
 }
