@@ -17,13 +17,13 @@ limitations under the License.
 package upstream
 
 import (
+	"fmt"
 	"sort"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -93,7 +93,7 @@ func (upstream AMI) LatestVersion() (string, error) {
 	log.Debugf("Matched AMIs:\n%s", images)
 
 	if len(images) < 1 {
-		return "", errors.Errorf("no AMI found for upstream %s", upstream.Name)
+		return "", fmt.Errorf("no AMI found for upstream %s", upstream.Name)
 	}
 
 	latestImage := images[0]

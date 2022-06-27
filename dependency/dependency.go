@@ -19,6 +19,7 @@ package dependency
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -28,7 +29,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/mitchellh/mapstructure"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 
@@ -88,11 +88,11 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 
 	// Custom validation for the Dependency type
 	if d.Name == "" {
-		return errors.Errorf("Dependency has no `name`: %#v", d)
+		return fmt.Errorf("Dependency has no `name`: %#v", d)
 	}
 
 	if d.Version == "" {
-		return errors.Errorf("Dependency has no `version`: %#v", d)
+		return fmt.Errorf("Dependency has no `version`: %#v", d)
 	}
 
 	// Default scheme to Semver if unset
@@ -105,7 +105,7 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 	case Semver, Alpha, Random:
 		// All good!
 	default:
-		return errors.Errorf("unknown version scheme: %s", d.Scheme)
+		return fmt.Errorf("unknown version scheme: %s", d.Scheme)
 	}
 
 	log.Debugf("Deserialised Dependency %s: %#v", d.Name, d)
@@ -156,7 +156,7 @@ func (c *Client) LocalCheck(dependencyFilePath, basePath string) error {
 			match := refPath.Match
 			matcher, err := regexp.Compile(match)
 			if err != nil {
-				return errors.Wrap(err, "compiling regex")
+				return fmt.Errorf("compiling regex: %w", err)
 			}
 			scanner := bufio.NewScanner(file)
 
@@ -363,7 +363,7 @@ func (c *Client) checkUpstreamVersions(deps []*Dependency) ([]versionUpdateInfo,
 
 			latestVersion.Version, err = eks.LatestVersion()
 		default:
-			return nil, errors.Errorf("unknown upstream flavour '%#v' for dependency %s", flavour, dep.Name)
+			return nil, fmt.Errorf("unknown upstream flavour '%#v' for dependency %s", flavour, dep.Name)
 		}
 
 		if err != nil {

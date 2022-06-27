@@ -19,7 +19,6 @@ package gitlab
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/xanzy/go-gitlab"
 
@@ -147,7 +146,7 @@ func (g *GitLab) Client() Client {
 func (g *GitLab) Releases(owner, repo string) ([]*gitlab.Release, error) {
 	allReleases, _, err := g.client.ListReleases(owner, repo, nil)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to retrieve GitLab releases for %s/%s", owner, repo)
+		return nil, fmt.Errorf("unable to retrieve GitLab releases for %s/%s: %w", owner, repo, err)
 	}
 
 	return allReleases, nil
@@ -156,7 +155,7 @@ func (g *GitLab) Releases(owner, repo string) ([]*gitlab.Release, error) {
 func (g *GitLab) Branches(owner, repo string) ([]*gitlab.Branch, error) {
 	branches, _, err := g.client.ListBranches(owner, repo, nil)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to retrieve GitLab releases for %s/%s", owner, repo)
+		return nil, fmt.Errorf("unable to retrieve GitLab releases for %s/%s: %w", owner, repo, err)
 	}
 
 	return branches, nil
@@ -172,7 +171,7 @@ func (g *GitLab) GetRepository(owner, repo string) (*gitlab.Project, error) {
 
 	projects, _, err := g.client.ListProjects(opt)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to retrieve GitLab projects for %s/%s", owner, repo)
+		return nil, fmt.Errorf("unable to retrieve GitLab projects for %s/%s: %w", owner, repo, err)
 	}
 
 	if len(projects) > 1 {
@@ -193,7 +192,7 @@ func (g *GitLab) ListTags(owner, repo string) ([]*gitlab.Tag, error) {
 
 	tags, _, err := g.client.ListTags(owner, repo, opt)
 	if err != nil {
-		return nil, errors.Wrapf(err, "unable to retrieve GitLab tags for %s/%s", owner, repo)
+		return nil, fmt.Errorf("unable to retrieve GitLab tags for %s/%s: %w", owner, repo, err)
 	}
 
 	return tags, nil

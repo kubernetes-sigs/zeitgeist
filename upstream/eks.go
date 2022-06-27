@@ -17,12 +17,13 @@ limitations under the License.
 package upstream
 
 import (
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"regexp"
 
 	"github.com/blang/semver"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -51,7 +52,7 @@ func (upstream EKS) LatestVersion() (string, error) {
 
 	expectedRange, err := semver.ParseRange(semverConstraints)
 	if err != nil {
-		return "", errors.Errorf("invalid semver constraints range: %v", upstream.Constraints)
+		return "", fmt.Errorf("invalid semver constraints range: %v: %w", upstream.Constraints, err)
 	}
 
 	const docsURL = "https://docs.aws.amazon.com/eks/latest/userguide/kubernetes-versions.html"

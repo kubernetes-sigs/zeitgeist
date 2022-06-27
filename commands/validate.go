@@ -19,7 +19,6 @@ package commands
 import (
 	"fmt"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 
 	"sigs.k8s.io/zeitgeist/dependency"
@@ -51,12 +50,12 @@ func runValidate(opts *options) error {
 
 	if opts.localOnly {
 		if err := client.LocalCheck(opts.configFile, opts.basePath); err != nil {
-			return errors.Wrap(err, "checking local dependencies")
+			return fmt.Errorf("checking local dependencies: %w", err)
 		}
 	} else {
 		updates, err := client.RemoteCheck(opts.configFile)
 		if err != nil {
-			return errors.Wrap(err, "checking remote dependencies")
+			return fmt.Errorf("checking remote dependencies: %w", err)
 		}
 
 		for _, update := range updates {

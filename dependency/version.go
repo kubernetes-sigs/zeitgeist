@@ -17,10 +17,10 @@ limitations under the License.
 package dependency
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/blang/semver"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -89,7 +89,7 @@ func (a Version) MoreSensitivelyRecentThan(b Version, sensitivity VersionSensiti
 	}
 
 	if a.Scheme != b.Scheme {
-		return false, errors.Errorf("trying to compare incompatible 'Version' schemes: %s and %s", a.Scheme, b.Scheme)
+		return false, fmt.Errorf("trying to compare incompatible 'Version' schemes: %s and %s", a.Scheme, b.Scheme)
 	}
 
 	switch a.Scheme {
@@ -114,7 +114,7 @@ func (a Version) MoreSensitivelyRecentThan(b Version, sensitivity VersionSensiti
 		// When identifiers are random (e.g. hashes), the newer version will just be a different version
 		return a.Version != b.Version, nil
 	default:
-		return false, errors.Errorf("unknown version scheme: %s", a.Scheme)
+		return false, fmt.Errorf("unknown version scheme: %s", a.Scheme)
 	}
 }
 
@@ -128,6 +128,6 @@ func semverCompare(a, b semver.Version, sensitivity VersionSensitivity) (bool, e
 	case Patch:
 		return a.GT(b), nil
 	default:
-		return false, errors.Errorf("unknown version sensitivity: %s", sensitivity)
+		return false, fmt.Errorf("unknown version sensitivity: %s", sensitivity)
 	}
 }
