@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
 )
 
