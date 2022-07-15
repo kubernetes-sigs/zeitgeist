@@ -25,7 +25,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/blang/semver"
+	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
 
 	"helm.sh/helm/v3/pkg/cli"
