@@ -11,7 +11,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.5.0
 	github.com/stretchr/testify v1.8.0
-	github.com/xanzy/go-gitlab v0.72.0
+	github.com/xanzy/go-gitlab v0.73.0
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.9.3
 	sigs.k8s.io/release-sdk v0.9.2
