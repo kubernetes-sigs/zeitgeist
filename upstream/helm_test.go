@@ -18,9 +18,9 @@ package upstream
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -103,7 +103,7 @@ func helmHandler(rw http.ResponseWriter, req *http.Request) {
 	case "/":
 		fmt.Fprint(rw, "zeitgeist testing server")
 	case "/index.yaml":
-		index, err := ioutil.ReadFile("../testdata/helm-repo/index.yaml")
+		index, err := os.ReadFile("../testdata/helm-repo/index.yaml")
 		if err != nil {
 			panic("Cannot open helm repo test file")
 		}
@@ -111,7 +111,7 @@ func helmHandler(rw http.ResponseWriter, req *http.Request) {
 	case "/broken-repo/index.yaml":
 		fmt.Fprint(rw, "bad yaml here } !")
 	default:
-		rw.WriteHeader(404)
+		rw.WriteHeader(http.StatusNotFound)
 	}
 }
 
