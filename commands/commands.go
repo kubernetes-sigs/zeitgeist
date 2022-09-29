@@ -74,6 +74,7 @@ func New() *cobra.Command {
 func AddCommands(topLevel *cobra.Command) {
 	addValidate(topLevel)
 	addExport(topLevel)
+	addUpgrade(topLevel)
 }
 
 func initLogging(*cobra.Command, []string) error {
