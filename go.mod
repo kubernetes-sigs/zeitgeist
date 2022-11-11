@@ -13,7 +13,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/xanzy/go-gitlab v0.74.0
 	gopkg.in/yaml.v3 v3.0.1
-	helm.sh/helm/v3 v3.10.1
+	helm.sh/helm/v3 v3.10.2
 	sigs.k8s.io/release-sdk v0.9.3
 	sigs.k8s.io/release-utils v0.7.3
 )
