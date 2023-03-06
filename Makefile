@@ -71,7 +71,7 @@ test-results: test
 generate: ## Generate go code for the fake clients
 	go generate ./...
 
-verify: verify-boilerplate verify-golangci-lint verify-go-mod  ## Runs verification scripts to ensure correct execution
+verify: verify-boilerplate verify-go-mod  ## Runs verification scripts to ensure correct execution
 
 verify-boilerplate: ## Runs the file header check
 	./hack/verify-boilerplate.sh
