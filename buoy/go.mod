@@ -8,10 +8,10 @@ require (
 	github.com/go-git/go-git/v5 v5.2.0
 	github.com/google/go-cmp v0.5.9
 	github.com/spf13/cobra v1.1.1
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.8.0
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4
 	golang.org/x/net v0.7.0
-	k8s.io/apimachinery v0.18.8
+	k8s.io/apimachinery v0.26.2
 )
 
 require (
@@ -35,5 +35,5 @@ require (
 	golang.org/x/sys v0.5.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	gopkg.in/yaml.v2 v2.2.8 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
