@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
 jobs:
   release:
@@ -11,47 +11,38 @@ jobs:
 
     permissions:
       id-token: write
-      packages: write
       contents: write
 
     env:
       GOPATH: ${{ github.workspace }}
-      GO111MODULE: on
-      COSIGN_EXPERIMENTAL: "true"
+      COSIGN_YES: "true"
 
     steps:
+    - name: Check out code onto GOPATH
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      with:
+        fetch-depth: 1
+        path: ./src/github.com/${{ github.repository }}
+
     - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3.3.0
       with:
         go-version: 1.20
         check-latest: true
 
     - name: Install ko
-      uses: imjasonh/setup-ko@ace48d793556083a76f1e3e6068850c1f4a369aa # v0.6
+      uses: ko-build/setup-ko@ace48d793556083a76f1e3e6068850c1f4a369aa # v0.6
 
     - name: Install cosign
-      uses: sigstore/cosign-installer@ced07f21fb1da67979f539bbc6304c16c0677e76 # v2.7.0
+      uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65 # v3.0.1
 
     - name: Install GoReleaser
-      uses: goreleaser/goreleaser-action@ff11ca24a9b39f2d36796d1fbd7a4e39c182630a # v3.1.0
+      uses: goreleaser/goreleaser-action@f82d6c1c344bcacabba2c841718984797f664a6b # v4.2.0
       with:
         install-only: true
 
-    - name: Log into ghcr.io
-      uses: docker/login-action@v1
-      with:
-        registry: ghcr.io
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Check out code onto GOPATH
-      uses: actions/checkout@a12a3943b4bdde767164f792f33f40b04645d846 # v3.0.0
-      with:
-        fetch-depth: 1
-        path: ./src/github.com/${{ github.repository }}
-
     - name: Get TAG
       id: get_tag
-      run: echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
+      run: echo "TAG=${GITHUB_REF#refs/*/}" >> "$GITHUB_OUTPUT"
 
     - name: Run goreleaser
       working-directory: ./src/github.com/${{ github.repository }}
