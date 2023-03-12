@@ -1,6 +1,7 @@
 coverage.out
 .DS_Store
 dist/
+output/
 bin/
 .idea
 /zeitgeist
