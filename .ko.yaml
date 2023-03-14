@@ -1,17 +1,33 @@
-defaultBaseImage: gcr.io/distroless/base:nonroot
+---
+defaultBaseImage: cgr.dev/chainguard/static:latest
 
 builds:
-- id: zeitgeist
-  dir: .
-  main: .
-  env:
-  - CGO_ENABLED=0
-  flags:
-  - -trimpath
-  - -tags
-  - nostackdriver
-  ldflags:
-  - -s
-  - -w
-  - -extldflags "-static"
-  - "{{ .Env.LDFLAGS }}"
+  - id: zeitgeist
+    dir: .
+    main: .
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+      - -tags
+      - nostackdriver
+    ldflags:
+      - -s
+      - -w
+      - -extldflags "-static"
+      - "{{ .Env.LDFLAGS }}"
+
+  - id: buoy
+    dir: .
+    main: ./buoy
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+      - -tags
+      - nostackdriver
+    ldflags:
+      - -s
+      - -w
+      - -extldflags "-static"
+      - "{{ .Env.LDFLAGS }}"
