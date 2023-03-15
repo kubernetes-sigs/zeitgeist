@@ -1,5 +1,5 @@
 ---
-defaultBaseImage: cgr.dev/chainguard/static:latest
+defaultBaseImage: gcr.io/distroless/static-debian11
 
 builds:
   - id: zeitgeist
@@ -9,25 +9,17 @@ builds:
       - CGO_ENABLED=0
     flags:
       - -trimpath
-      - -tags
-      - nostackdriver
     ldflags:
-      - -s
-      - -w
       - -extldflags "-static"
       - "{{ .Env.LDFLAGS }}"
 
   - id: buoy
-    dir: .
-    main: ./buoy
+    dir: ./buoy
+    main: .
     env:
       - CGO_ENABLED=0
     flags:
       - -trimpath
-      - -tags
-      - nostackdriver
     ldflags:
-      - -s
-      - -w
       - -extldflags "-static"
       - "{{ .Env.LDFLAGS }}"
