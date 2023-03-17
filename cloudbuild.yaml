@@ -3,7 +3,7 @@
 timeout: 7200s
 options:
   substitution_option: ALLOW_LOOSE
-  machineType: 'N1_HIGHCPU_8'
+  machineType: 'N1_HIGHCPU_32'
 steps:
   - name: gcr.io/cloud-builders/git
     dir: "go/src/sigs.k8s.io"

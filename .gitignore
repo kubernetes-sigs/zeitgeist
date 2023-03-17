@@ -6,4 +6,5 @@ bin/
 .idea
 /zeitgeist
 /imagerefs
+/imagerefs_buoy
 .vscode/*

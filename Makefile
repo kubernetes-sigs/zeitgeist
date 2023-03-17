@@ -42,8 +42,8 @@ LDFLAGS=-buildid= -X sigs.k8s.io/release-utils/version.gitVersion=$(GIT_VERSION)
         -X sigs.k8s.io/release-utils/version.gitTreeState=$(GIT_TREESTATE) \
         -X sigs.k8s.io/release-utils/version.buildDate=$(BUILD_DATE)
 
-KO_DOCKER_REPO ?= gcr.io/k8s-staging-zeitgeist
-export KO_DOCKER_REPO
+KO_PREFIX ?= gcr.io/k8s-staging-zeitgeist
+KO_DOCKER_REPO=$(KO_PREFIX)
 
 build: ## Build zeitgeist
 	go build -trimpath -ldflags "$(LDFLAGS)" -o ./output/zeitgeist .
@@ -51,9 +51,9 @@ build: ## Build zeitgeist
 
 ko-local: ## Build zeitgeist/buoy image locally (does not push it)
 	LDFLAGS="$(LDFLAGS)" KO_DOCKER_REPO=ko.local \
-	ko build --base-import-paths sigs.k8s.io/zeitgeist
+	ko build --bare sigs.k8s.io/zeitgeist
 	LDFLAGS="$(LDFLAGS)" KO_DOCKER_REPO=ko.local \
-	ko build --base-import-paths sigs.k8s.io/zeitgeist/buoy
+	ko build --bare sigs.k8s.io/zeitgeist/buoy
 
 .PHONY: snapshot
 snapshot: ## Build zeitgeist binaries with goreleaser in snapshot mode
@@ -99,13 +99,15 @@ ko-release: ko-release-zeitgeist ko-release-buoy
 .PHONY: ko-release-zeitgeist
 ko-release-zeitgeist: ## Build zeitgeist image
 	LDFLAGS="$(LDFLAGS)" GIT_HASH=$(GIT_HASH) GIT_VERSION=$(GIT_VERSION) \
-	ko build --base-import-paths \
+	KO_DOCKER_REPO=$(KO_PREFIX)/zeitgeist \
+	ko build --bare \
 	--platform=all --tags $(GIT_VERSION),$(GIT_HASH),latest --image-refs imagerefs sigs.k8s.io/zeitgeist
 
 .PHONY: ko-release-buoy
 ko-release-buoy: ## Build zeitgeist image
 	LDFLAGS="$(LDFLAGS)" GIT_HASH=$(GIT_HASH) GIT_VERSION=$(GIT_VERSION) \
-	ko build --base-import-paths \
+	KO_DOCKER_REPO=$(KO_PREFIX)/bouy \
+	ko build --bare \
 	--platform=all --tags $(GIT_VERSION),$(GIT_HASH),latest --image-refs imagerefs_buoy sigs.k8s.io/zeitgeist/buoy
 
 imagerefs := $(shell cat imagerefs imagerefs_buoy)
