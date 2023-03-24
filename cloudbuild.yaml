@@ -31,12 +31,6 @@ steps:
     args:
       - ko-release
 
-artifacts:
-  objects:
-    location: 'gs://k8s-staging-zeitgeist/${_PULL_BASE_REF}'
-    paths:
-      - "go/src/sigs.k8s.io/zeitgeist/dist/*"
-
 substitutions:
   # _GIT_TAG will be filled with a git-based tag for the image, of the form vYYYYMMDD-hash, and
   # can be used as a substitution
