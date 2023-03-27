@@ -3,7 +3,7 @@ project_name: zeitgeist
 env:
   - GO111MODULE=on
   - CGO_ENABLED=0
-  - COSIGN_YES="true"
+  - COSIGN_YES=true
 
 before:
   hooks:
