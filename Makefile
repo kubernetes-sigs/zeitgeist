@@ -58,7 +58,7 @@ ko-local: ## Build zeitgeist/buoy image locally (does not push it)
 .PHONY: snapshot
 snapshot: ## Build zeitgeist binaries with goreleaser in snapshot mode
 	LDFLAGS="$(LDFLAGS)" GIT_HASH=$(GIT_HASH) GIT_VERSION=$(GIT_VERSION) \
-	goreleaser release --rm-dist --snapshot --skip-sign --skip-publish
+	goreleaser release --clean --snapshot --skip-sign --skip-publish
 
 lint:
 	test -z $(shell go fmt .) || (echo "Linting failed !" && exit 8)
@@ -91,7 +91,7 @@ verify-golangci-lint: ## Runs all golang linters
 .PHONY: goreleaser
 goreleaser: ## Build zeitgeist binaries with goreleaser
 	LDFLAGS="$(LDFLAGS)" GIT_HASH=$(GIT_HASH) GIT_VERSION=$(GIT_VERSION) \
-	goreleaser release --rm-dist
+	goreleaser release --clean
 
 .PHONY: ko-release
 ko-release: ko-release-zeitgeist ko-release-buoy
