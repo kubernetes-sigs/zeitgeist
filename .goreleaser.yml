@@ -15,7 +15,8 @@ gomod:
 
 builds:
   - id: zeitgeist
-    binary: zeitgeist
+    no_unique_dist_dir: true
+    binary: zeitgeist-{{ .Arch }}-{{ .Os }}
     goos:
       - darwin
       - linux
@@ -44,7 +45,8 @@ builds:
 
   - id: buoy
     dir: ./buoy
-    binary: buoy
+    no_unique_dist_dir: true
+    binary: buoy-{{ .Arch }}-{{ .Os }}
     main: .
     goos:
       - darwin
@@ -73,8 +75,14 @@ builds:
       - "{{ .Env.LDFLAGS }}"
 
 archives:
-  - format: binary
+  - id: zeitgeist
+    format: binary
     allow_different_binary_count: true
+    name_template: zeitgeist-{{ .Arch }}-{{ .Os }}
+  - id: buoy
+    format: binary
+    allow_different_binary_count: true
+    name_template: buoy-{{ .Arch }}-{{ .Os }}
 
 signs:
   # Keyless
@@ -84,6 +92,38 @@ signs:
     cmd: cosign
     args: ["sign-blob", "--output-signature", "${artifact}.sig", "--output-certificate", "${artifact}.pem", "${artifact}"]
     artifacts: all
+
+sboms:
+  - id: zeitgeist
+    cmd: bom
+    args:
+      - generate
+      - "--output"
+      - "zeitgeist-bom.json.spdx"
+      - "-d"
+      - "../"
+      - "-c"
+      - "../.zeitgeist-bom-config.yaml"
+      - "--format"
+      - "json"
+    artifacts: any
+    documents:
+      - "zeitgeist-bom.json.spdx"
+  - id: buoy
+    cmd: bom
+    args:
+      - generate
+      - "--output"
+      - "buoy-bom.json.spdx"
+      - "-d"
+      - "../"
+      - "-c"
+      - "../.buoy-bom-config.yaml"
+      - "--format"
+      - "json"
+    artifacts: any
+    documents:
+      - "buoy-bom.json.spdx"
 
 checksum:
   name_template: 'checksums.txt'

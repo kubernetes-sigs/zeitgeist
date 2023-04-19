@@ -18,34 +18,72 @@ jobs:
       COSIGN_YES: "true"
 
     steps:
-    - name: Check out code onto GOPATH
-      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-      with:
-        fetch-depth: 1
-        path: ./src/github.com/${{ github.repository }}
+      - name: Check out code onto GOPATH
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          fetch-depth: 1
+          path: ./src/github.com/${{ github.repository }}
 
-    - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3.3.0
-      with:
-        go-version: '1.20'
-        check-latest: true
+      - uses: actions/setup-go@268d8c0ca0432bb2cf416faae41297df9d262d7f # v3.3.0
+        with:
+          go-version: '1.20'
+          check-latest: true
 
-    - name: Install ko
-      uses: ko-build/setup-ko@ace48d793556083a76f1e3e6068850c1f4a369aa # v0.6
+      - name: Install ko
+        uses: ko-build/setup-ko@ace48d793556083a76f1e3e6068850c1f4a369aa # v0.6
 
-    - name: Install cosign
-      uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65 # v3.0.1
+      - name: Install cosign
+        uses: sigstore/cosign-installer@c3667d99424e7e6047999fb6246c0da843953c65 # v3.0.1
 
-    - name: Install GoReleaser
-      uses: goreleaser/goreleaser-action@f82d6c1c344bcacabba2c841718984797f664a6b # v4.2.0
-      with:
-        install-only: true
+      - name: Install bom
+        uses: puerco/release-actions/setup-bom@6c88cda6495b4415966e61f20798fb96a9081397 # main
 
-    - name: Get TAG
-      id: get_tag
-      run: echo "TAG=${GITHUB_REF#refs/*/}" >> "$GITHUB_OUTPUT"
+      - name: Install GoReleaser
+        uses: goreleaser/goreleaser-action@f82d6c1c344bcacabba2c841718984797f664a6b # v4.2.0
+        with:
+          install-only: true
 
-    - name: Run goreleaser
-      working-directory: ./src/github.com/${{ github.repository }}
-      run: make goreleaser
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Get TAG
+        id: get_tag
+        run: echo "TAG=${GITHUB_REF#refs/*/}" >> "$GITHUB_OUTPUT"
+
+      - name: Run goreleaser
+        working-directory: ./src/github.com/${{ github.repository }}
+        run: make goreleaser
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  attestation:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: write
+
+    needs:
+      - release
+
+    steps:
+      - name: Check out code onto GOPATH
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+        with:
+          fetch-depth: 1
+
+      - name: Set tag output
+        id: tag
+        run: echo "tag_name=${GITHUB_REF#refs/*/}" >> "$GITHUB_OUTPUT"
+
+      - name: Install tejolote
+        uses: puerco/release-actions/setup-tejolote@6c88cda6495b4415966e61f20798fb96a9081397 # main
+
+      - run: |
+          tejolote attest --artifacts github://kubernetes-sigs/zeitgeist/${{ steps.tag.outputs.tag_name }} github://kubernetes-sigs/zeitgeist/"${GITHUB_RUN_ID}" --output zeitgeist.intoto.json --sign
+
+      - name: Release
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v0.1.15
+        with:
+          files: zeitgeist.intoto.json
+          tag_name: "${{ steps.tag.outputs.tag_name }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_REPOSITORY: kubernetes-sigs/zeitgeist

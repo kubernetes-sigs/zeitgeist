@@ -1,0 +1,36 @@
+name: Snapshot
+
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code onto GOPATH
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+
+      - uses: actions/setup-go@4d34df0c2316fe8122ab82dc22947d607c0c91f9 # v4.0.0
+        with:
+          go-version: '1.20'
+          check-latest: true
+
+      - name: Install GoReleaser
+        uses: goreleaser/goreleaser-action@f82d6c1c344bcacabba2c841718984797f664a6b # v4.2.0
+        with:
+          install-only: true
+
+      - name: Install bom
+        uses: puerco/release-actions/setup-bom@6c88cda6495b4415966e61f20798fb96a9081397 # main
+
+      - name: Run Snapshot
+        run: make snapshot
+
+      - name: check binary
+        run: |
+          ./dist/zeitgeist-amd64-linux version
+          ./dist/buoy-amd64-linux help
