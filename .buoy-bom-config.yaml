@@ -1,0 +1,48 @@
+---
+namespace: https://sigs.k8s.io/zeitgeist/buoy
+license: Apache-2.0
+name: buoy
+creator:
+ person: The Kubernetes Authors
+ tool: buoy
+
+artifacts:
+  - type: file
+    source: buoy-amd64-windows.exe
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: buoy-amd64-darwin
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: buoy-amd64-linux
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: buoy-arm-linux
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: buoy-arm64-darwin
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: buoy-arm64-linux
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: buoy-ppc64le-linux
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: buoy-s390x-linux
+    license: Apache-2.0
+    gomodules: true

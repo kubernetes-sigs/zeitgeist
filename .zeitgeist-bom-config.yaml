@@ -1,0 +1,48 @@
+---
+namespace: https://sigs.k8s.io/zeitgeist
+license: Apache-2.0
+name: zeitgeist
+creator:
+ person: The Kubernetes Authors
+ tool: zeitgeist
+
+artifacts:
+  - type: file
+    source: zeitgeist-amd64-windows.exe
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: zeitgeist-amd64-darwin
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: zeitgeist-amd64-linux
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: zeitgeist-arm-linux
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: zeitgeist-arm64-darwin
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: zeitgeist-arm64-linux
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: zeitgeist-ppc64le-linux
+    license: Apache-2.0
+    gomodules: true
+
+  - type: file
+    source: zeitgeist-s390x-linux
+    license: Apache-2.0
+    gomodules: true
