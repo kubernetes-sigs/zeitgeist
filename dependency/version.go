@@ -42,13 +42,6 @@ const (
 	Random VersionScheme = "random"
 )
 
-type versionUpdateInfo struct {
-	name            string
-	current         Version
-	latest          Version
-	updateAvailable bool
-}
-
 // VersionUpdate represents the schema of the output format
 // The output format is dictated by exportOptions.outputFormat
 type VersionUpdate struct {
