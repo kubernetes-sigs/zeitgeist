@@ -1,5 +1,5 @@
 /*
-Copyright 2020 The Kubernetes Authors.
+Copyright 2023 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -22,10 +22,13 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"sigs.k8s.io/zeitgeist/commands"
+
+	// import to link in remote functionality
+	_ "sigs.k8s.io/zeitgeist/remote/dependency"
 )
 
 func main() {
-	if err := commands.New(commands.Options{LocalOnly: true}).Execute(); err != nil {
+	if err := commands.New(commands.Options{LocalOnly: false}).Execute(); err != nil {
 		logrus.Fatalf("error during command execution: %#v", err)
 	}
 }

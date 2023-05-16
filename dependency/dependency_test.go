@@ -23,11 +23,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/stretchr/testify/require"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -60,59 +59,9 @@ func TestLocalSuccess(t *testing.T) {
 	require.Nil(t, err)
 }
 
-func TestRemoteSuccess(t *testing.T) {
-	var client RemoteClient
-	client.AWSEC2Client = mockedReceiveMsgs{
-		Resp: ec2.DescribeImagesOutput{
-			Images: []*ec2.Image{
-				{
-					CreationDate: aws.String("2019-05-10T13:17:12.000Z"),
-					ImageId:      aws.String("ami-09bbefc07310f7914"),
-					Name:         aws.String("amazon-eks-node-1.13-honk"),
-				},
-			},
-		},
-	}
-
-	_, err := client.RemoteCheck("../testdata/remote.yaml")
-	require.Nil(t, err)
-}
-
-func TestDummyRemote(t *testing.T) {
-	client, err := NewRemoteClient()
-	require.Nil(t, err)
-
-	_, err = client.RemoteCheck("../testdata/remote-dummy.yaml")
-	require.Nil(t, err)
-}
-
-func TestDummyRemoteExportWithoutUpdate(t *testing.T) {
-	client, err := NewRemoteClient()
-	require.Nil(t, err)
-
-	updates, err := client.RemoteExport("../testdata/remote-dummy.yaml")
-	require.Nil(t, err)
-	require.Empty(t, updates)
-}
-
-func TestDummyRemoteExportWithUpdate(t *testing.T) {
-	client, err := NewRemoteClient()
-	require.Nil(t, err)
-
-	updates, err := client.RemoteExport("../testdata/remote-dummy-with-update.yaml")
-	require.Nil(t, err)
-	require.NotEmpty(t, updates)
-	require.Equal(t, updates[0].Name, "example")
-	require.Equal(t, updates[0].Version, "0.0.1")
-	require.Equal(t, updates[0].NewVersion, "1.0.0")
-}
-
-func TestRemoteConstraint(t *testing.T) {
-	client, err := NewRemoteClient()
-	require.Nil(t, err)
-
-	_, err = client.RemoteCheck("../testdata/remote-constraint.yaml")
-	require.Nil(t, err)
+func TestRemoteUnsupported(t *testing.T) {
+	_, err := NewRemoteClient()
+	require.True(t, errors.As(err, &UnsupportedError{}))
 }
 
 func TestBrokenFile(t *testing.T) {
@@ -148,14 +97,6 @@ func TestFileDoesntExist(t *testing.T) {
 	require.Nil(t, err)
 
 	err = client.LocalCheck("../testdata/local-no-file.yaml", "../testdata")
-	require.NotNil(t, err)
-}
-
-func TestUnknownFlavour(t *testing.T) {
-	client, err := NewRemoteClient()
-	require.Nil(t, err)
-
-	_, err = client.RemoteCheck("../testdata/unknown-upstream.yaml")
 	require.NotNil(t, err)
 }
 
