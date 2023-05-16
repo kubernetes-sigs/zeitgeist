@@ -17,6 +17,7 @@ limitations under the License.
 package dependency
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -40,15 +41,27 @@ func (m mockedReceiveMsgs) DescribeImages(_ *ec2.DescribeImagesInput) (*ec2.Desc
 	return &m.Resp, nil
 }
 
-func TestLocalSuccess(t *testing.T) {
-	client := NewClient()
+func TestUnsupported(t *testing.T) {
+	client, err := NewLocalClient()
+	require.Nil(t, err)
+	_, err = client.RemoteCheck("")
+	require.True(t, errors.As(err, &UnsupportedError{}))
+	_, err = client.RemoteExport("")
+	require.True(t, errors.As(err, &UnsupportedError{}))
+	_, err = client.Upgrade("")
+	require.True(t, errors.As(err, &UnsupportedError{}))
+}
 
-	err := client.LocalCheck("../testdata/local.yaml", "../testdata")
+func TestLocalSuccess(t *testing.T) {
+	client, err := NewLocalClient()
+	require.Nil(t, err)
+
+	err = client.LocalCheck("../testdata/local.yaml", "../testdata")
 	require.Nil(t, err)
 }
 
 func TestRemoteSuccess(t *testing.T) {
-	var client Client
+	var client RemoteClient
 	client.AWSEC2Client = mockedReceiveMsgs{
 		Resp: ec2.DescribeImagesOutput{
 			Images: []*ec2.Image{
@@ -66,14 +79,16 @@ func TestRemoteSuccess(t *testing.T) {
 }
 
 func TestDummyRemote(t *testing.T) {
-	client := NewClient()
+	client, err := NewRemoteClient()
+	require.Nil(t, err)
 
-	_, err := client.RemoteCheck("../testdata/remote-dummy.yaml")
+	_, err = client.RemoteCheck("../testdata/remote-dummy.yaml")
 	require.Nil(t, err)
 }
 
 func TestDummyRemoteExportWithoutUpdate(t *testing.T) {
-	client := NewClient()
+	client, err := NewRemoteClient()
+	require.Nil(t, err)
 
 	updates, err := client.RemoteExport("../testdata/remote-dummy.yaml")
 	require.Nil(t, err)
@@ -81,7 +96,8 @@ func TestDummyRemoteExportWithoutUpdate(t *testing.T) {
 }
 
 func TestDummyRemoteExportWithUpdate(t *testing.T) {
-	client := NewClient()
+	client, err := NewRemoteClient()
+	require.Nil(t, err)
 
 	updates, err := client.RemoteExport("../testdata/remote-dummy-with-update.yaml")
 	require.Nil(t, err)
@@ -92,16 +108,18 @@ func TestDummyRemoteExportWithUpdate(t *testing.T) {
 }
 
 func TestRemoteConstraint(t *testing.T) {
-	client := NewClient()
+	client, err := NewRemoteClient()
+	require.Nil(t, err)
 
-	_, err := client.RemoteCheck("../testdata/remote-constraint.yaml")
+	_, err = client.RemoteCheck("../testdata/remote-constraint.yaml")
 	require.Nil(t, err)
 }
 
 func TestBrokenFile(t *testing.T) {
-	client := NewClient()
+	client, err := NewLocalClient()
+	require.Nil(t, err)
 
-	err := client.LocalCheck("../testdata/does-not-exist", "../testdata")
+	err = client.LocalCheck("../testdata/does-not-exist", "../testdata")
 	require.NotNil(t, err)
 
 	err = client.LocalCheck("../testdata/Dockerfile", "../testdata")
@@ -109,31 +127,35 @@ func TestBrokenFile(t *testing.T) {
 }
 
 func TestLocalOutOfSync(t *testing.T) {
-	client := NewClient()
+	client, err := NewLocalClient()
+	require.Nil(t, err)
 
-	err := client.LocalCheck("../testdata/local-out-of-sync.yaml", "../testdata")
+	err = client.LocalCheck("../testdata/local-out-of-sync.yaml", "../testdata")
 	require.NotNil(t, err)
 }
 
 func TestLocalInvalid(t *testing.T) {
-	client := NewClient()
+	client, err := NewLocalClient()
+	require.Nil(t, err)
 
-	err := client.LocalCheck("../testdata/local-invalid.yaml", "../testdata")
+	err = client.LocalCheck("../testdata/local-invalid.yaml", "../testdata")
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "compiling regex")
 }
 
 func TestFileDoesntExist(t *testing.T) {
-	client := NewClient()
+	client, err := NewLocalClient()
+	require.Nil(t, err)
 
-	err := client.LocalCheck("../testdata/local-no-file.yaml", "../testdata")
+	err = client.LocalCheck("../testdata/local-no-file.yaml", "../testdata")
 	require.NotNil(t, err)
 }
 
 func TestUnknownFlavour(t *testing.T) {
-	client := NewClient()
+	client, err := NewRemoteClient()
+	require.Nil(t, err)
 
-	_, err := client.RemoteCheck("../testdata/unknown-upstream.yaml")
+	_, err = client.RemoteCheck("../testdata/unknown-upstream.yaml")
 	require.NotNil(t, err)
 }
 

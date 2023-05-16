@@ -36,8 +36,35 @@ import (
 )
 
 // Client holds any client that is needed
-type Client struct {
-	AWSEC2Client ec2iface.EC2API
+type Client interface {
+	// LocalCheck checks whether dependencies are in-sync locally
+	//
+	// Will return an error if the dependency cannot be found in the files it has defined, or if the version does not match
+	LocalCheck(dependencyFilePath, basePath string) error
+
+	// RemoteCheck checks whether dependencies are up to date with upstream
+	//
+	// Will return an error if checking the versions upstream fails.
+	//
+	// Out-of-date dependencies will be printed out on stdout at the INFO level.
+	RemoteCheck(dependencyFilePath string) ([]string, error)
+
+	// Upgrade retrieves the most up-to-date version of the dependency and replaces
+	// the local version with the most up-to-date version.
+	//
+	// Will return an error if checking the versions upstream fails, or if updating
+	// files fails.
+	Upgrade(dependencyFilePath string) ([]string, error)
+
+	RemoteExport(dependencyFilePath string) ([]VersionUpdate, error)
+}
+
+type UnsupportedError struct {
+	message string
+}
+
+func (u UnsupportedError) Error() string {
+	return u.message
 }
 
 // Dependencies is used to deserialise the configuration file
@@ -66,13 +93,6 @@ type RefPath struct {
 	Path string `yaml:"path"`
 	// Match expression for the line that should contain the dependency's version. Regexp is supported.
 	Match string `yaml:"match"`
-}
-
-// NewClient returns all clients that can be used to the validation
-func NewClient() *Client {
-	return &Client{
-		AWSEC2Client: upstream.NewAWSClient(),
-	}
 }
 
 // UnmarshalYAML implements custom unmarshalling of Dependency with validation
@@ -147,10 +167,17 @@ func toFile(dependencyFilePath string, dependencies *Dependencies) error {
 	return nil
 }
 
+type LocalClient struct{}
+
+// NewClient returns all clients that can be used to the validation
+func NewLocalClient() (Client, error) {
+	return &LocalClient{}, nil
+}
+
 // LocalCheck checks whether dependencies are in-sync locally
 //
 // Will return an error if the dependency cannot be found in the files it has defined, or if the version does not match
-func (c *Client) LocalCheck(dependencyFilePath, basePath string) error {
+func (c *LocalClient) LocalCheck(dependencyFilePath, basePath string) error {
 	log.Debugf("Base path: %s", basePath)
 	externalDeps, err := fromFile(dependencyFilePath)
 	if err != nil {
@@ -224,12 +251,44 @@ func (c *Client) LocalCheck(dependencyFilePath, basePath string) error {
 	return nil
 }
 
+func (c *LocalClient) RemoteCheck(dependencyFilePath string) ([]string, error) {
+	return nil, UnsupportedError{"remote checks are not supported by the local client"}
+}
+
+func (c *LocalClient) Upgrade(dependencyFilePath string) ([]string, error) {
+	return nil, UnsupportedError{"upgrade is not supported by the local client"}
+}
+
+func (c *LocalClient) RemoteExport(dependencyFilePath string) ([]VersionUpdate, error) {
+	return nil, UnsupportedError{"remote export is not supported by the local client"}
+}
+
+type RemoteClient struct {
+	LocalClient  Client
+	AWSEC2Client ec2iface.EC2API
+}
+
+func NewRemoteClient() (Client, error) {
+	localClient, err := NewLocalClient()
+	if err != nil {
+		return nil, err
+	}
+	return &RemoteClient{
+		LocalClient:  localClient,
+		AWSEC2Client: upstream.NewAWSClient(),
+	}, nil
+}
+
+func (c *RemoteClient) LocalCheck(dependencyFilePath, basePath string) error {
+	return c.LocalClient.LocalCheck(dependencyFilePath, basePath)
+}
+
 // RemoteCheck checks whether dependencies are up to date with upstream
 //
 // Will return an error if checking the versions upstream fails.
 //
 // Out-of-date dependencies will be printed out on stdout at the INFO level.
-func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
+func (c *RemoteClient) RemoteCheck(dependencyFilePath string) ([]string, error) {
 	externalDeps, err := fromFile(dependencyFilePath)
 	if err != nil {
 		return nil, err
@@ -271,7 +330,7 @@ func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
 //
 // Will return an error if checking the versions upstream fails, or if updating
 // files fails.
-func (c *Client) Upgrade(dependencyFilePath, basePath string) ([]string, error) {
+func (c *RemoteClient) Upgrade(dependencyFilePath, basePath string) ([]string, error) {
 	externalDeps, err := fromFile(dependencyFilePath)
 	if err != nil {
 		return nil, err
@@ -449,7 +508,7 @@ func replaceInFile(basePath string, refPath *RefPath, versionUpdate *versionUpda
 	return nil
 }
 
-func (c *Client) RemoteExport(dependencyFilePath string) ([]VersionUpdate, error) {
+func (c *RemoteClient) RemoteExport(dependencyFilePath string) ([]VersionUpdate, error) {
 	externalDeps, err := fromFile(dependencyFilePath)
 	if err != nil {
 		return nil, err
@@ -481,7 +540,7 @@ func (c *Client) RemoteExport(dependencyFilePath string) ([]VersionUpdate, error
 	return versionUpdates, nil
 }
 
-func (c *Client) checkUpstreamVersions(deps []*Dependency) ([]versionUpdateInfo, error) {
+func (c *RemoteClient) checkUpstreamVersions(deps []*Dependency) ([]versionUpdateInfo, error) {
 	versionUpdates := []versionUpdateInfo{}
 	for _, dep := range deps {
 		if dep.Upstream == nil {

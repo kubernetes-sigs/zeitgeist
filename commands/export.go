@@ -106,7 +106,10 @@ func addExport(topLevel *cobra.Command) {
 // runValidate is the function invoked by 'addValidate', responsible for
 // validating dependencies in a specified configuration file.
 func runExport(opts *exportOptions) error {
-	client := dependency.NewClient()
+	client, err := dependency.NewRemoteClient()
+	if err != nil {
+		return err
+	}
 
 	updates, err := client.RemoteExport(opts.rootOpts.configFile)
 	if err != nil {
