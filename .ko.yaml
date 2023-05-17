@@ -3,7 +3,7 @@ defaultBaseImage: gcr.io/distroless/static-debian11
 
 builds:
   - id: zeitgeist
-    dir: .
+    dir: ./remote/zeitgeist
     main: .
     env:
       - CGO_ENABLED=0
