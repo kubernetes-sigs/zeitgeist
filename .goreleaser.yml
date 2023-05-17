@@ -15,6 +15,7 @@ gomod:
 
 builds:
   - id: zeitgeist
+    dir: ./remote/zeitgeist
     no_unique_dist_dir: true
     binary: zeitgeist-{{ .Arch }}-{{ .Os }}
     goos:

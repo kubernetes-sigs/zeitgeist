@@ -3,7 +3,7 @@ defaultBaseImage: cgr.dev/chainguard/static:latest
 
 builds:
   - id: zeitgeist
-    dir: .
+    dir: ./remote/zeitgeist
     main: .
     env:
       - CGO_ENABLED=0

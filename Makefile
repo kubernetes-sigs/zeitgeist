@@ -46,12 +46,19 @@ KO_PREFIX ?= gcr.io/k8s-staging-zeitgeist
 KO_DOCKER_REPO=$(KO_PREFIX)
 
 build: ## Build zeitgeist
+	# build local version
 	go build -trimpath -ldflags "$(LDFLAGS)" -o ./output/zeitgeist .
+	# build remote version
+	go build -trimpath -ldflags "$(LDFLAGS)" -o ./output/zeitgeist ./remote/zeitgeist
 	cd buoy && go build -trimpath -ldflags "$(LDFLAGS)"  -o ../output/buoy .
 
 ko-local: ## Build zeitgeist/buoy image locally (does not push it)
+	# build local version
 	LDFLAGS="$(LDFLAGS)" KO_DOCKER_REPO=ko.local \
 	ko build --bare sigs.k8s.io/zeitgeist
+	# build remote version
+	LDFLAGS="$(LDFLAGS)" KO_DOCKER_REPO=ko.local \
+	ko build --bare sigs.k8s.io/zeitgeist/remote/zeitgeist
 	LDFLAGS="$(LDFLAGS)" KO_DOCKER_REPO=ko.local \
 	ko build --bare sigs.k8s.io/zeitgeist/buoy
 
@@ -101,7 +108,7 @@ ko-release-zeitgeist: ## Build zeitgeist image
 	LDFLAGS="$(LDFLAGS)" GIT_HASH=$(GIT_HASH) GIT_VERSION=$(GIT_VERSION) \
 	KO_DOCKER_REPO=$(KO_PREFIX)/zeitgeist \
 	ko build --bare \
-	--platform=all --tags $(GIT_VERSION),$(GIT_HASH),latest --image-refs imagerefs sigs.k8s.io/zeitgeist
+	--platform=all --tags $(GIT_VERSION),$(GIT_HASH),latest --image-refs imagerefs sigs.k8s.io/zeitgeist/remote/zeitgeist
 
 .PHONY: ko-release-buoy
 ko-release-buoy: ## Build zeitgeist image
