@@ -10,7 +10,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.9.2
 	github.com/spf13/cobra v1.7.0
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.8.4
 	github.com/xanzy/go-gitlab v0.83.0
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.12.0
