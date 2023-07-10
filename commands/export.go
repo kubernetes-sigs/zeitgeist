@@ -79,10 +79,7 @@ func addExport(topLevel *cobra.Command) {
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PreRunE: func(*cobra.Command, []string) error {
-			if err := exo.setAndValidate(); err != nil {
-				return err
-			}
-			return nil
+			return exo.setAndValidate()
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runExport(exo)
