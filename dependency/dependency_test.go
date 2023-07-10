@@ -32,7 +32,7 @@ type mockedReceiveMsgs struct {
 	Resp ec2.DescribeImagesOutput
 }
 
-func (m mockedReceiveMsgs) DescribeImages(in *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
+func (m mockedReceiveMsgs) DescribeImages(_ *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
 	// Only need to return mocked response output
 	return &m.Resp, nil
 }
