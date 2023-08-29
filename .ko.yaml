@@ -1,5 +1,5 @@
 ---
-defaultBaseImage: gcr.io/distroless/static-debian11
+defaultBaseImage: gcr.io/distroless/static-debian12
 
 builds:
   - id: zeitgeist
