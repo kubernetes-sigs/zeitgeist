@@ -15,7 +15,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.13.0
 	sigs.k8s.io/release-sdk v0.10.3
-	sigs.k8s.io/release-utils v0.7.5-0.20230707140704-1bf6b4c5d954
+	sigs.k8s.io/release-utils v0.7.5
 )
 
 require (
