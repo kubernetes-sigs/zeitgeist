@@ -4,8 +4,8 @@ go 1.20
 
 require (
 	github.com/blang/semver/v4 v4.0.0
-	github.com/go-git/go-git-fixtures/v4 v4.3.2-0.20230305113008-0c11038e723f
-	github.com/go-git/go-git/v5 v5.9.0
+	github.com/go-git/go-git-fixtures/v4 v4.3.2-0.20231010084843-55a94097c399
+	github.com/go-git/go-git/v5 v5.10.0
 	github.com/google/go-cmp v0.6.0
 	github.com/spf13/cobra v1.7.0
 	github.com/stretchr/testify v1.8.4
