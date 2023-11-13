@@ -75,14 +75,9 @@ builds:
       - "{{ .Env.LDFLAGS }}"
 
 archives:
-  - id: zeitgeist
-    format: binary
+  - format: binary
+    name_template: "{{ .Binary }}"
     allow_different_binary_count: true
-    name_template: zeitgeist-{{ .Arch }}-{{ .Os }}
-  - id: buoy
-    format: binary
-    allow_different_binary_count: true
-    name_template: buoy-{{ .Arch }}-{{ .Os }}
 
 signs:
   # Keyless
