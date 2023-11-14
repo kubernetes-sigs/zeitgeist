@@ -36,7 +36,7 @@ jobs:
         uses: sigstore/cosign-installer@1fc5bd396d372bee37d608f955b336615edf79c8 # v3.2.0
 
       - name: Install bom
-        uses: puerco/release-actions/setup-bom@beca347e5c7f22d345c758aaf318ab46e0329cc0 # v0.1.0
+        uses: puerco/release-actions/setup-bom@5697f63bfe3e4881c38c5a598b8e8c9ccb1cf331 # v0.1.1
 
       - name: Install GoReleaser
         uses: goreleaser/goreleaser-action@7ec5c2b0c6cdda6e8bbb49444bc797dd33d74dd8 # v5.0.0
@@ -74,7 +74,7 @@ jobs:
         run: echo "tag_name=${GITHUB_REF#refs/*/}" >> "$GITHUB_OUTPUT"
 
       - name: Install tejolote
-        uses: puerco/release-actions/setup-tejolote@beca347e5c7f22d345c758aaf318ab46e0329cc0 # v0.1.0
+        uses: puerco/release-actions/setup-tejolote@5697f63bfe3e4881c38c5a598b8e8c9ccb1cf331 # v0.1.1
 
       - run: |
           tejolote attest --artifacts github://kubernetes-sigs/zeitgeist/${{ steps.tag.outputs.tag_name }} github://kubernetes-sigs/zeitgeist/"${GITHUB_RUN_ID}" --output zeitgeist.intoto.json --sign
