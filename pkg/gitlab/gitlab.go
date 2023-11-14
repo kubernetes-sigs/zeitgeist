@@ -165,8 +165,8 @@ func (g *GitLab) Branches(owner, repo string) ([]*gitlab.Branch, error) {
 // `repo`.
 func (g *GitLab) GetRepository(owner, repo string) (*gitlab.Project, error) {
 	opt := &gitlab.ListProjectsOptions{
-		SearchNamespaces: gitlab.Bool(true),
-		Search:           gitlab.String(fmt.Sprintf("%s/%s", owner, repo)),
+		SearchNamespaces: gitlab.Ptr(true),
+		Search:           gitlab.Ptr(fmt.Sprintf("%s/%s", owner, repo)),
 	}
 
 	projects, _, err := g.client.ListProjects(opt)
