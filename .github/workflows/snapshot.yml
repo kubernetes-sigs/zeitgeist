@@ -25,7 +25,7 @@ jobs:
           install-only: true
 
       - name: Install bom
-        uses: puerco/release-actions/setup-bom@5697f63bfe3e4881c38c5a598b8e8c9ccb1cf331 # v0.1.1
+        uses: puerco/release-actions/setup-bom@dd08496c83441d6477114cc0555b96d404dacff7 # v0.1.2
 
       - name: Run Snapshot
         run: make snapshot
