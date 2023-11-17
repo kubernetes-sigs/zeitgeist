@@ -128,23 +128,7 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 		}
 	}
 
-	for _, tag := range tags {
-		// Try to match semver and range
-		version, err := semver.Parse(strings.Trim(tag, "v"))
-		if err != nil {
-			log.Debugf("Error parsing version %s (%#v) as semver, cannot validate semver constraints", tag, err)
-		} else if !expectedRange(version) {
-			log.Debugf("Skipping release not matching range constraints (%s): %s\n", upstream.Constraints, tag)
-			continue
-		}
-
-		log.Debugf("Found latest matching release: %s\n", version)
-
-		return version.String(), nil
-	}
-
-	// No latest version found – no versions? Only prereleases?
-	return "", errors.New("no potential version found")
+	return selectHighestVersion(upstream.Constraints, expectedRange, tags)
 }
 
 func latestGitlabCommit(upstream *GitLab) (string, error) {
