@@ -137,6 +137,10 @@ func latestRelease(upstream Github) (string, error) {
 		}
 	}
 
+	return selectHighestVersion(upstream, expectedRange, tags)
+}
+
+func selectHighestVersion(upstream Github, expectedRange semver.Range, tags []string) (string, error) {
 	for _, tag := range tags {
 		// Try to match semver and range
 		version, err := semver.Parse(strings.Trim(tag, "v"))
