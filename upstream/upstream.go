@@ -26,6 +26,10 @@ package upstream
 
 import (
 	"errors"
+	"strings"
+
+	"github.com/blang/semver/v4"
+	log "github.com/sirupsen/logrus"
 )
 
 // Base only contains a flavour. "Concrete" upstreams each implement their own fields.
@@ -66,3 +70,35 @@ const (
 
 	DefaultSemVerConstraints = ">= 0.0.0"
 )
+
+func selectHighestVersion(constraints string, expectedRange semver.Range, tags []string) (string, error) {
+	var candidateVersion semver.Version
+	candidateVersionString := "" // keep the version string separately as it may contain a leading `v`
+	for _, tag := range tags {
+		// Try to match semver and range
+		version, err := semver.Parse(strings.Trim(tag, "v"))
+		if err != nil {
+			log.Debugf("Error parsing version %s (%#v) as semver, cannot validate semver constraints", tag, err)
+			continue
+		}
+
+		if !expectedRange(version) {
+			log.Debugf("Skipping release not matching range constraints (%s): %s\n", constraints, tag)
+			continue
+		}
+
+		log.Debugf("Found potential release: %s\n", version.String())
+		if candidateVersionString == "" || version.GT(candidateVersion) {
+			log.Debugf("Release is the newest found so far: %s\n", version.String())
+			candidateVersion = version
+			candidateVersionString = tag
+		}
+	}
+
+	if candidateVersionString != "" {
+		return candidateVersionString, nil
+	}
+
+	// No latest version found – no versions? Only prereleases?
+	return "", errors.New("no potential version found")
+}

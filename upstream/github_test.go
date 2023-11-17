@@ -106,18 +106,52 @@ func TestHappyPath(t *testing.T) {
 	require.NotEmpty(t, latestVersion)
 }
 
-func TestSelectHighestVersion(t *testing.T) {
+func TestSelectHighestVersionOrdered(t *testing.T) {
 	gh := Github{
 		URL: "helm/helm",
 	}
 	expectedRange, err := semver.ParseRange(DefaultSemVerConstraints)
 	require.NoError(t, err)
 	tags := []string{
+		"v1.32.2",
+		"v1.31.4",
+		"v1.29.2",
+	}
+	v, err := selectHighestVersion(gh.Constraints, expectedRange, tags)
+	require.NoError(t, err)
+	require.Equal(t, "v1.32.2", v)
+}
+
+func TestSelectHighestVersionOrderedWithConstraints(t *testing.T) {
+	gh := Github{
+		URL:         "helm/helm",
+		Constraints: "<1.30.0",
+	}
+	expectedRange, err := semver.ParseRange(gh.Constraints)
+	require.NoError(t, err)
+	tags := []string{
+		"v1.32.2",
+		"v1.31.4",
+		"v1.29.2",
+	}
+	v, err := selectHighestVersion(gh.Constraints, expectedRange, tags)
+	require.NoError(t, err)
+	require.Equal(t, "v1.29.2", v)
+}
+
+func TestSelectHighestVersionUnorderedWithConstraints(t *testing.T) {
+	gh := Github{
+		URL:         "helm/helm",
+		Constraints: "<1.30.0",
+	}
+	expectedRange, err := semver.ParseRange(gh.Constraints)
+	require.NoError(t, err)
+	tags := []string{
 		"v1.31.4",
 		"v1.29.2",
 		"v1.32.2",
 	}
-	v, err := selectHighestVersion(gh, expectedRange, tags)
+	v, err := selectHighestVersion(gh.Constraints, expectedRange, tags)
 	require.NoError(t, err)
-	require.Equal(t, "v1.32.2", v)
+	require.Equal(t, "v1.29.2", v)
 }
