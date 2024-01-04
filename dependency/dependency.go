@@ -529,6 +529,8 @@ func (c *Client) checkUpstreamVersions(deps []*Dependency) ([]versionUpdateInfo,
 			return nil, err
 		}
 
+		latestVersion.Version = formatVersion(currentVersion.Version, latestVersion.Version)
+
 		versionUpdates = append(versionUpdates, versionUpdateInfo{
 			name:            dep.Name,
 			current:         currentVersion,
