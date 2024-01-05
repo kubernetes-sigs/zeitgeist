@@ -439,6 +439,11 @@ func (c *Client) checkUpstreamVersions(deps []*Dependency) ([]versionUpdateInfo,
 	versionUpdates := []versionUpdateInfo{}
 	for _, dep := range deps {
 		if dep.Upstream == nil {
+			versionUpdates = append(versionUpdates, versionUpdateInfo{
+				name:            dep.Name,
+				current:         Version{dep.Version, dep.Scheme},
+				updateAvailable: false,
+			})
 			continue
 		}
 

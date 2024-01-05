@@ -182,6 +182,18 @@ func TestCheckUpstreamVersions(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name:        "test-no-upstream",
+			Version:     "0.0.1",
+			Scheme:      Semver,
+			Sensitivity: Patch,
+			RefPaths: []*RefPath{
+				{
+					Path:  "test",
+					Match: "test",
+				},
+			},
+		},
 	}
 
 	client := NewClient()
@@ -200,6 +212,14 @@ func TestCheckUpstreamVersions(t *testing.T) {
 				Scheme:  Semver,
 			},
 			updateAvailable: true,
+		},
+		{
+			name: "test-no-upstream",
+			current: Version{
+				Version: "0.0.1",
+				Scheme:  Semver,
+			},
+			updateAvailable: false,
 		},
 	}
 
@@ -228,6 +248,12 @@ dependencies:
     refPaths:
     - path: test.txt
       match: VERSION
+  - name: no-upstream
+    version: 0.0.1
+    scheme: semver
+    refPaths:
+    - path: test.txt
+      match: OTHER
 `), 0o644)
 	require.Nil(t, err)
 
