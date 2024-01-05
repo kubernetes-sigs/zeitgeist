@@ -17,6 +17,9 @@ limitations under the License.
 package dependency
 
 import (
+	"os"
+	"path/filepath"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -160,4 +163,84 @@ func TestDeserialising(t *testing.T) {
 		err := yaml.Unmarshal([]byte(valid), &d)
 		require.Nil(t, err)
 	}
+}
+
+func TestCheckUpstreamVersions(t *testing.T) {
+	deps := []*Dependency{
+		{
+			Name:        "test",
+			Version:     "0.0.1",
+			Scheme:      Semver,
+			Sensitivity: Patch,
+			Upstream: map[string]string{
+				"flavour": "dummy",
+			},
+			RefPaths: []*RefPath{
+				{
+					Path:  "test",
+					Match: "test",
+				},
+			},
+		},
+	}
+
+	client := NewClient()
+	updateInfos, err := client.checkUpstreamVersions(deps)
+	require.Nil(t, err)
+
+	expectedUpdateInfos := []versionUpdateInfo{
+		{
+			name: "test",
+			current: Version{
+				Version: "0.0.1",
+				Scheme:  Semver,
+			},
+			latest: Version{
+				Version: "1.0.0",
+				Scheme:  Semver,
+			},
+			updateAvailable: true,
+		},
+	}
+
+	for i, updateInfo := range updateInfos {
+		if !reflect.DeepEqual(updateInfo, expectedUpdateInfos[i]) {
+			t.Errorf("checkUpstreamVersions mismatch at index %d:\ngot: %#v\nexpected: %#v", i, updateInfo, expectedUpdateInfos[i])
+		}
+	}
+}
+
+func TestUpgrade(t *testing.T) {
+	dir := t.TempDir()
+	testFile := filepath.Join(dir, "test.txt")
+
+	err := os.WriteFile(testFile, []byte("VERSION: 0.0.1\nOTHER: 0.0.1"), 0o644)
+	require.Nil(t, err)
+
+	err = os.WriteFile(filepath.Join(dir, "dependencies.yaml"), []byte(`
+dependencies:
+  - name: upgrade
+    version: 0.0.1
+    scheme: semver
+    upstream:
+      flavour: dummy
+      url: example/example
+    refPaths:
+    - path: test.txt
+      match: VERSION
+`), 0o644)
+	require.Nil(t, err)
+
+	client := NewClient()
+	ret, err := client.Upgrade(filepath.Join(dir, "dependencies.yaml"), dir)
+	if err != nil {
+		t.Fatalf("Upgrade failed: %v", err)
+	}
+
+	require.Equal(t, len(ret), 1)
+	require.Equal(t, ret[0], "Upgraded dependency upgrade from version 0.0.1 to version 1.0.0")
+
+	got, err := os.ReadFile(testFile)
+	require.Nil(t, err)
+	require.Equal(t, string(got), "VERSION: 1.0.0\nOTHER: 0.0.1")
 }
