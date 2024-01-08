@@ -142,3 +142,45 @@ func TestRandomVersions(t *testing.T) {
 	shouldBeFalse, _ := a.MoreRecentThan(a)
 	require.False(t, shouldBeFalse)
 }
+
+func TestFormatVersion(t *testing.T) {
+	tests := []struct {
+		name     string
+		template string
+		version  string
+		want     string
+	}{
+		{
+			name:     "Both versions start with 'v'",
+			template: "v1.0.0",
+			version:  "v2.0.0",
+			want:     "v2.0.0",
+		},
+		{
+			name:     "Template starts with 'v', version does not",
+			template: "v1.0.0",
+			version:  "2.0.0",
+			want:     "v2.0.0",
+		},
+		{
+			name:     "Template does not start with 'v', version does",
+			template: "1.0.0",
+			version:  "v2.0.0",
+			want:     "2.0.0",
+		},
+		{
+			name:     "Neither version starts with 'v'",
+			template: "1.0.0",
+			version:  "2.0.0",
+			want:     "2.0.0",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := formatVersion(tt.template, tt.version); got != tt.want {
+				t.Errorf("formatVersion() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
