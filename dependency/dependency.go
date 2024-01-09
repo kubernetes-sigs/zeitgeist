@@ -271,7 +271,7 @@ func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
 //
 // Will return an error if checking the versions upstream fails, or if updating
 // files fails.
-func (c *Client) Upgrade(dependencyFilePath string) ([]string, error) {
+func (c *Client) Upgrade(dependencyFilePath, basePath string) ([]string, error) {
 	externalDeps, err := fromFile(dependencyFilePath)
 	if err != nil {
 		return nil, err
@@ -292,7 +292,7 @@ func (c *Client) Upgrade(dependencyFilePath string) ([]string, error) {
 		}
 
 		if vu.updateAvailable {
-			err = upgradeDependency(dependency, &vu)
+			err = upgradeDependency(basePath, dependency, &vu)
 			if err != nil {
 				return nil, err
 			}
@@ -347,10 +347,10 @@ func findDependencyByName(dependencies []*Dependency, name string) (*Dependency,
 	return nil, fmt.Errorf("cannot find dependency by name: %s", name)
 }
 
-func upgradeDependency(dependency *Dependency, versionUpdate *versionUpdateInfo) error {
+func upgradeDependency(basePath string, dependency *Dependency, versionUpdate *versionUpdateInfo) error {
 	log.Debugf("running upgradeDependency, versionUpdate %#v", versionUpdate)
 	for _, refPath := range dependency.RefPaths {
-		err := replaceInFile(refPath, versionUpdate)
+		err := replaceInFile(basePath, refPath, versionUpdate)
 		if err != nil {
 			return err
 		}
@@ -359,7 +359,8 @@ func upgradeDependency(dependency *Dependency, versionUpdate *versionUpdateInfo)
 	return nil
 }
 
-func replaceInFile(refPath *RefPath, versionUpdate *versionUpdateInfo) error {
+func replaceInFile(basePath string, refPath *RefPath, versionUpdate *versionUpdateInfo) error {
+	filename := filepath.Join(basePath, refPath.Path)
 	log.Debugf("running replaceInFile, refpath is %#v, versionUpdate %#v", refPath, versionUpdate)
 
 	matcher, err := regexp.Compile(refPath.Match)
@@ -367,7 +368,7 @@ func replaceInFile(refPath *RefPath, versionUpdate *versionUpdateInfo) error {
 		return fmt.Errorf("compiling regex: %w", err)
 	}
 
-	inputFile, err := os.ReadFile(refPath.Path)
+	inputFile, err := os.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("reading file: %w", err)
 	}
@@ -394,7 +395,7 @@ func replaceInFile(refPath *RefPath, versionUpdate *versionUpdateInfo) error {
 	upgradedFile := strings.Join(lines, "\n")
 
 	// Finally, write the file out
-	err = os.WriteFile(refPath.Path, []byte(upgradedFile), 0o644)
+	err = os.WriteFile(filename, []byte(upgradedFile), 0o644)
 
 	if err != nil {
 		return fmt.Errorf("writing file: %w", err)
@@ -438,6 +439,11 @@ func (c *Client) checkUpstreamVersions(deps []*Dependency) ([]versionUpdateInfo,
 	versionUpdates := []versionUpdateInfo{}
 	for _, dep := range deps {
 		if dep.Upstream == nil {
+			versionUpdates = append(versionUpdates, versionUpdateInfo{
+				name:            dep.Name,
+				current:         Version{dep.Version, dep.Scheme},
+				updateAvailable: false,
+			})
 			continue
 		}
 
