@@ -263,10 +263,48 @@ dependencies:
 		t.Fatalf("Upgrade failed: %v", err)
 	}
 
-	require.Equal(t, len(ret), 1)
-	require.Equal(t, ret[0], "Upgraded dependency upgrade from version 0.0.1 to version 1.0.0")
+	require.Equal(t, 1, len(ret))
+	require.Equal(t, "Upgraded dependency upgrade from version 0.0.1 to version 1.0.0", ret[0])
 
 	got, err := os.ReadFile(testFile)
 	require.Nil(t, err)
-	require.Equal(t, string(got), "VERSION: 1.0.0\nOTHER: 0.0.1")
+	require.Equal(t, "VERSION: 1.0.0\nOTHER: 0.0.1", string(got))
+}
+
+func TestSetVersion(t *testing.T) {
+	dir := t.TempDir()
+	testFile := filepath.Join(dir, "test.txt")
+
+	err := os.WriteFile(testFile, []byte("APP1_VERSION: 0.0.1\nAPP2_VERSION: 0.0.1"), 0o644)
+	require.Nil(t, err)
+
+	err = os.WriteFile(filepath.Join(dir, "dependencies.yaml"), []byte(`
+dependencies:
+  - name: app1
+    version: 0.0.1
+    scheme: semver
+    upstream:
+      flavour: dummy
+      url: example/example
+    refPaths:
+    - path: test.txt
+      match: APP1_VERSION
+  - name: app2
+    version: 0.0.1
+    scheme: semver
+    refPaths:
+    - path: test.txt
+      match: APP2_VERSION
+`), 0o644)
+	require.Nil(t, err)
+
+	client := NewClient()
+	err = client.SetVersion(filepath.Join(dir, "dependencies.yaml"), dir, "app1", "2.1.0")
+	if err != nil {
+		t.Fatalf("SetVersion failed: %v", err)
+	}
+
+	got, err := os.ReadFile(testFile)
+	require.Nil(t, err)
+	require.Equal(t, "APP1_VERSION: 2.1.0\nAPP2_VERSION: 0.0.1", string(got))
 }

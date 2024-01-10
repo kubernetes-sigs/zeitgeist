@@ -338,6 +338,56 @@ func (c *Client) Upgrade(dependencyFilePath, basePath string) ([]string, error) 
 	return upgrades, nil
 }
 
+// SetVersion sets the version of a dependency to the specified version
+//
+// Will return an error  if updating files fails.
+func (c *Client) SetVersion(dependencyFilePath, basePath, dependency, version string) error {
+	externalDeps, err := fromFile(dependencyFilePath)
+	if err != nil {
+		return err
+	}
+
+	found := false
+	for _, dep := range externalDeps.Dependencies {
+		if dep.Name == dependency {
+			if dep.Version == version {
+				return fmt.Errorf("version %s is already set for dependency %s", version, dependency)
+			}
+
+			found = true
+
+			if err := upgradeDependency(basePath, dep, &versionUpdateInfo{
+				name: dep.Name,
+				current: Version{
+					Version: dep.Version,
+					Scheme:  dep.Scheme,
+				},
+				latest: Version{
+					Version: version,
+					Scheme:  dep.Scheme,
+				},
+				updateAvailable: true,
+			}); err != nil {
+				return err
+			}
+
+			dep.Version = version
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("dependency %s not found", dependency)
+	}
+
+	// Update the dependencies file to reflect the upgrades
+	err = toFile(dependencyFilePath, externalDeps)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func findDependencyByName(dependencies []*Dependency, name string) (*Dependency, error) {
 	for _, dep := range dependencies {
 		if dep.Name == name {
