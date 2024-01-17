@@ -9,6 +9,12 @@ updates:
       - "release-note-none"
       - "ok-to-test"
     open-pull-requests-limit: 10
+    groups:
+      all:
+        update-types:
+          - "minor"
+          - "patch"
+
   - package-ecosystem: gomod
     directory: "/buoy"
     schedule:
@@ -18,6 +24,12 @@ updates:
       - "release-note-none"
       - "ok-to-test"
     open-pull-requests-limit: 10
+    groups:
+      all:
+        update-types:
+          - "minor"
+          - "patch"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
@@ -27,3 +39,8 @@ updates:
       - "release-note-none"
       - "ok-to-test"
     open-pull-requests-limit: 10
+    groups:
+      all:
+        update-types:
+          - "minor"
+          - "patch"
