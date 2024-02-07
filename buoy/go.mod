@@ -9,7 +9,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/mod v0.14.0
+	golang.org/x/mod v0.15.0
 	golang.org/x/net v0.20.0
 	k8s.io/apimachinery v0.29.1
 )
