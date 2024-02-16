@@ -350,10 +350,6 @@ func (c *Client) SetVersion(dependencyFilePath, basePath, dependency, version st
 	found := false
 	for _, dep := range externalDeps.Dependencies {
 		if dep.Name == dependency {
-			if dep.Version == version {
-				return fmt.Errorf("version %s is already set for dependency %s", version, dependency)
-			}
-
 			found = true
 
 			if err := upgradeDependency(basePath, dep, &versionUpdateInfo{

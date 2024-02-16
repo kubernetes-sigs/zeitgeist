@@ -56,8 +56,8 @@ func runSetVersion(opts *options, args []string) error {
 		return fmt.Errorf("checking local dependencies: %w", err)
 	}
 
-	dependency, version := args[0], args[1]
-	if err := client.SetVersion(opts.configFile, opts.basePath, dependency, version); err != nil {
+	dependencyName, version := args[0], args[1]
+	if err := client.SetVersion(opts.configFile, opts.basePath, dependencyName, version); err != nil {
 		return fmt.Errorf("set dependency version: %w", err)
 	}
 
