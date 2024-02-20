@@ -297,19 +297,19 @@ func (c *LocalClient) SetVersion(dependencyFilePath, basePath, dependency, versi
 	return nil
 }
 
-func (c *LocalClient) RemoteCheck(dependencyFilePath string) ([]string, error) {
+func (c *LocalClient) RemoteCheck(dependencyFilePath string) ([]string, error) { //nolint: revive
 	return nil, UnsupportedError{"remote checks are not supported by the local client"}
 }
 
-func (c *LocalClient) Upgrade(dependencyFilePath, basePath string) ([]string, error) {
+func (c *LocalClient) Upgrade(dependencyFilePath, basePath string) ([]string, error) { //nolint: revive
 	return nil, UnsupportedError{"upgrade is not supported by the local client"}
 }
 
-func (c *LocalClient) RemoteExport(dependencyFilePath string) ([]VersionUpdate, error) {
+func (c *LocalClient) RemoteExport(dependencyFilePath string) ([]VersionUpdate, error) { //nolint: revive
 	return nil, UnsupportedError{"remote export is not supported by the local client"}
 }
 
-func (c *LocalClient) CheckUpstreamVersions(deps []*Dependency) ([]VersionUpdateInfo, error) {
+func (c *LocalClient) CheckUpstreamVersions(deps []*Dependency) ([]VersionUpdateInfo, error) { //nolint: revive
 	return nil, UnsupportedError{"CheckUpstreamVersions is not supported by the local client"}
 }
 
