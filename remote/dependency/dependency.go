@@ -20,6 +20,7 @@ package dependency
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -38,13 +39,6 @@ func init() {
 type RemoteClient struct {
 	LocalClient  deppkg.Client
 	AWSEC2Client ec2iface.EC2API
-}
-
-type versionUpdateInfo struct {
-	name            string
-	current         deppkg.Version
-	latest          deppkg.Version
-	updateAvailable bool
 }
 
 func NewRemoteClient() (deppkg.Client, error) {
@@ -75,28 +69,28 @@ func (c *RemoteClient) RemoteCheck(dependencyFilePath string) ([]string, error) 
 
 	updates := make([]string, 0)
 
-	versionUpdateInfos, err := c.checkUpstreamVersions(externalDeps.Dependencies)
+	versionUpdateInfos, err := c.CheckUpstreamVersions(externalDeps.Dependencies)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, vu := range versionUpdateInfos {
-		if vu.updateAvailable {
+		if vu.UpdateAvailable {
 			updates = append(
 				updates,
 				fmt.Sprintf(
 					"Update available for dependency %s: %s (current: %s)",
-					vu.name,
-					vu.latest.Version,
-					vu.current.Version,
+					vu.Name,
+					vu.Latest.Version,
+					vu.Current.Version,
 				),
 			)
 		} else {
 			log.Debugf(
 				"No update available for dependency %s: %s (latest: %s)\n",
-				vu.name,
-				vu.current.Version,
-				vu.latest.Version,
+				vu.Name,
+				vu.Current.Version,
+				vu.Latest.Version,
 			)
 		}
 	}
@@ -104,12 +98,16 @@ func (c *RemoteClient) RemoteCheck(dependencyFilePath string) ([]string, error) 
 	return updates, nil
 }
 
+func (c *RemoteClient) SetVersion(dependencyFilePath, basePath, dependency, version string) error {
+	return c.LocalClient.SetVersion(dependencyFilePath, basePath, dependency, version)
+}
+
 // Upgrade retrieves the most up-to-date version of the dependency and replaces
 // the local version with the most up-to-date version.
 //
 // Will return an error if checking the versions upstream fails, or if updating
 // files fails.
-func (c *RemoteClient) Upgrade(dependencyFilePath string) ([]string, error) {
+func (c *RemoteClient) Upgrade(dependencyFilePath, basePath string) ([]string, error) {
 	externalDeps, err := deppkg.FromFile(dependencyFilePath)
 	if err != nil {
 		return nil, err
@@ -118,24 +116,24 @@ func (c *RemoteClient) Upgrade(dependencyFilePath string) ([]string, error) {
 	upgrades := make([]string, 0)
 	upgradedDependencies := make([]*deppkg.Dependency, 0)
 
-	versionUpdateInfos, err := c.checkUpstreamVersions(externalDeps.Dependencies)
+	versionUpdateInfos, err := c.CheckUpstreamVersions(externalDeps.Dependencies)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, vu := range versionUpdateInfos {
-		dependency, err := findDependencyByName(externalDeps.Dependencies, vu.name)
+		dependency, err := findDependencyByName(externalDeps.Dependencies, vu.Name)
 		if err != nil {
 			return nil, err
 		}
 
-		if vu.updateAvailable {
-			err = upgradeDependency(dependency, &vu)
+		if vu.UpdateAvailable {
+			err = upgradeDependency(basePath, dependency, &vu)
 			if err != nil {
 				return nil, err
 			}
 
-			dependency.Version = vu.latest.Version
+			dependency.Version = vu.Latest.Version
 			upgradedDependencies = append(
 				upgradedDependencies,
 				dependency,
@@ -145,9 +143,9 @@ func (c *RemoteClient) Upgrade(dependencyFilePath string) ([]string, error) {
 				upgrades,
 				fmt.Sprintf(
 					"Upgraded dependency %s from version %s to version %s",
-					vu.name,
-					vu.current.Version,
-					vu.latest.Version,
+					vu.Name,
+					vu.Current.Version,
+					vu.Latest.Version,
 				),
 			)
 		} else {
@@ -158,9 +156,9 @@ func (c *RemoteClient) Upgrade(dependencyFilePath string) ([]string, error) {
 
 			log.Debugf(
 				"No update available for dependency %s: %s (latest: %s)\n",
-				vu.name,
-				vu.current.Version,
-				vu.latest.Version,
+				vu.Name,
+				vu.Current.Version,
+				vu.Latest.Version,
 			)
 		}
 	}
@@ -185,10 +183,10 @@ func findDependencyByName(dependencies []*deppkg.Dependency, name string) (*depp
 	return nil, fmt.Errorf("cannot find dependency by name: %s", name)
 }
 
-func upgradeDependency(dependency *deppkg.Dependency, versionUpdate *versionUpdateInfo) error {
+func upgradeDependency(basePath string, dependency *deppkg.Dependency, versionUpdate *deppkg.VersionUpdateInfo) error {
 	log.Debugf("running upgradeDependency, versionUpdate %#v", versionUpdate)
 	for _, refPath := range dependency.RefPaths {
-		err := replaceInFile(refPath, versionUpdate)
+		err := replaceInFile(basePath, refPath, versionUpdate)
 		if err != nil {
 			return err
 		}
@@ -197,7 +195,8 @@ func upgradeDependency(dependency *deppkg.Dependency, versionUpdate *versionUpda
 	return nil
 }
 
-func replaceInFile(refPath *deppkg.RefPath, versionUpdate *versionUpdateInfo) error {
+func replaceInFile(basePath string, refPath *deppkg.RefPath, versionUpdate *deppkg.VersionUpdateInfo) error {
+	filename := filepath.Join(basePath, refPath.Path)
 	log.Debugf("running replaceInFile, refpath is %#v, versionUpdate %#v", refPath, versionUpdate)
 
 	matcher, err := regexp.Compile(refPath.Match)
@@ -205,7 +204,7 @@ func replaceInFile(refPath *deppkg.RefPath, versionUpdate *versionUpdateInfo) er
 		return fmt.Errorf("compiling regex: %w", err)
 	}
 
-	inputFile, err := os.ReadFile(refPath.Path)
+	inputFile, err := os.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("reading file: %w", err)
 	}
@@ -214,17 +213,17 @@ func replaceInFile(refPath *deppkg.RefPath, versionUpdate *versionUpdateInfo) er
 
 	for i, line := range lines {
 		if matcher.MatchString(line) {
-			if strings.Contains(line, versionUpdate.current.Version) {
+			if strings.Contains(line, versionUpdate.Current.Version) {
 				log.Debugf(
 					"Line %d matches expected regexp %q and version %q: %s",
 					i,
 					refPath.Match,
-					versionUpdate.current.Version,
+					versionUpdate.Current.Version,
 					line,
 				)
 
 				// The actual upgrade:
-				lines[i] = strings.ReplaceAll(line, versionUpdate.current.Version, versionUpdate.latest.Version)
+				lines[i] = strings.ReplaceAll(line, versionUpdate.Current.Version, versionUpdate.Latest.Version)
 			}
 		}
 	}
@@ -232,7 +231,7 @@ func replaceInFile(refPath *deppkg.RefPath, versionUpdate *versionUpdateInfo) er
 	upgradedFile := strings.Join(lines, "\n")
 
 	// Finally, write the file out
-	err = os.WriteFile(refPath.Path, []byte(upgradedFile), 0o644)
+	err = os.WriteFile(filename, []byte(upgradedFile), 0o644)
 
 	if err != nil {
 		return fmt.Errorf("writing file: %w", err)
@@ -248,32 +247,32 @@ func (c *RemoteClient) RemoteExport(dependencyFilePath string) ([]deppkg.Version
 
 	versionUpdates := []deppkg.VersionUpdate{}
 
-	versionUpdatesInfos, err := c.checkUpstreamVersions(externalDeps.Dependencies)
+	versionUpdatesInfos, err := c.CheckUpstreamVersions(externalDeps.Dependencies)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, vui := range versionUpdatesInfos {
-		if vui.updateAvailable {
+		if vui.UpdateAvailable {
 			versionUpdates = append(versionUpdates, deppkg.VersionUpdate{
-				Name:       vui.name,
-				Version:    vui.current.Version,
-				NewVersion: vui.latest.Version,
+				Name:       vui.Name,
+				Version:    vui.Current.Version,
+				NewVersion: vui.Latest.Version,
 			})
 		} else {
 			log.Debugf(
 				"No update available for dependency %s: %s (latest: %s)\n",
-				vui.name,
-				vui.current.Version,
-				vui.latest.Version,
+				vui.Name,
+				vui.Current.Version,
+				vui.Latest.Version,
 			)
 		}
 	}
 	return versionUpdates, nil
 }
 
-func (c *RemoteClient) checkUpstreamVersions(deps []*deppkg.Dependency) ([]versionUpdateInfo, error) {
-	versionUpdates := []versionUpdateInfo{}
+func (c *RemoteClient) CheckUpstreamVersions(deps []*deppkg.Dependency) ([]deppkg.VersionUpdateInfo, error) {
+	versionUpdates := []deppkg.VersionUpdateInfo{}
 	for _, dep := range deps {
 		if dep.Upstream == nil {
 			continue
@@ -367,11 +366,11 @@ func (c *RemoteClient) checkUpstreamVersions(deps []*deppkg.Dependency) ([]versi
 			return nil, err
 		}
 
-		versionUpdates = append(versionUpdates, versionUpdateInfo{
-			name:            dep.Name,
-			current:         currentVersion,
-			latest:          latestVersion,
-			updateAvailable: updateAvailable,
+		versionUpdates = append(versionUpdates, deppkg.VersionUpdateInfo{
+			Name:            dep.Name,
+			Current:         currentVersion,
+			Latest:          latestVersion,
+			UpdateAvailable: updateAvailable,
 		})
 	}
 

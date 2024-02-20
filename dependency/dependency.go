@@ -50,9 +50,13 @@ type Client interface {
 	//
 	// Will return an error if checking the versions upstream fails, or if updating
 	// files fails.
-	Upgrade(dependencyFilePath string) ([]string, error)
+	Upgrade(dependencyFilePath, basePath string) ([]string, error)
+
+	SetVersion(dependencyFilePath, basePath, dependency, version string) error
 
 	RemoteExport(dependencyFilePath string) ([]VersionUpdate, error)
+
+	CheckUpstreamVersions(deps []*Dependency) ([]VersionUpdateInfo, error)
 }
 
 type UnsupportedError struct {
@@ -247,11 +251,57 @@ func (c *LocalClient) LocalCheck(dependencyFilePath, basePath string) error {
 	return nil
 }
 
+// SetVersion sets the version of a dependency to the specified version
+//
+// Will return an error  if updating files fails.
+func (c *LocalClient) SetVersion(dependencyFilePath, basePath, dependency, version string) error {
+	externalDeps, err := fromFile(dependencyFilePath)
+	if err != nil {
+		return err
+	}
+
+	found := false
+	for _, dep := range externalDeps.Dependencies {
+		if dep.Name == dependency {
+			found = true
+
+			if err := upgradeDependency(basePath, dep, &VersionUpdateInfo{
+				Name: dep.Name,
+				Current: Version{
+					Version: dep.Version,
+					Scheme:  dep.Scheme,
+				},
+				Latest: Version{
+					Version: version,
+					Scheme:  dep.Scheme,
+				},
+				UpdateAvailable: true,
+			}); err != nil {
+				return err
+			}
+
+			dep.Version = version
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("dependency %s not found", dependency)
+	}
+
+	// Update the dependencies file to reflect the upgrades
+	err = toFile(dependencyFilePath, externalDeps)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *LocalClient) RemoteCheck(dependencyFilePath string) ([]string, error) {
 	return nil, UnsupportedError{"remote checks are not supported by the local client"}
 }
 
-func (c *LocalClient) Upgrade(dependencyFilePath string) ([]string, error) {
+func (c *LocalClient) Upgrade(dependencyFilePath, basePath string) ([]string, error) {
 	return nil, UnsupportedError{"upgrade is not supported by the local client"}
 }
 
@@ -259,6 +309,100 @@ func (c *LocalClient) RemoteExport(dependencyFilePath string) ([]VersionUpdate, 
 	return nil, UnsupportedError{"remote export is not supported by the local client"}
 }
 
+func (c *LocalClient) CheckUpstreamVersions(deps []*Dependency) ([]VersionUpdateInfo, error) {
+	return nil, UnsupportedError{"CheckUpstreamVersions is not supported by the local client"}
+}
+
 var NewRemoteClient = func() (Client, error) {
 	return nil, UnsupportedError{"remote upstream functionality is not supported by this command; use sigs.k8s.io/zeitgeist/remote/zeitgeist"}
+}
+
+func upgradeDependency(basePath string, dependency *Dependency, versionUpdate *VersionUpdateInfo) error {
+	log.Debugf("running upgradeDependency, versionUpdate %#v", versionUpdate)
+	for _, refPath := range dependency.RefPaths {
+		err := replaceInFile(basePath, refPath, versionUpdate)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func replaceInFile(basePath string, refPath *RefPath, versionUpdate *VersionUpdateInfo) error {
+	filename := filepath.Join(basePath, refPath.Path)
+	log.Debugf("running replaceInFile, refpath is %#v, versionUpdate %#v", refPath, versionUpdate)
+
+	matcher, err := regexp.Compile(refPath.Match)
+	if err != nil {
+		return fmt.Errorf("compiling regex: %w", err)
+	}
+
+	inputFile, err := os.ReadFile(filename)
+	if err != nil {
+		return fmt.Errorf("reading file: %w", err)
+	}
+
+	lines := strings.Split(string(inputFile), "\n")
+
+	for i, line := range lines {
+		if matcher.MatchString(line) {
+			if strings.Contains(line, versionUpdate.Current.Version) {
+				log.Debugf(
+					"Line %d matches expected regexp %q and version %q: %s",
+					i,
+					refPath.Match,
+					versionUpdate.Current.Version,
+					line,
+				)
+
+				// The actual upgrade:
+				lines[i] = strings.ReplaceAll(line, versionUpdate.Current.Version, versionUpdate.Latest.Version)
+			}
+		}
+	}
+
+	upgradedFile := strings.Join(lines, "\n")
+
+	// Finally, write the file out
+	err = os.WriteFile(filename, []byte(upgradedFile), 0o644)
+
+	if err != nil {
+		return fmt.Errorf("writing file: %w", err)
+	}
+	return nil
+}
+
+func fromFile(dependencyFilePath string) (*Dependencies, error) {
+	depFile, err := os.ReadFile(dependencyFilePath)
+	if err != nil {
+		return nil, err
+	}
+
+	dependencies := &Dependencies{}
+
+	err = yaml.Unmarshal(depFile, dependencies)
+	if err != nil {
+		return nil, err
+	}
+
+	return dependencies, nil
+}
+
+func toFile(dependencyFilePath string, dependencies *Dependencies) error {
+	var output bytes.Buffer
+	yamlEncoder := yaml.NewEncoder(&output)
+	yamlEncoder.SetIndent(2)
+
+	err := yamlEncoder.Encode(dependencies)
+	if err != nil {
+		return err
+	}
+
+	err = os.WriteFile(dependencyFilePath, output.Bytes(), 0o644)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

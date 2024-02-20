@@ -17,6 +17,9 @@ limitations under the License.
 package dependency
 
 import (
+	"os"
+	"path/filepath"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -24,6 +27,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+
+	deppkg "sigs.k8s.io/zeitgeist/dependency"
 )
 
 type mockedReceiveMsgs struct {
@@ -97,4 +102,112 @@ func TestUnknownFlavour(t *testing.T) {
 
 	_, err = client.RemoteCheck("../testdata/unknown-upstream.yaml")
 	require.NotNil(t, err)
+}
+
+func TestCheckUpstreamVersions(t *testing.T) {
+	deps := []*deppkg.Dependency{
+		{
+			Name:        "test",
+			Version:     "0.0.1",
+			Scheme:      deppkg.Semver,
+			Sensitivity: deppkg.Patch,
+			Upstream: map[string]string{
+				"flavour": "dummy",
+			},
+			RefPaths: []*deppkg.RefPath{
+				{
+					Path:  "test",
+					Match: "test",
+				},
+			},
+		},
+		{
+			Name:        "test-no-upstream",
+			Version:     "0.0.1",
+			Scheme:      deppkg.Semver,
+			Sensitivity: deppkg.Patch,
+			RefPaths: []*deppkg.RefPath{
+				{
+					Path:  "test",
+					Match: "test",
+				},
+			},
+		},
+	}
+
+	client, err := NewRemoteClient()
+	require.Nil(t, err)
+	updateInfos, err := client.CheckUpstreamVersions(deps)
+	require.Nil(t, err)
+
+	expectedUpdateInfos := []deppkg.VersionUpdateInfo{
+		{
+			Name: "test",
+			Current: deppkg.Version{
+				Version: "0.0.1",
+				Scheme:  deppkg.Semver,
+			},
+			Latest: deppkg.Version{
+				Version: "1.0.0",
+				Scheme:  deppkg.Semver,
+			},
+			UpdateAvailable: true,
+		},
+		{
+			Name: "test-no-upstream",
+			Current: deppkg.Version{
+				Version: "0.0.1",
+				Scheme:  deppkg.Semver,
+			},
+			UpdateAvailable: false,
+		},
+	}
+
+	for i, updateInfo := range updateInfos {
+		if !reflect.DeepEqual(updateInfo, expectedUpdateInfos[i]) {
+			t.Errorf("checkUpstreamVersions mismatch at index %d:\ngot: %#v\nexpected: %#v", i, updateInfo, expectedUpdateInfos[i])
+		}
+	}
+}
+
+func TestUpgrade(t *testing.T) {
+	dir := t.TempDir()
+	testFile := filepath.Join(dir, "test.txt")
+
+	err := os.WriteFile(testFile, []byte("VERSION: 0.0.1\nOTHER: 0.0.1"), 0o644)
+	require.Nil(t, err)
+
+	err = os.WriteFile(filepath.Join(dir, "dependencies.yaml"), []byte(`
+dependencies:
+  - name: upgrade
+    version: 0.0.1
+    scheme: semver
+    upstream:
+      flavour: dummy
+      url: example/example
+    refPaths:
+    - path: test.txt
+      match: VERSION
+  - name: no-upstream
+    version: 0.0.1
+    scheme: semver
+    refPaths:
+    - path: test.txt
+      match: OTHER
+`), 0o644)
+	require.Nil(t, err)
+
+	client, err := NewRemoteClient()
+	require.Nil(t, err)
+	ret, err := client.Upgrade(filepath.Join(dir, "dependencies.yaml"), dir)
+	if err != nil {
+		t.Fatalf("Upgrade failed: %v", err)
+	}
+
+	require.Equal(t, 1, len(ret))
+	require.Equal(t, "Upgraded dependency upgrade from version 0.0.1 to version 1.0.0", ret[0])
+
+	got, err := os.ReadFile(testFile)
+	require.Nil(t, err)
+	require.Equal(t, "VERSION: 1.0.0\nOTHER: 0.0.1", string(got))
 }

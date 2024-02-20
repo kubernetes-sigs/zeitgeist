@@ -14,8 +14,38 @@ gomod:
   proxy: true
 
 builds:
-  - id: zeitgeist
+  - id: zeitgeist-remote
     dir: ./remote/zeitgeist
+    no_unique_dist_dir: true
+    binary: zeitgeist-remote-{{ .Arch }}-{{ .Os }}
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - arm
+      - s390x
+      - ppc64le
+    goarm:
+      - '7'
+    ignore:
+      - goos: windows
+        goarch: arm64
+      - goos: windows
+        goarch: arm
+      - goos: windows
+        goarch: s390x
+      - goos: windows
+        goarch: ppc64le
+    flags:
+      - -trimpath
+    ldflags:
+      - "{{ .Env.LDFLAGS }}"
+
+  - id: zeitgeist-full
+    dir: .
     no_unique_dist_dir: true
     binary: zeitgeist-{{ .Arch }}-{{ .Os }}
     goos:
@@ -90,7 +120,23 @@ signs:
     artifacts: all
 
 sboms:
-  - id: zeitgeist
+  - id: zeitgeist-remote
+    cmd: bom
+    args:
+      - generate
+      - "--output"
+      - "zeitgeist-bom.json.spdx"
+      - "-d"
+      - "../"
+      - "-c"
+      - "../.zeitgeist-remote-bom-config.yaml"
+      - "--format"
+      - "json"
+    artifacts: any
+    documents:
+      - "zeitgeist-bom.json.spdx"
+
+  - id: zeitgeist-full
     cmd: bom
     args:
       - generate
@@ -105,6 +151,7 @@ sboms:
     artifacts: any
     documents:
       - "zeitgeist-bom.json.spdx"
+
   - id: buoy
     cmd: bom
     args:

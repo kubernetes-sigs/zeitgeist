@@ -20,25 +20,12 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/stretchr/testify/require"
 
 	"gopkg.in/yaml.v3"
 )
-
-type mockedReceiveMsgs struct {
-	ec2iface.EC2API
-	Resp ec2.DescribeImagesOutput
-}
-
-func (m mockedReceiveMsgs) DescribeImages(_ *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
-	// Only need to return mocked response output
-	return &m.Resp, nil
-}
 
 func TestUnsupported(t *testing.T) {
 	client, err := NewLocalClient()
@@ -47,7 +34,7 @@ func TestUnsupported(t *testing.T) {
 	require.True(t, errors.As(err, &UnsupportedError{}))
 	_, err = client.RemoteExport("")
 	require.True(t, errors.As(err, &UnsupportedError{}))
-	_, err = client.Upgrade("")
+	_, err = client.Upgrade("", "")
 	require.True(t, errors.As(err, &UnsupportedError{}))
 }
 
@@ -128,112 +115,6 @@ func TestDeserialising(t *testing.T) {
 	}
 }
 
-func TestCheckUpstreamVersions(t *testing.T) {
-	deps := []*Dependency{
-		{
-			Name:        "test",
-			Version:     "0.0.1",
-			Scheme:      Semver,
-			Sensitivity: Patch,
-			Upstream: map[string]string{
-				"flavour": "dummy",
-			},
-			RefPaths: []*RefPath{
-				{
-					Path:  "test",
-					Match: "test",
-				},
-			},
-		},
-		{
-			Name:        "test-no-upstream",
-			Version:     "0.0.1",
-			Scheme:      Semver,
-			Sensitivity: Patch,
-			RefPaths: []*RefPath{
-				{
-					Path:  "test",
-					Match: "test",
-				},
-			},
-		},
-	}
-
-	client := NewClient()
-	updateInfos, err := client.checkUpstreamVersions(deps)
-	require.Nil(t, err)
-
-	expectedUpdateInfos := []versionUpdateInfo{
-		{
-			name: "test",
-			current: Version{
-				Version: "0.0.1",
-				Scheme:  Semver,
-			},
-			latest: Version{
-				Version: "1.0.0",
-				Scheme:  Semver,
-			},
-			updateAvailable: true,
-		},
-		{
-			name: "test-no-upstream",
-			current: Version{
-				Version: "0.0.1",
-				Scheme:  Semver,
-			},
-			updateAvailable: false,
-		},
-	}
-
-	for i, updateInfo := range updateInfos {
-		if !reflect.DeepEqual(updateInfo, expectedUpdateInfos[i]) {
-			t.Errorf("checkUpstreamVersions mismatch at index %d:\ngot: %#v\nexpected: %#v", i, updateInfo, expectedUpdateInfos[i])
-		}
-	}
-}
-
-func TestUpgrade(t *testing.T) {
-	dir := t.TempDir()
-	testFile := filepath.Join(dir, "test.txt")
-
-	err := os.WriteFile(testFile, []byte("VERSION: 0.0.1\nOTHER: 0.0.1"), 0o644)
-	require.Nil(t, err)
-
-	err = os.WriteFile(filepath.Join(dir, "dependencies.yaml"), []byte(`
-dependencies:
-  - name: upgrade
-    version: 0.0.1
-    scheme: semver
-    upstream:
-      flavour: dummy
-      url: example/example
-    refPaths:
-    - path: test.txt
-      match: VERSION
-  - name: no-upstream
-    version: 0.0.1
-    scheme: semver
-    refPaths:
-    - path: test.txt
-      match: OTHER
-`), 0o644)
-	require.Nil(t, err)
-
-	client := NewClient()
-	ret, err := client.Upgrade(filepath.Join(dir, "dependencies.yaml"), dir)
-	if err != nil {
-		t.Fatalf("Upgrade failed: %v", err)
-	}
-
-	require.Equal(t, 1, len(ret))
-	require.Equal(t, "Upgraded dependency upgrade from version 0.0.1 to version 1.0.0", ret[0])
-
-	got, err := os.ReadFile(testFile)
-	require.Nil(t, err)
-	require.Equal(t, "VERSION: 1.0.0\nOTHER: 0.0.1", string(got))
-}
-
 func TestSetVersion(t *testing.T) {
 	dir := t.TempDir()
 	testFile := filepath.Join(dir, "test.txt")
@@ -261,7 +142,8 @@ dependencies:
 `), 0o644)
 	require.Nil(t, err)
 
-	client := NewClient()
+	client, err := NewLocalClient()
+	require.Nil(t, err)
 	err = client.SetVersion(filepath.Join(dir, "dependencies.yaml"), dir, "app1", "2.1.0")
 	if err != nil {
 		t.Fatalf("SetVersion failed: %v", err)
