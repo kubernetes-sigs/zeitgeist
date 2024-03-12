@@ -3,7 +3,7 @@ module sigs.k8s.io/zeitgeist
 go 1.21
 
 require (
-	github.com/aws/aws-sdk-go v1.50.35
+	github.com/aws/aws-sdk-go v1.50.36
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/go-containerregistry v0.19.0
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.8.1
