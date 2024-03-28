@@ -49,8 +49,10 @@ func runSetVersion(opts *options, args []string) error {
 		return fmt.Errorf("expected exactly two arguments: <dependency> <version>")
 	}
 
-	client := dependency.NewClient()
-
+	client, err := dependency.NewLocalClient()
+	if err != nil {
+		return err
+	}
 	// Check locally first: it's fast, and ensures we're working on clean files
 	if err := client.LocalCheck(opts.configFile, opts.basePath); err != nil {
 		return fmt.Errorf("checking local dependencies: %w", err)

@@ -46,7 +46,18 @@ func addValidate(topLevel *cobra.Command) {
 // runValidate is the function invoked by 'addValidate', responsible for
 // validating dependencies in a specified configuration file.
 func runValidate(opts *options) error {
-	client := dependency.NewClient()
+	var (
+		client dependency.Client
+		err    error
+	)
+	if opts.localOnly {
+		client, err = dependency.NewLocalClient()
+	} else {
+		client, err = dependency.NewRemoteClient()
+	}
+	if err != nil {
+		return fmt.Errorf("constructing client: %w", err)
+	}
 
 	if err := client.LocalCheck(opts.configFile, opts.basePath); err != nil {
 		return fmt.Errorf("checking local dependencies: %w", err)

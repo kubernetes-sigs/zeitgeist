@@ -42,11 +42,11 @@ const (
 	Random VersionScheme = "random"
 )
 
-type versionUpdateInfo struct {
-	name            string
-	current         Version
-	latest          Version
-	updateAvailable bool
+type VersionUpdateInfo struct {
+	Name            string
+	Current         Version
+	Latest          Version
+	UpdateAvailable bool
 }
 
 // VersionUpdate represents the schema of the output format

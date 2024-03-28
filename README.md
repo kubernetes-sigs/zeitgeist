@@ -75,10 +75,19 @@ You can also use `zeitgeist upgrade` to go ahead and upgrade your dependencies t
 
 You will need to build Zeitgeist from source (for now at least!).
 
-Clone the repository and run `go build` will give you the `zeitgeist` binary:
+Clone the repository and run `go build` will give you the `zeitgeist` binary.
+
+To build the local-only binary:
 ```bash
 git clone https://github.com/kubernetes-sigs/zeitgeist.git
 cd zeitgeist/
+go build
+```
+
+To build a binary capable of inspecting remote upstreams:
+```bash
+git clone https://github.com/kubernetes-sigs/zeitgeist.git
+cd zeitgeist/remote/zeitgeist
 go build
 ```
 

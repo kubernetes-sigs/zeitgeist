@@ -29,7 +29,11 @@ const defaultConfigFile = "dependencies.yaml"
 
 var rootOpts = &options{}
 
-func New() *cobra.Command {
+type Options struct {
+	LocalOnly bool
+}
+
+func New(opts Options) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "zeitgeist",
 		Short:             "Zeitgeist is a language-agnostic dependency checker",
@@ -41,7 +45,7 @@ func New() *cobra.Command {
 	cmd.PersistentFlags().BoolVar(
 		&rootOpts.localOnly,
 		"local-only",
-		false,
+		opts.LocalOnly,
 		"if specified, subcommands will only perform local checks",
 	)
 

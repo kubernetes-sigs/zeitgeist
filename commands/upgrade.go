@@ -46,7 +46,10 @@ func addUpgrade(topLevel *cobra.Command) {
 // runUpgrade is the function invoked by 'addUpgrade', responsible for
 // upgrading dependencies.
 func runUpgrade(opts *options) error {
-	client := dependency.NewClient()
+	client, err := dependency.NewRemoteClient()
+	if err != nil {
+		return err
+	}
 
 	// Check locally first: it's fast, and ensures we're working on clean files
 	if err := client.LocalCheck(opts.configFile, opts.basePath); err != nil {
