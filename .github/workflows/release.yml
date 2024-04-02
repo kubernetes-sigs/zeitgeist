@@ -26,7 +26,7 @@ jobs:
 
       - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
         with:
-          go-version: '1.21'
+          go-version: '1.22'
           check-latest: true
 
       - name: Install ko
@@ -78,6 +78,8 @@ jobs:
 
       - run: |
           tejolote attest --artifacts github://kubernetes-sigs/zeitgeist/${{ steps.tag.outputs.tag_name }} github://kubernetes-sigs/zeitgeist/"${GITHUB_RUN_ID}" --output zeitgeist.intoto.json --sign
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Release
         uses: softprops/action-gh-release@9d7c94cfd0a1f3ed45544c887983e9fa900f0564 # v0.1.15

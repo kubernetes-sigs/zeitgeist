@@ -101,7 +101,7 @@ goreleaser: ## Build zeitgeist binaries with goreleaser
 	goreleaser release --clean
 
 .PHONY: ko-release
-ko-release: ko-release-zeitgeist ko-release-buoy
+ko-release: ko-release-zeitgeist ko-release-zeitgeist-remote ko-release-buoy
 
 .PHONY: ko-release-zeitgeist
 ko-release-zeitgeist: ## Build zeitgeist image
@@ -111,20 +111,20 @@ ko-release-zeitgeist: ## Build zeitgeist image
 	--platform=all --tags $(GIT_VERSION),$(GIT_HASH),latest --image-refs imagerefs sigs.k8s.io/zeitgeist
 
 .PHONY: ko-release-zeitgeist-remote
-ko-release-zeitgeist: ## Build zeitgeist image
+ko-release-zeitgeist-remote: ## Build zeitgeist remote image
 	LDFLAGS="$(LDFLAGS)" GIT_HASH=$(GIT_HASH) GIT_VERSION=$(GIT_VERSION) \
 	KO_DOCKER_REPO=$(KO_PREFIX)/zeitgeist-remote \
 	ko build --bare \
-	--platform=all --tags $(GIT_VERSION),$(GIT_HASH),latest --image-refs imagerefs sigs.k8s.io/zeitgeist/remote/zeitgeist
+	--platform=all --tags $(GIT_VERSION),$(GIT_HASH),latest --image-refs imageremoterefs sigs.k8s.io/zeitgeist/remote/zeitgeist
 
 .PHONY: ko-release-buoy
-ko-release-buoy: ## Build zeitgeist image
+ko-release-buoy: ## Build buoy image
 	LDFLAGS="$(LDFLAGS)" GIT_HASH=$(GIT_HASH) GIT_VERSION=$(GIT_VERSION) \
 	KO_DOCKER_REPO=$(KO_PREFIX)/bouy \
 	ko build --bare \
 	--platform=all --tags $(GIT_VERSION),$(GIT_HASH),latest --image-refs imagerefs_buoy sigs.k8s.io/zeitgeist/buoy
 
-imagerefs := $(shell cat imagerefs imagerefs_buoy)
+imagerefs := $(shell cat imagerefs imageremoterefs imagerefs_buoy)
 sign-refs := $(foreach ref,$(imagerefs),$(ref))
 .PHONY: sign-images
 sign-images:
