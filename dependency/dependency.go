@@ -27,17 +27,44 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
-
-	"sigs.k8s.io/zeitgeist/upstream"
 )
 
 // Client holds any client that is needed
-type Client struct {
-	AWSEC2Client ec2iface.EC2API
+type Client interface {
+	// LocalCheck checks whether dependencies are in-sync locally
+	//
+	// Will return an error if the dependency cannot be found in the files it has defined, or if the version does not match
+	LocalCheck(dependencyFilePath, basePath string) error
+
+	// RemoteCheck checks whether dependencies are up to date with upstream
+	//
+	// Will return an error if checking the versions upstream fails.
+	//
+	// Out-of-date dependencies will be printed out on stdout at the INFO level.
+	RemoteCheck(dependencyFilePath string) ([]string, error)
+
+	// Upgrade retrieves the most up-to-date version of the dependency and replaces
+	// the local version with the most up-to-date version.
+	//
+	// Will return an error if checking the versions upstream fails, or if updating
+	// files fails.
+	Upgrade(dependencyFilePath, basePath string) ([]string, error)
+
+	SetVersion(dependencyFilePath, basePath, dependency, version string) error
+
+	RemoteExport(dependencyFilePath string) ([]VersionUpdate, error)
+
+	CheckUpstreamVersions(deps []*Dependency) ([]VersionUpdateInfo, error)
+}
+
+type UnsupportedError struct {
+	message string
+}
+
+func (u UnsupportedError) Error() string {
+	return u.message
 }
 
 // Dependencies is used to deserialise the configuration file
@@ -66,13 +93,6 @@ type RefPath struct {
 	Path string `yaml:"path"`
 	// Match expression for the line that should contain the dependency's version. Regexp is supported.
 	Match string `yaml:"match"`
-}
-
-// NewClient returns all clients that can be used to the validation
-func NewClient() *Client {
-	return &Client{
-		AWSEC2Client: upstream.NewAWSClient(),
-	}
 }
 
 // UnmarshalYAML implements custom unmarshalling of Dependency with validation
@@ -113,7 +133,7 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 	return nil
 }
 
-func fromFile(dependencyFilePath string) (*Dependencies, error) {
+func FromFile(dependencyFilePath string) (*Dependencies, error) {
 	depFile, err := os.ReadFile(dependencyFilePath)
 	if err != nil {
 		return nil, err
@@ -129,7 +149,7 @@ func fromFile(dependencyFilePath string) (*Dependencies, error) {
 	return dependencies, nil
 }
 
-func toFile(dependencyFilePath string, dependencies *Dependencies) error {
+func ToFile(dependencyFilePath string, dependencies *Dependencies) error {
 	var output bytes.Buffer
 	yamlEncoder := yaml.NewEncoder(&output)
 	yamlEncoder.SetIndent(2)
@@ -147,12 +167,19 @@ func toFile(dependencyFilePath string, dependencies *Dependencies) error {
 	return nil
 }
 
+type LocalClient struct{}
+
+// NewClient returns all clients that can be used to the validation
+func NewLocalClient() (Client, error) {
+	return &LocalClient{}, nil
+}
+
 // LocalCheck checks whether dependencies are in-sync locally
 //
 // Will return an error if the dependency cannot be found in the files it has defined, or if the version does not match
-func (c *Client) LocalCheck(dependencyFilePath, basePath string) error {
+func (c *LocalClient) LocalCheck(dependencyFilePath, basePath string) error {
 	log.Debugf("Base path: %s", basePath)
-	externalDeps, err := fromFile(dependencyFilePath)
+	externalDeps, err := FromFile(dependencyFilePath)
 	if err != nil {
 		return err
 	}
@@ -224,124 +251,10 @@ func (c *Client) LocalCheck(dependencyFilePath, basePath string) error {
 	return nil
 }
 
-// RemoteCheck checks whether dependencies are up to date with upstream
-//
-// Will return an error if checking the versions upstream fails.
-//
-// Out-of-date dependencies will be printed out on stdout at the INFO level.
-func (c *Client) RemoteCheck(dependencyFilePath string) ([]string, error) {
-	externalDeps, err := fromFile(dependencyFilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	updates := make([]string, 0)
-
-	versionUpdateInfos, err := c.checkUpstreamVersions(externalDeps.Dependencies)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, vu := range versionUpdateInfos {
-		if vu.updateAvailable {
-			updates = append(
-				updates,
-				fmt.Sprintf(
-					"Update available for dependency %s: %s (current: %s)",
-					vu.name,
-					vu.latest.Version,
-					vu.current.Version,
-				),
-			)
-		} else {
-			log.Debugf(
-				"No update available for dependency %s: %s (latest: %s)\n",
-				vu.name,
-				vu.current.Version,
-				vu.latest.Version,
-			)
-		}
-	}
-
-	return updates, nil
-}
-
-// Upgrade retrieves the most up-to-date version of the dependency and replaces
-// the local version with the most up-to-date version.
-//
-// Will return an error if checking the versions upstream fails, or if updating
-// files fails.
-func (c *Client) Upgrade(dependencyFilePath, basePath string) ([]string, error) {
-	externalDeps, err := fromFile(dependencyFilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	upgrades := make([]string, 0)
-	upgradedDependencies := make([]*Dependency, 0)
-
-	versionUpdateInfos, err := c.checkUpstreamVersions(externalDeps.Dependencies)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, vu := range versionUpdateInfos {
-		dependency, err := findDependencyByName(externalDeps.Dependencies, vu.name)
-		if err != nil {
-			return nil, err
-		}
-
-		if vu.updateAvailable {
-			err = upgradeDependency(basePath, dependency, &vu)
-			if err != nil {
-				return nil, err
-			}
-
-			dependency.Version = vu.latest.Version
-			upgradedDependencies = append(
-				upgradedDependencies,
-				dependency,
-			)
-
-			upgrades = append(
-				upgrades,
-				fmt.Sprintf(
-					"Upgraded dependency %s from version %s to version %s",
-					vu.name,
-					vu.current.Version,
-					vu.latest.Version,
-				),
-			)
-		} else {
-			upgradedDependencies = append(
-				upgradedDependencies,
-				dependency,
-			)
-
-			log.Debugf(
-				"No update available for dependency %s: %s (latest: %s)\n",
-				vu.name,
-				vu.current.Version,
-				vu.latest.Version,
-			)
-		}
-	}
-
-	// Update the dependencies file to reflect the upgrades
-	err = toFile(dependencyFilePath, &Dependencies{
-		Dependencies: upgradedDependencies,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return upgrades, nil
-}
-
 // SetVersion sets the version of a dependency to the specified version
 //
 // Will return an error  if updating files fails.
-func (c *Client) SetVersion(dependencyFilePath, basePath, dependency, version string) error {
+func (c *LocalClient) SetVersion(dependencyFilePath, basePath, dependency, version string) error {
 	externalDeps, err := fromFile(dependencyFilePath)
 	if err != nil {
 		return err
@@ -352,17 +265,17 @@ func (c *Client) SetVersion(dependencyFilePath, basePath, dependency, version st
 		if dep.Name == dependency {
 			found = true
 
-			if err := upgradeDependency(basePath, dep, &versionUpdateInfo{
-				name: dep.Name,
-				current: Version{
+			if err := upgradeDependency(basePath, dep, &VersionUpdateInfo{
+				Name: dep.Name,
+				Current: Version{
 					Version: dep.Version,
 					Scheme:  dep.Scheme,
 				},
-				latest: Version{
+				Latest: Version{
 					Version: version,
 					Scheme:  dep.Scheme,
 				},
-				updateAvailable: true,
+				UpdateAvailable: true,
 			}); err != nil {
 				return err
 			}
@@ -384,16 +297,27 @@ func (c *Client) SetVersion(dependencyFilePath, basePath, dependency, version st
 	return nil
 }
 
-func findDependencyByName(dependencies []*Dependency, name string) (*Dependency, error) {
-	for _, dep := range dependencies {
-		if dep.Name == name {
-			return dep, nil
-		}
-	}
-	return nil, fmt.Errorf("cannot find dependency by name: %s", name)
+func (c *LocalClient) RemoteCheck(dependencyFilePath string) ([]string, error) { //nolint: revive
+	return nil, UnsupportedError{"remote checks are not supported by the local client"}
 }
 
-func upgradeDependency(basePath string, dependency *Dependency, versionUpdate *versionUpdateInfo) error {
+func (c *LocalClient) Upgrade(dependencyFilePath, basePath string) ([]string, error) { //nolint: revive
+	return nil, UnsupportedError{"upgrade is not supported by the local client"}
+}
+
+func (c *LocalClient) RemoteExport(dependencyFilePath string) ([]VersionUpdate, error) { //nolint: revive
+	return nil, UnsupportedError{"remote export is not supported by the local client"}
+}
+
+func (c *LocalClient) CheckUpstreamVersions(deps []*Dependency) ([]VersionUpdateInfo, error) { //nolint: revive
+	return nil, UnsupportedError{"CheckUpstreamVersions is not supported by the local client"}
+}
+
+var NewRemoteClient = func() (Client, error) {
+	return nil, UnsupportedError{"remote upstream functionality is not supported by this command; use sigs.k8s.io/zeitgeist/remote/zeitgeist"}
+}
+
+func upgradeDependency(basePath string, dependency *Dependency, versionUpdate *VersionUpdateInfo) error {
 	log.Debugf("running upgradeDependency, versionUpdate %#v", versionUpdate)
 	for _, refPath := range dependency.RefPaths {
 		err := replaceInFile(basePath, refPath, versionUpdate)
@@ -405,7 +329,7 @@ func upgradeDependency(basePath string, dependency *Dependency, versionUpdate *v
 	return nil
 }
 
-func replaceInFile(basePath string, refPath *RefPath, versionUpdate *versionUpdateInfo) error {
+func replaceInFile(basePath string, refPath *RefPath, versionUpdate *VersionUpdateInfo) error {
 	filename := filepath.Join(basePath, refPath.Path)
 	log.Debugf("running replaceInFile, refpath is %#v, versionUpdate %#v", refPath, versionUpdate)
 
@@ -423,17 +347,17 @@ func replaceInFile(basePath string, refPath *RefPath, versionUpdate *versionUpda
 
 	for i, line := range lines {
 		if matcher.MatchString(line) {
-			if strings.Contains(line, versionUpdate.current.Version) {
+			if strings.Contains(line, versionUpdate.Current.Version) {
 				log.Debugf(
 					"Line %d matches expected regexp %q and version %q: %s",
 					i,
 					refPath.Match,
-					versionUpdate.current.Version,
+					versionUpdate.Current.Version,
 					line,
 				)
 
 				// The actual upgrade:
-				lines[i] = strings.ReplaceAll(line, versionUpdate.current.Version, versionUpdate.latest.Version)
+				lines[i] = strings.ReplaceAll(line, versionUpdate.Current.Version, versionUpdate.Latest.Version)
 			}
 		}
 	}
@@ -449,147 +373,36 @@ func replaceInFile(basePath string, refPath *RefPath, versionUpdate *versionUpda
 	return nil
 }
 
-func (c *Client) RemoteExport(dependencyFilePath string) ([]VersionUpdate, error) {
-	externalDeps, err := fromFile(dependencyFilePath)
+func fromFile(dependencyFilePath string) (*Dependencies, error) {
+	depFile, err := os.ReadFile(dependencyFilePath)
 	if err != nil {
 		return nil, err
 	}
 
-	versionUpdates := []VersionUpdate{}
+	dependencies := &Dependencies{}
 
-	versionUpdatesInfos, err := c.checkUpstreamVersions(externalDeps.Dependencies)
+	err = yaml.Unmarshal(depFile, dependencies)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, vui := range versionUpdatesInfos {
-		if vui.updateAvailable {
-			versionUpdates = append(versionUpdates, VersionUpdate{
-				Name:       vui.name,
-				Version:    vui.current.Version,
-				NewVersion: vui.latest.Version,
-			})
-		} else {
-			log.Debugf(
-				"No update available for dependency %s: %s (latest: %s)\n",
-				vui.name,
-				vui.current.Version,
-				vui.latest.Version,
-			)
-		}
-	}
-	return versionUpdates, nil
+	return dependencies, nil
 }
 
-func (c *Client) checkUpstreamVersions(deps []*Dependency) ([]versionUpdateInfo, error) {
-	versionUpdates := []versionUpdateInfo{}
-	for _, dep := range deps {
-		if dep.Upstream == nil {
-			versionUpdates = append(versionUpdates, versionUpdateInfo{
-				name:            dep.Name,
-				current:         Version{dep.Version, dep.Scheme},
-				updateAvailable: false,
-			})
-			continue
-		}
+func toFile(dependencyFilePath string, dependencies *Dependencies) error {
+	var output bytes.Buffer
+	yamlEncoder := yaml.NewEncoder(&output)
+	yamlEncoder.SetIndent(2)
 
-		up := dep.Upstream
-		latestVersion := Version{dep.Version, dep.Scheme}
-		currentVersion := Version{dep.Version, dep.Scheme}
-
-		var err error
-
-		// Cast the flavour from the currently unknown upstream type
-		flavour := upstream.Flavour(up["flavour"])
-		switch flavour {
-		case upstream.DummyFlavour:
-			var d upstream.Dummy
-
-			decodeErr := mapstructure.Decode(up, &d)
-			if decodeErr != nil {
-				return nil, decodeErr
-			}
-
-			latestVersion.Version, err = d.LatestVersion()
-		case upstream.GithubFlavour:
-			var gh upstream.Github
-
-			decodeErr := mapstructure.Decode(up, &gh)
-			if decodeErr != nil {
-				return nil, decodeErr
-			}
-
-			latestVersion.Version, err = gh.LatestVersion()
-		case upstream.GitLabFlavour:
-			var gl upstream.GitLab
-
-			decodeErr := mapstructure.Decode(up, &gl)
-			if decodeErr != nil {
-				return nil, decodeErr
-			}
-
-			latestVersion.Version, err = gl.LatestVersion()
-		case upstream.HelmFlavour:
-			var h upstream.Helm
-
-			decodeErr := mapstructure.Decode(up, &h)
-			if decodeErr != nil {
-				return nil, decodeErr
-			}
-
-			latestVersion.Version, err = h.LatestVersion()
-		case upstream.AMIFlavour:
-			var ami upstream.AMI
-
-			decodeErr := mapstructure.Decode(up, &ami)
-			if decodeErr != nil {
-				return nil, decodeErr
-			}
-
-			ami.ServiceClient = c.AWSEC2Client
-
-			latestVersion.Version, err = ami.LatestVersion()
-		case upstream.ContainerFlavour:
-			var ct upstream.Container
-
-			decodeErr := mapstructure.Decode(up, &ct)
-			if decodeErr != nil {
-				log.Debug("errr decoding")
-				return nil, decodeErr
-			}
-
-			latestVersion.Version, err = ct.LatestVersion()
-		case upstream.EKSFlavour:
-			var eks upstream.EKS
-
-			decodeErr := mapstructure.Decode(up, &eks)
-			if decodeErr != nil {
-				return nil, decodeErr
-			}
-
-			latestVersion.Version, err = eks.LatestVersion()
-		default:
-			return nil, fmt.Errorf("unknown upstream flavour '%#v' for dependency %s", flavour, dep.Name)
-		}
-
-		if err != nil {
-			return nil, err
-		}
-
-		updateAvailable, err := latestVersion.MoreSensitivelyRecentThan(currentVersion, dep.Sensitivity)
-		if err != nil {
-			return nil, err
-		}
-
-		latestVersion.Version = formatVersion(currentVersion.Version, latestVersion.Version)
-
-		versionUpdates = append(versionUpdates, versionUpdateInfo{
-			name:            dep.Name,
-			current:         currentVersion,
-			latest:          latestVersion,
-			updateAvailable: updateAvailable,
-		})
+	err := yamlEncoder.Encode(dependencies)
+	if err != nil {
+		return err
 	}
 
-	return versionUpdates, nil
+	err = os.WriteFile(dependencyFilePath, output.Bytes(), 0o644)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

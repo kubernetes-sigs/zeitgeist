@@ -17,91 +17,45 @@ limitations under the License.
 package dependency
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"gopkg.in/yaml.v3"
 )
 
-type mockedReceiveMsgs struct {
-	ec2iface.EC2API
-	Resp ec2.DescribeImagesOutput
-}
-
-func (m mockedReceiveMsgs) DescribeImages(_ *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
-	// Only need to return mocked response output
-	return &m.Resp, nil
+func TestUnsupported(t *testing.T) {
+	client, err := NewLocalClient()
+	require.Nil(t, err)
+	_, err = client.RemoteCheck("")
+	require.True(t, errors.As(err, &UnsupportedError{}))
+	_, err = client.RemoteExport("")
+	require.True(t, errors.As(err, &UnsupportedError{}))
+	_, err = client.Upgrade("", "")
+	require.True(t, errors.As(err, &UnsupportedError{}))
 }
 
 func TestLocalSuccess(t *testing.T) {
-	client := NewClient()
+	client, err := NewLocalClient()
+	require.Nil(t, err)
 
-	err := client.LocalCheck("../testdata/local.yaml", "../testdata")
+	err = client.LocalCheck("../testdata/local.yaml", "../testdata")
 	require.Nil(t, err)
 }
 
-func TestRemoteSuccess(t *testing.T) {
-	var client Client
-	client.AWSEC2Client = mockedReceiveMsgs{
-		Resp: ec2.DescribeImagesOutput{
-			Images: []*ec2.Image{
-				{
-					CreationDate: aws.String("2019-05-10T13:17:12.000Z"),
-					ImageId:      aws.String("ami-09bbefc07310f7914"),
-					Name:         aws.String("amazon-eks-node-1.13-honk"),
-				},
-			},
-		},
-	}
-
-	_, err := client.RemoteCheck("../testdata/remote.yaml")
-	require.Nil(t, err)
-}
-
-func TestDummyRemote(t *testing.T) {
-	client := NewClient()
-
-	_, err := client.RemoteCheck("../testdata/remote-dummy.yaml")
-	require.Nil(t, err)
-}
-
-func TestDummyRemoteExportWithoutUpdate(t *testing.T) {
-	client := NewClient()
-
-	updates, err := client.RemoteExport("../testdata/remote-dummy.yaml")
-	require.Nil(t, err)
-	require.Empty(t, updates)
-}
-
-func TestDummyRemoteExportWithUpdate(t *testing.T) {
-	client := NewClient()
-
-	updates, err := client.RemoteExport("../testdata/remote-dummy-with-update.yaml")
-	require.Nil(t, err)
-	require.NotEmpty(t, updates)
-	require.Equal(t, updates[0].Name, "example")
-	require.Equal(t, updates[0].Version, "0.0.1")
-	require.Equal(t, updates[0].NewVersion, "1.0.0")
-}
-
-func TestRemoteConstraint(t *testing.T) {
-	client := NewClient()
-
-	_, err := client.RemoteCheck("../testdata/remote-constraint.yaml")
-	require.Nil(t, err)
+func TestRemoteUnsupported(t *testing.T) {
+	_, err := NewRemoteClient()
+	require.True(t, errors.As(err, &UnsupportedError{}))
 }
 
 func TestBrokenFile(t *testing.T) {
-	client := NewClient()
+	client, err := NewLocalClient()
+	require.Nil(t, err)
 
-	err := client.LocalCheck("../testdata/does-not-exist", "../testdata")
+	err = client.LocalCheck("../testdata/does-not-exist", "../testdata")
 	require.NotNil(t, err)
 
 	err = client.LocalCheck("../testdata/Dockerfile", "../testdata")
@@ -109,31 +63,27 @@ func TestBrokenFile(t *testing.T) {
 }
 
 func TestLocalOutOfSync(t *testing.T) {
-	client := NewClient()
+	client, err := NewLocalClient()
+	require.Nil(t, err)
 
-	err := client.LocalCheck("../testdata/local-out-of-sync.yaml", "../testdata")
+	err = client.LocalCheck("../testdata/local-out-of-sync.yaml", "../testdata")
 	require.NotNil(t, err)
 }
 
 func TestLocalInvalid(t *testing.T) {
-	client := NewClient()
+	client, err := NewLocalClient()
+	require.Nil(t, err)
 
-	err := client.LocalCheck("../testdata/local-invalid.yaml", "../testdata")
+	err = client.LocalCheck("../testdata/local-invalid.yaml", "../testdata")
 	require.NotNil(t, err)
 	require.Contains(t, err.Error(), "compiling regex")
 }
 
 func TestFileDoesntExist(t *testing.T) {
-	client := NewClient()
+	client, err := NewLocalClient()
+	require.Nil(t, err)
 
-	err := client.LocalCheck("../testdata/local-no-file.yaml", "../testdata")
-	require.NotNil(t, err)
-}
-
-func TestUnknownFlavour(t *testing.T) {
-	client := NewClient()
-
-	_, err := client.RemoteCheck("../testdata/unknown-upstream.yaml")
+	err = client.LocalCheck("../testdata/local-no-file.yaml", "../testdata")
 	require.NotNil(t, err)
 }
 
@@ -165,112 +115,6 @@ func TestDeserialising(t *testing.T) {
 	}
 }
 
-func TestCheckUpstreamVersions(t *testing.T) {
-	deps := []*Dependency{
-		{
-			Name:        "test",
-			Version:     "0.0.1",
-			Scheme:      Semver,
-			Sensitivity: Patch,
-			Upstream: map[string]string{
-				"flavour": "dummy",
-			},
-			RefPaths: []*RefPath{
-				{
-					Path:  "test",
-					Match: "test",
-				},
-			},
-		},
-		{
-			Name:        "test-no-upstream",
-			Version:     "0.0.1",
-			Scheme:      Semver,
-			Sensitivity: Patch,
-			RefPaths: []*RefPath{
-				{
-					Path:  "test",
-					Match: "test",
-				},
-			},
-		},
-	}
-
-	client := NewClient()
-	updateInfos, err := client.checkUpstreamVersions(deps)
-	require.Nil(t, err)
-
-	expectedUpdateInfos := []versionUpdateInfo{
-		{
-			name: "test",
-			current: Version{
-				Version: "0.0.1",
-				Scheme:  Semver,
-			},
-			latest: Version{
-				Version: "1.0.0",
-				Scheme:  Semver,
-			},
-			updateAvailable: true,
-		},
-		{
-			name: "test-no-upstream",
-			current: Version{
-				Version: "0.0.1",
-				Scheme:  Semver,
-			},
-			updateAvailable: false,
-		},
-	}
-
-	for i, updateInfo := range updateInfos {
-		if !reflect.DeepEqual(updateInfo, expectedUpdateInfos[i]) {
-			t.Errorf("checkUpstreamVersions mismatch at index %d:\ngot: %#v\nexpected: %#v", i, updateInfo, expectedUpdateInfos[i])
-		}
-	}
-}
-
-func TestUpgrade(t *testing.T) {
-	dir := t.TempDir()
-	testFile := filepath.Join(dir, "test.txt")
-
-	err := os.WriteFile(testFile, []byte("VERSION: 0.0.1\nOTHER: 0.0.1"), 0o644)
-	require.Nil(t, err)
-
-	err = os.WriteFile(filepath.Join(dir, "dependencies.yaml"), []byte(`
-dependencies:
-  - name: upgrade
-    version: 0.0.1
-    scheme: semver
-    upstream:
-      flavour: dummy
-      url: example/example
-    refPaths:
-    - path: test.txt
-      match: VERSION
-  - name: no-upstream
-    version: 0.0.1
-    scheme: semver
-    refPaths:
-    - path: test.txt
-      match: OTHER
-`), 0o644)
-	require.Nil(t, err)
-
-	client := NewClient()
-	ret, err := client.Upgrade(filepath.Join(dir, "dependencies.yaml"), dir)
-	if err != nil {
-		t.Fatalf("Upgrade failed: %v", err)
-	}
-
-	require.Equal(t, 1, len(ret))
-	require.Equal(t, "Upgraded dependency upgrade from version 0.0.1 to version 1.0.0", ret[0])
-
-	got, err := os.ReadFile(testFile)
-	require.Nil(t, err)
-	require.Equal(t, "VERSION: 1.0.0\nOTHER: 0.0.1", string(got))
-}
-
 func TestSetVersion(t *testing.T) {
 	dir := t.TempDir()
 	testFile := filepath.Join(dir, "test.txt")
@@ -298,7 +142,8 @@ dependencies:
 `), 0o644)
 	require.Nil(t, err)
 
-	client := NewClient()
+	client, err := NewLocalClient()
+	require.Nil(t, err)
 	err = client.SetVersion(filepath.Join(dir, "dependencies.yaml"), dir, "app1", "2.1.0")
 	if err != nil {
 		t.Fatalf("SetVersion failed: %v", err)
