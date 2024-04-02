@@ -34,7 +34,7 @@ func addSetVersion(topLevel *cobra.Command) {
 		PreRunE: func(*cobra.Command, []string) error {
 			return vo.setAndValidate()
 		},
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			return runSetVersion(vo, args)
 		},
 	}

@@ -366,7 +366,6 @@ func replaceInFile(basePath string, refPath *RefPath, versionUpdate *VersionUpda
 
 	// Finally, write the file out
 	err = os.WriteFile(filename, []byte(upgradedFile), 0o644)
-
 	if err != nil {
 		return fmt.Errorf("writing file: %w", err)
 	}

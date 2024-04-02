@@ -232,7 +232,6 @@ func replaceInFile(basePath string, refPath *deppkg.RefPath, versionUpdate *depp
 
 	// Finally, write the file out
 	err = os.WriteFile(filename, []byte(upgradedFile), 0o644)
-
 	if err != nil {
 		return fmt.Errorf("writing file: %w", err)
 	}

@@ -81,7 +81,7 @@ func addExport(topLevel *cobra.Command) {
 		PreRunE: func(*cobra.Command, []string) error {
 			return exo.setAndValidate()
 		},
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, _ []string) error {
 			return runExport(exo)
 		},
 	}
