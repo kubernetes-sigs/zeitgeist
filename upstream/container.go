@@ -68,6 +68,7 @@ func highestSemanticImageTag(upstream *Container) (string, error) {
 	type semverWithOrig struct {
 		orig   string         // original tag string
 		parsed semver.Version // parsed semver
+		strict bool           // is real semver
 	}
 	versions := make([]semverWithOrig, 0, len(tags))
 	for _, tag := range tags {
@@ -76,13 +77,20 @@ func highestSemanticImageTag(upstream *Container) (string, error) {
 			log.Debugf("Error parsing version %s (%v) as semver", tag, err)
 			continue
 		}
+		_, err = semver.Parse(tag)
 		versions = append(versions, semverWithOrig{
 			orig:   tag,
 			parsed: parsed,
+			strict: err == nil,
 		})
 	}
 	// reverse sort, highest first
 	sort.Slice(versions, func(i, j int) bool {
+		if versions[j].parsed.EQ(versions[i].parsed) {
+			// return compliant semver when possible
+			return !versions[j].strict
+		}
+
 		return versions[j].parsed.LT(versions[i].parsed)
 	})
 
