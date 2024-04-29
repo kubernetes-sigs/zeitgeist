@@ -17,8 +17,6 @@ limitations under the License.
 package commands
 
 import (
-	"fmt"
-
 	"github.com/spf13/cobra"
 
 	"sigs.k8s.io/release-utils/log"
@@ -67,7 +65,7 @@ func New(opts Options) *cobra.Command {
 		&rootOpts.logLevel,
 		"log-level",
 		"info",
-		fmt.Sprintf("the logging verbosity, either %s", log.LevelNames()),
+		"the logging verbosity, either "+log.LevelNames(),
 	)
 
 	AddCommands(cmd)

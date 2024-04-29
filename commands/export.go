@@ -18,6 +18,7 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
@@ -57,7 +58,7 @@ func (exo *exportOptions) setAndValidate() error {
 	case JSON:
 	case LOG:
 	default:
-		return fmt.Errorf("unsuported output format")
+		return errors.New("unsuported output format")
 	}
 
 	if exo.outputFile != "" && OutputFormat(exo.outputFormat) == LOG {

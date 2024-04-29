@@ -17,6 +17,7 @@ limitations under the License.
 package gitlab
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -179,7 +180,7 @@ func (g *GitLab) GetRepository(owner, repo string) (*gitlab.Project, error) {
 	}
 
 	if len(projects) == 0 {
-		return nil, fmt.Errorf("no project found")
+		return nil, errors.New("no project found")
 	}
 
 	return projects[0], nil
