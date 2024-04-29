@@ -54,6 +54,7 @@ linters:
     - nilnil
     - nonamedreturns
     - nosprintfhostport
+    - perfsprint
     - prealloc
     - predeclared
     - promlinter

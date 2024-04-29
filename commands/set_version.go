@@ -17,6 +17,7 @@ limitations under the License.
 package commands
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -46,7 +47,7 @@ func addSetVersion(topLevel *cobra.Command) {
 // upgrading/downgrading a single dependency to the specified version.
 func runSetVersion(opts *options, args []string) error {
 	if len(args) != 2 {
-		return fmt.Errorf("expected exactly two arguments: <dependency> <version>")
+		return errors.New("expected exactly two arguments: <dependency> <version>")
 	}
 
 	client, err := dependency.NewLocalClient()
