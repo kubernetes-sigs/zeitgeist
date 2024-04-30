@@ -25,7 +25,7 @@ import (
 )
 
 func main() {
-	if err := commands.New(commands.Options{LocalOnly: true}).Execute(); err != nil {
+	if err := commands.New(commands.Options{LocalOnly: true}, commands.Local).Execute(); err != nil {
 		logrus.Fatalf("error during command execution: %#v", err)
 	}
 }

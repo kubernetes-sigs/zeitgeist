@@ -22,13 +22,12 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"sigs.k8s.io/zeitgeist/commands"
-
 	// import to link in remote functionality
 	_ "sigs.k8s.io/zeitgeist/remote/dependency"
 )
 
 func main() {
-	if err := commands.New(commands.Options{LocalOnly: false}).Execute(); err != nil {
+	if err := commands.New(commands.Options{LocalOnly: false}, commands.Remote).Execute(); err != nil {
 		logrus.Fatalf("error during command execution: %#v", err)
 	}
 }
