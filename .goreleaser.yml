@@ -44,7 +44,7 @@ builds:
     ldflags:
       - "{{ .Env.LDFLAGS }}"
 
-  - id: zeitgeist-full
+  - id: zeitgeist-local
     dir: .
     no_unique_dist_dir: true
     binary: zeitgeist-{{ .Arch }}-{{ .Os }}
@@ -134,7 +134,7 @@ sboms:
       - "json"
     artifacts: any
     documents:
-      - "zeitgeist-bom.json.spdx"
+      - "zeitgeist-remote-bom.json.spdx"
 
   - id: zeitgeist-full
     cmd: bom
@@ -181,4 +181,4 @@ release:
   prerelease: auto
 
 changelog:
-  skip: true
+  disable: true
