@@ -125,7 +125,7 @@ sboms:
     args:
       - generate
       - "--output"
-      - "zeitgeist-bom.json.spdx"
+      - "zeitgeist-remote-bom.json.spdx"
       - "-d"
       - "../"
       - "-c"
