@@ -23,7 +23,13 @@ import (
 	"sigs.k8s.io/release-utils/version"
 )
 
-const defaultConfigFile = "dependencies.yaml"
+type ZeitgeistType string
+
+const (
+	defaultConfigFile               = "dependencies.yaml"
+	Remote            ZeitgeistType = "zeitgeist-remote"
+	Local             ZeitgeistType = "zeitgeist"
+)
 
 var rootOpts = &options{}
 
@@ -31,9 +37,9 @@ type Options struct {
 	LocalOnly bool
 }
 
-func New(opts Options) *cobra.Command {
+func New(opts Options, zeitVersionType ZeitgeistType) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:               "zeitgeist",
+		Use:               string(zeitVersionType),
 		Short:             "Zeitgeist is a language-agnostic dependency checker",
 		PersistentPreRunE: initLogging,
 	}
