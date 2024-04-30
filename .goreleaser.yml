@@ -10,8 +10,9 @@ before:
     - go mod tidy
     - /bin/bash -c 'if [ -n "$(git --no-pager diff --exit-code go.mod go.sum)" ]; then exit 1; fi'
 
-gomod:
-  proxy: true
+# disabling for now, looks like we cannot build two different binaries, it build only the root one.
+# gomod:
+#   proxy: true
 
 builds:
   - id: zeitgeist-remote
