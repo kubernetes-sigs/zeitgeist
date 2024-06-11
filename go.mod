@@ -5,7 +5,7 @@ go 1.22.0
 toolchain go1.22.3
 
 require (
-	github.com/aws/aws-sdk-go v1.53.19
+	github.com/aws/aws-sdk-go v1.53.20
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/go-containerregistry v0.19.1
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.8.1
@@ -16,7 +16,7 @@ require (
 	github.com/xanzy/go-gitlab v0.105.0
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.15.1
-	sigs.k8s.io/release-sdk v0.11.1
+	sigs.k8s.io/release-sdk v0.12.0
 	sigs.k8s.io/release-utils v0.8.2
 )
 
@@ -114,7 +114,7 @@ require (
 	golang.org/x/crypto v0.23.0 // indirect
 	golang.org/x/mod v0.17.0 // indirect
 	golang.org/x/net v0.25.0 // indirect
-	golang.org/x/oauth2 v0.20.0 // indirect
+	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/term v0.20.0 // indirect
