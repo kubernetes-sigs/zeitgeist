@@ -11,7 +11,7 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
-	golang.org/x/mod v0.18.0
+	golang.org/x/mod v0.19.0
 	golang.org/x/net v0.26.0
 	k8s.io/apimachinery v0.30.2
 )
