@@ -12,7 +12,7 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/mod v0.19.0
-	golang.org/x/net v0.26.0
+	golang.org/x/net v0.27.0
 	k8s.io/apimachinery v0.30.2
 )
 
@@ -39,8 +39,8 @@ require (
 	github.com/skeema/knownhosts v1.2.2 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
-	golang.org/x/crypto v0.24.0 // indirect
-	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/crypto v0.25.0 // indirect
+	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/tools v0.18.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
