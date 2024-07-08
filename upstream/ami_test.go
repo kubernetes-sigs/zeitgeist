@@ -19,11 +19,10 @@ package upstream
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/stretchr/testify/require"
 )
 
 type mockedReceiveMsgs struct {
@@ -82,16 +81,15 @@ func TestGetAMI(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		tc := tc
 		t.Run(tc.Name, func(t *testing.T) {
 			tc.Input.ServiceClient = mockedReceiveMsgs{Resp: tc.Resp}
 
 			latestImage, err := tc.Input.LatestVersion()
 			if tc.ExpectedError {
-				require.NotNil(t, err)
+				require.Error(t, err)
 				require.EqualError(t, err, tc.Expected)
 			} else {
-				require.Nil(t, err)
+				require.NoError(t, err)
 				require.Equal(t, tc.Expected, latestImage)
 			}
 		})

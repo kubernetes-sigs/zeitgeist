@@ -28,7 +28,7 @@ const (
 	RegistryUserName = "REGISTRY_USERNAME"
 )
 
-// Container is a wrapper around Container related functionality
+// Container is a wrapper around Container related functionality.
 type Container struct {
 	client Client
 	Auth   authn.Basic
@@ -56,17 +56,17 @@ func New() *Container {
 	}
 }
 
-// SetClient can be used to manually set the internal Container client
+// SetClient can be used to manually set the internal Container client.
 func (c *Container) SetClient(client Client) {
 	c.client = client
 }
 
-// Client can be used to retrieve the Client type
+// Client can be used to retrieve the Client type.
 func (c *Container) Client() Client {
 	return c.client
 }
 
-// ListTags list all tag for a specific repository
+// ListTags list all tag for a specific repository.
 func (c *Container) ListTags(
 	src string,
 ) ([]string, error) {

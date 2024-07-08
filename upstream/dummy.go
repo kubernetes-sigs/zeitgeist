@@ -21,7 +21,7 @@ type Dummy struct {
 	Base
 }
 
-// LatestVersion always returns 1.0.0
+// LatestVersion always returns 1.0.0.
 func (upstream Dummy) LatestVersion() (string, error) {
 	return "1.0.0", nil
 }

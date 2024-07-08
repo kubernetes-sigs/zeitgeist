@@ -31,7 +31,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Client holds any client that is needed
+// Client holds any client that is needed.
 type Client interface {
 	// LocalCheck checks whether dependencies are in-sync locally
 	//
@@ -67,12 +67,12 @@ func (u UnsupportedError) Error() string {
 	return u.message
 }
 
-// Dependencies is used to deserialise the configuration file
+// Dependencies is used to deserialise the configuration file.
 type Dependencies struct {
 	Dependencies []*Dependency `yaml:"dependencies"`
 }
 
-// Dependency is the internal representation of a dependency
+// Dependency is the internal representation of a dependency.
 type Dependency struct {
 	Name string `yaml:"name"`
 	// Version of the dependency that should be present throughout your code
@@ -87,7 +87,7 @@ type Dependency struct {
 	RefPaths []*RefPath `yaml:"refPaths"`
 }
 
-// RefPath represents a file to check for a reference to the version
+// RefPath represents a file to check for a reference to the version.
 type RefPath struct {
 	// Path of the file to test
 	Path string `yaml:"path"`
@@ -95,7 +95,7 @@ type RefPath struct {
 	Match string `yaml:"match"`
 }
 
-// UnmarshalYAML implements custom unmarshalling of Dependency with validation
+// UnmarshalYAML implements custom unmarshalling of Dependency with validation.
 func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	// Use a different type to prevent infinite loop in unmarshalling
 	type DependencyYAML Dependency
@@ -169,14 +169,14 @@ func ToFile(dependencyFilePath string, dependencies *Dependencies) error {
 
 type LocalClient struct{}
 
-// NewClient returns all clients that can be used to the validation
+// NewClient returns all clients that can be used to the validation.
 func NewLocalClient() (Client, error) {
 	return &LocalClient{}, nil
 }
 
 // LocalCheck checks whether dependencies are in-sync locally
 //
-// Will return an error if the dependency cannot be found in the files it has defined, or if the version does not match
+// Will return an error if the dependency cannot be found in the files it has defined, or if the version does not match.
 func (c *LocalClient) LocalCheck(dependencyFilePath, basePath string) error {
 	log.Debugf("Base path: %s", basePath)
 	externalDeps, err := FromFile(dependencyFilePath)

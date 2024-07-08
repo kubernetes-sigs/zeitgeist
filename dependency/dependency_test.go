@@ -17,74 +17,72 @@ limitations under the License.
 package dependency
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
 	"gopkg.in/yaml.v3"
 )
 
 func TestUnsupported(t *testing.T) {
 	client, err := NewLocalClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	_, err = client.RemoteCheck("")
-	require.True(t, errors.As(err, &UnsupportedError{}))
+	require.ErrorAs(t, err, &UnsupportedError{})
 	_, err = client.RemoteExport("")
-	require.True(t, errors.As(err, &UnsupportedError{}))
+	require.ErrorAs(t, err, &UnsupportedError{})
 	_, err = client.Upgrade("", "")
-	require.True(t, errors.As(err, &UnsupportedError{}))
+	require.ErrorAs(t, err, &UnsupportedError{})
 }
 
 func TestLocalSuccess(t *testing.T) {
 	client, err := NewLocalClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/local.yaml", "../testdata")
-	require.Nil(t, err)
+	require.NoError(t, err)
 }
 
 func TestRemoteUnsupported(t *testing.T) {
 	_, err := NewRemoteClient()
-	require.True(t, errors.As(err, &UnsupportedError{}))
+	require.ErrorAs(t, err, &UnsupportedError{})
 }
 
 func TestBrokenFile(t *testing.T) {
 	client, err := NewLocalClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/does-not-exist", "../testdata")
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	err = client.LocalCheck("../testdata/Dockerfile", "../testdata")
-	require.NotNil(t, err)
+	require.Error(t, err)
 }
 
 func TestLocalOutOfSync(t *testing.T) {
 	client, err := NewLocalClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/local-out-of-sync.yaml", "../testdata")
-	require.NotNil(t, err)
+	require.Error(t, err)
 }
 
 func TestLocalInvalid(t *testing.T) {
 	client, err := NewLocalClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/local-invalid.yaml", "../testdata")
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Contains(t, err.Error(), "compiling regex")
 }
 
 func TestFileDoesntExist(t *testing.T) {
 	client, err := NewLocalClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/local-no-file.yaml", "../testdata")
-	require.NotNil(t, err)
+	require.Error(t, err)
 }
 
 func TestDeserialising(t *testing.T) {
@@ -99,7 +97,7 @@ func TestDeserialising(t *testing.T) {
 		var d Dependency
 
 		err := yaml.Unmarshal([]byte(invalid), &d)
-		require.NotNil(t, err)
+		require.Error(t, err)
 	}
 
 	validYamls := []string{
@@ -111,7 +109,7 @@ func TestDeserialising(t *testing.T) {
 		var d Dependency
 
 		err := yaml.Unmarshal([]byte(valid), &d)
-		require.Nil(t, err)
+		require.NoError(t, err)
 	}
 }
 
@@ -120,7 +118,7 @@ func TestSetVersion(t *testing.T) {
 	testFile := filepath.Join(dir, "test.txt")
 
 	err := os.WriteFile(testFile, []byte("APP1_VERSION: 0.0.1\nAPP2_VERSION: 0.0.1"), 0o644)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	err = os.WriteFile(filepath.Join(dir, "dependencies.yaml"), []byte(`
 dependencies:
@@ -140,16 +138,16 @@ dependencies:
     - path: test.txt
       match: APP2_VERSION
 `), 0o644)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	client, err := NewLocalClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	err = client.SetVersion(filepath.Join(dir, "dependencies.yaml"), dir, "app1", "2.1.0")
 	if err != nil {
 		t.Fatalf("SetVersion failed: %v", err)
 	}
 
 	got, err := os.ReadFile(testFile)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "APP1_VERSION: 2.1.0\nAPP2_VERSION: 0.0.1", string(got))
 }

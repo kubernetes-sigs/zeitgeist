@@ -40,7 +40,7 @@ type EKS struct {
 // LatestVersion returns the latest available EKS version.
 //
 // Retrieves all available EKS versions from the parsing HTML from AWS's documentation page
-// This feels brittle and wrong, but AFAIK there is no better way to do this
+// This feels brittle and wrong, but AFAIK there is no better way to do this.
 func (upstream EKS) LatestVersion() (string, error) {
 	log.Debug("Using EKS upstream")
 

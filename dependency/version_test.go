@@ -33,40 +33,40 @@ func TestSanity(t *testing.T) {
 	b := Version{"2.0.0", Alpha}
 
 	_, err = a.MoreRecentThan(b)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	a = Version{"1.0.0", "Foo"}
 	b = Version{"2.0.0", "Foo"}
 
 	_, err = a.MoreRecentThan(b)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	a = Version{"ami-1234", Semver}
 	b = Version{"ami-4567", Semver}
 
 	_, err = a.MoreRecentThan(b)
-	require.NotNil(t, err)
+	require.Error(t, err)
 
 	a = Version{"1.0.0", Semver}
 	b = Version{"bad-version", Semver}
 
 	_, err = a.MoreRecentThan(b)
-	require.NotNil(t, err)
+	require.Error(t, err)
 }
 
 func TestSemverVersions(t *testing.T) {
 	a := Version{"1.0.0", Semver}
 	b := Version{"2.0.0", Semver}
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeFalse, _ := a.MoreRecentThan(b)
 	require.False(t, shouldBeFalse)
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeTrue, _ := b.MoreRecentThan(a)
 	require.True(t, shouldBeTrue)
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeFalse, _ = a.MoreRecentThan(a)
 	require.False(t, shouldBeFalse)
 }
@@ -75,30 +75,30 @@ func TestSemverSensitiveVersions(t *testing.T) {
 	a := Version{"1.0.0", Semver}
 	b := Version{"1.1.0", Semver}
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeFalse, _ := b.MoreSensitivelyRecentThan(a, Major)
 	require.False(t, shouldBeFalse)
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeTrue, _ := b.MoreSensitivelyRecentThan(a, Minor)
 	require.True(t, shouldBeTrue)
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeTrue, _ = b.MoreSensitivelyRecentThan(a, Patch)
 	require.True(t, shouldBeTrue)
 
 	a = Version{"1.0.0", Semver}
 	b = Version{"1.0.1", Semver}
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeFalse, _ = b.MoreSensitivelyRecentThan(a, Major)
 	require.False(t, shouldBeFalse)
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeFalse, _ = b.MoreSensitivelyRecentThan(a, Minor)
 	require.False(t, shouldBeFalse)
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeTrue, _ = b.MoreSensitivelyRecentThan(a, Patch)
 	require.True(t, shouldBeTrue)
 
@@ -108,7 +108,7 @@ func TestSemverSensitiveVersions(t *testing.T) {
 	a = Version{"6.21.0", Semver}
 	b = Version{"8.1.8", Semver}
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeTrue, _ = b.MoreSensitivelyRecentThan(a, Minor)
 	require.True(t, shouldBeTrue)
 }
@@ -117,15 +117,15 @@ func TestAlphaVersions(t *testing.T) {
 	a := Version{"20180101-commitid", Alpha}
 	b := Version{"20180505-commitid", Alpha}
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeFalse, _ := a.MoreRecentThan(b)
 	require.False(t, shouldBeFalse)
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeTrue, _ := b.MoreRecentThan(a)
 	require.True(t, shouldBeTrue)
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeFalse, _ = a.MoreRecentThan(a)
 	require.False(t, shouldBeFalse)
 }
@@ -134,11 +134,11 @@ func TestRandomVersions(t *testing.T) {
 	a := Version{"ami-09bbefc07310f7914", Random}
 	b := Version{"ami-0199284372364b02a", Random}
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeTrue, _ := b.MoreRecentThan(a)
 	require.True(t, shouldBeTrue)
 
-	// nolint: errcheck
+	//nolint: errcheck
 	shouldBeFalse, _ := a.MoreRecentThan(a)
 	require.False(t, shouldBeFalse)
 }

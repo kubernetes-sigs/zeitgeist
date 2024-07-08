@@ -27,14 +27,14 @@ import (
 )
 
 const (
-	// TokenEnvKey is the default GitLab token environment variable key
+	// TokenEnvKey is the default GitLab token environment variable key.
 	TokenEnvKey = "GITLAB_TOKEN"
-	// PrivateTokenEnvKey is the private GitLab token environment variable key
+	// PrivateTokenEnvKey is the private GitLab token environment variable key.
 	PrivateTokenEnvKey = "GITLAB_PRIVATE_TOKEN"
 	apiVersionPath     = "api/v4/"
 )
 
-// GitLab is a wrapper around GitLab related functionality
+// GitLab is a wrapper around GitLab related functionality.
 type GitLab struct {
 	client Client
 }
@@ -132,12 +132,12 @@ func (g *gitlabClient) ListTags(owner, repo string, opt *gitlab.ListTagsOptions,
 	return tags, resp, err
 }
 
-// SetClient can be used to manually set the internal GitLab client
+// SetClient can be used to manually set the internal GitLab client.
 func (g *GitLab) SetClient(client Client) {
 	g.client = client
 }
 
-// Client can be used to retrieve the Client type
+// Client can be used to retrieve the Client type.
 func (g *GitLab) Client() Client {
 	return g.client
 }

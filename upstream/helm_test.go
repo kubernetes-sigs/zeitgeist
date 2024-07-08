@@ -24,7 +24,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
 	"gopkg.in/yaml.v3"
 )
 
@@ -96,7 +95,7 @@ func TestInvalidHelmValues(t *testing.T) {
 
 // We need to set up a local webserver to serve the Helm repo index
 // (As far as I can tell, it can't read directly from a file)
-// We do that by instantiating an httptest server in each test that requires it
+// We do that by instantiating an httptest server in each test that requires it.
 func helmHandler(rw http.ResponseWriter, req *http.Request) {
 	url := req.URL.String()
 	switch url {
@@ -115,7 +114,7 @@ func helmHandler(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-// Negative tests
+// Negative tests.
 func TestHelmRepoNotFoundLocal(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(helmHandler))
 	defer server.Close()
@@ -173,7 +172,7 @@ func TestHelmUnsatisfiableConstraintLocal(t *testing.T) {
 	require.Empty(t, latestVersion)
 }
 
-// Happy tests
+// Happy tests.
 func TestHelmHappyPathLocal(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(helmHandler))
 	defer server.Close()
@@ -186,7 +185,7 @@ func TestHelmHappyPathLocal(t *testing.T) {
 	latestVersion, err := h.LatestVersion()
 	require.NoError(t, err)
 	require.NotEmpty(t, latestVersion)
-	require.Equal(t, latestVersion, "0.2.0")
+	require.Equal(t, "0.2.0", latestVersion)
 
 	h2 := Helm{
 		Repo:  server.URL,
@@ -196,7 +195,7 @@ func TestHelmHappyPathLocal(t *testing.T) {
 	latestVersion2, err := h2.LatestVersion()
 	require.NoError(t, err)
 	require.NotEmpty(t, latestVersion2)
-	require.Equal(t, latestVersion2, "2.0.0")
+	require.Equal(t, "2.0.0", latestVersion2)
 }
 
 func TestHelmHappyPathWithConstraintLocal(t *testing.T) {
@@ -212,7 +211,7 @@ func TestHelmHappyPathWithConstraintLocal(t *testing.T) {
 	latestVersion, err := h.LatestVersion()
 	require.NoError(t, err)
 	require.NotEmpty(t, latestVersion)
-	require.Equal(t, latestVersion, "0.1.2")
+	require.Equal(t, "0.1.2", latestVersion)
 }
 
 func TestHelmHappyPathWithPrelease(t *testing.T) {
@@ -227,5 +226,5 @@ func TestHelmHappyPathWithPrelease(t *testing.T) {
 	latestVersion, err := h.LatestVersion()
 	require.NoError(t, err)
 	require.NotEmpty(t, latestVersion)
-	require.Equal(t, latestVersion, "0.1.0")
+	require.Equal(t, "0.1.0", latestVersion)
 }

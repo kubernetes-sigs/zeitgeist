@@ -1,6 +1,6 @@
 ---
 run:
-  deadline: 10m
+  timeout: 10m
 issues:
   exclude-rules:
     # counterfeiter fakes are usually named 'fake_<something>.go'
@@ -16,21 +16,31 @@ linters:
     - asciicheck
     - bidichk
     - bodyclose
+    - canonicalheader
     - containedctx
     - contextcheck
+    - copyloopvar
     - decorder
     - dogsled
     - dupl
+    - dupword
     - durationcheck
     - errcheck
     - errchkjson
     - errname
     - errorlint
-    - execinquery
+    - exportloopref
+    - fatcontext
     - forcetypeassert
+    - gci
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecksumtype
+    - gocognit
     - goconst
     - gocritic
     - gocyclo
+    - godot
     - godox
     - gofmt
     - gofumpt
@@ -40,31 +50,42 @@ linters:
     - gomodguard
     - goprintffuncname
     - gosimple
+    - gosmopolitan
     - govet
     - grouper
     - importas
     - ineffassign
     - interfacebloat
-    - logrlint
+    - intrange
+    - loggercheck
     - maintidx
     - makezero
+    - mirror
     - misspell
     - nakedret
+    - nestif
     - nilerr
     - nilnil
+    - nolintlint
     - nonamedreturns
     - nosprintfhostport
     - perfsprint
     - prealloc
     - predeclared
     - promlinter
+    - protogetter
     - reassign
     - revive
     - rowserrcheck
+    - sloglint
+    - spancheck
     - sqlclosecheck
     - staticcheck
     - stylecheck
+    - tagalign
     - tenv
+    - testableexamples
+    - testifylint
     - thelper
     - tparallel
     - typecheck
@@ -74,26 +95,24 @@ linters:
     - usestdlibvars
     - wastedassign
     - whitespace
+    - zerologlint
     # - cyclop
+    # - depguard
+    # - err113
     # - exhaustive
     # - exhaustruct
-    # - exportloopref
     # - forbidigo
     # - funlen
-    # - gci
     # - gochecknoglobals
     # - gochecknoinits
-    # - gocognit
-    # - godot
-    # - goerr113
-    # - gomnd
     # - gosec
+    # - inamedparam
     # - ireturn
     # - lll
-    # - nestif
+    # - mnd
+    # - musttag
     # - nlreturn
     # - noctx
-    # - nolintlint
     # - paralleltest
     # - tagliatelle
     # - testpackage
@@ -101,6 +120,13 @@ linters:
     # - wrapcheck
     # - wsl
 linters-settings:
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(k8s.io)
+      - prefix(sigs.k8s.io)
+      - localmodule
   godox:
     keywords:
       - BUG
@@ -111,78 +137,74 @@ linters-settings:
     check-blank: true
   gocritic:
     enabled-checks:
-      # Diagnostic
+      - appendCombine
       - badLock
       - badRegexp
       - badSorting
+      - badSyncOnceFunc
+      - boolExprSimplify
+      - builtinShadow
       - builtinShadowDecl
       - commentedOutCode
+      - commentedOutImport
       - deferInLoop
+      - deferUnlambda
+      - docStub
+      - dupImport
       - dynamicFmtString
       - emptyDecl
+      - emptyFallthrough
+      - emptyStringTest
+      - equalFold
       - evalOrder
+      - exposedSyncMutex
       - externalErrorReassign
       - filepathJoin
+      - hexLiteral
+      - httpNoBody
+      - hugeParam
+      - importShadow
+      - indexAlloc
+      - initClause
+      - methodExprCall
+      - nestingReduce
       - nilValReturn
+      - octalLiteral
+      - paramTypeCombine
+      - preferDecodeRune
+      - preferFilepathJoin
+      - preferFprint
+      - preferStringWriter
+      - preferWriteByte
+      - ptrToRefParam
+      - rangeExprCopy
+      - rangeValCopy
+      - redundantSprint
       - regexpPattern
+      - regexpSimplify
       - returnAfterHttpError
+      - ruleguard
+      - sliceClear
       - sloppyReassign
       - sortSlice
       - sprintfQuotedString
       - sqlQuery
-      - syncMapLoadAndDelete
-      - truncateCmp
-      - unnecessaryDefer
-      - weakCond
-
-      # Performance
-      - appendCombine
-      - equalFold
-      - hugeParam
-      - indexAlloc
-      - preferDecodeRune
-      - preferFprint
-      - preferStringWriter
-      - preferWriteByte
-      - rangeExprCopy
-      - rangeValCopy
-      - sliceClear
-      - stringXbytes
-
-      # Style
-      - boolExprSimplify
-      - commentedOutImport
-      - deferUnlambda
-      - docStub
-      - dupImport
-      - emptyFallthrough
-      - emptyStringTest
-      - exposedSyncMutex
-      - hexLiteral
-      - httpNoBody
-      - methodExprCall
-      - octalLiteral
-      - preferFilepathJoin
-      - redundantSprint
-      - regexpSimplify
-      - ruleguard
       - stringConcatSimplify
+      - stringXbytes
       - stringsCompare
+      - syncMapLoadAndDelete
       - timeExprSimplify
+      - todoCommentWithoutDetail
       - tooManyResultsChecker
+      - truncateCmp
       - typeAssertChain
       - typeDefFirst
-      - unlabelStmt
-      - yodaStyleExpr
-      # - whyNoLint
-
-      # Opinionated
-      - builtinShadow
-      - importShadow
-      - initClause
-      - nestingReduce
-      - paramTypeCombine
-      - ptrToRefParam
       - typeUnparen
+      - uncheckedInlineErr
+      - unlabelStmt
       - unnamedResult
       - unnecessaryBlock
+      - unnecessaryDefer
+      - weakCond
+      - yodaStyleExpr
+      # - whyNoLint
