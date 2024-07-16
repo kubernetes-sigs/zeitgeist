@@ -55,7 +55,7 @@ func TestBranchesSuccessEmpty(t *testing.T) {
 	res, err := sut.Branches("", "")
 
 	// Then
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Empty(t, res)
 }
 
@@ -68,7 +68,7 @@ func TestPrivateBranchesSuccessEmpty(t *testing.T) {
 	res, err := sut.Branches("", "")
 
 	// Then
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Empty(t, res)
 }
 
@@ -81,7 +81,7 @@ func TestBranchesFailed(t *testing.T) {
 	res, err := sut.Branches("", "")
 
 	// Then
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Nil(t, res, nil)
 }
 
@@ -94,7 +94,7 @@ func TestPrivateBranchesFailed(t *testing.T) {
 	res, err := sut.Branches("", "")
 
 	// Then
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Nil(t, res, nil)
 }
 
@@ -107,7 +107,7 @@ func TestReleasesSuccessEmpty(t *testing.T) {
 	res, err := sut.Releases("", "")
 
 	// Then
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Empty(t, res)
 }
 
@@ -120,7 +120,7 @@ func TestPrivateReleasesSuccessEmpty(t *testing.T) {
 	res, err := sut.Releases("", "")
 
 	// Then
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Empty(t, res)
 }
 
@@ -133,7 +133,7 @@ func TestReleasesFailed(t *testing.T) {
 	res, err := sut.Releases("", "")
 
 	// Then
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Nil(t, res, nil)
 }
 
@@ -146,7 +146,7 @@ func TestPrivateReleasesFailed(t *testing.T) {
 	res, err := sut.Releases("", "")
 
 	// Then
-	require.NotNil(t, err)
+	require.Error(t, err)
 	require.Nil(t, res, nil)
 }
 
@@ -168,7 +168,7 @@ func TestReleasesSuccessNoPreReleases(t *testing.T) {
 	res, err := sut.Releases("", "")
 
 	// Then
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Len(t, res, 3)
 	require.Equal(t, tag1, res[0].TagName)
 	require.Equal(t, tag2, res[1].TagName)
@@ -234,7 +234,7 @@ func TestListTags(t *testing.T) {
 	res, err := sut.ListTags("", "")
 
 	// Then
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Len(t, res, 3)
 	require.Equal(t, tag1, res[0].Name)
 	require.Equal(t, tag2, res[1].Name)

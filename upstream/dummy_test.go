@@ -20,7 +20,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
 	"gopkg.in/yaml.v3"
 )
 
@@ -34,5 +33,5 @@ func TestDummy(t *testing.T) {
 
 	v, err := u.LatestVersion()
 	require.NoError(t, err)
-	require.Equal(t, v, "1.0.0")
+	require.Equal(t, "1.0.0", v)
 }

@@ -26,7 +26,7 @@ import (
 	"sigs.k8s.io/release-sdk/github"
 )
 
-// Github upstream representation
+// Github upstream representation.
 type Github struct {
 	Base `mapstructure:",squash"`
 

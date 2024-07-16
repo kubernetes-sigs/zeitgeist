@@ -26,13 +26,12 @@ import (
 
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
-
 	"helm.sh/helm/v3/pkg/cli"
 	"helm.sh/helm/v3/pkg/getter"
 	"helm.sh/helm/v3/pkg/repo"
 )
 
-// Helm upstream representation
+// Helm upstream representation.
 type Helm struct {
 	Base `mapstructure:",squash"`
 

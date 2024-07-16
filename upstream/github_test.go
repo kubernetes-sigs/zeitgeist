@@ -21,7 +21,6 @@ import (
 
 	"github.com/blang/semver/v4"
 	"github.com/stretchr/testify/require"
-
 	"gopkg.in/yaml.v3"
 )
 

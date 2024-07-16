@@ -27,7 +27,7 @@ import (
 	"sigs.k8s.io/zeitgeist/pkg/container"
 )
 
-// Container upstream representation
+// Container upstream representation.
 type Container struct {
 	Base `mapstructure:",squash"`
 	// Registry URL, e.g. gcr.io/k8s-staging-kubernetes/conformance
@@ -39,8 +39,8 @@ type Container struct {
 
 // LatestVersion returns the latest tag for the given repository
 // (depending on the Constraints if set).
-func (upstream Container) LatestVersion() (string, error) { // nolint:gocritic
-	log.Debugf("Using Container flavour")
+func (upstream Container) LatestVersion() (string, error) {
+	log.Debug("Using Container flavour")
 	return highestSemanticImageTag(&upstream)
 }
 

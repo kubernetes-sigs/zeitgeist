@@ -22,11 +22,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/stretchr/testify/require"
 
 	deppkg "sigs.k8s.io/zeitgeist/dependency"
 )
@@ -56,52 +55,52 @@ func TestRemoteSuccess(t *testing.T) {
 	}
 
 	_, err := client.RemoteCheck("../testdata/remote.yaml")
-	require.Nil(t, err)
+	require.NoError(t, err)
 }
 
 func TestDummyRemote(t *testing.T) {
 	client, err := NewRemoteClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	_, err = client.RemoteCheck("../testdata/remote-dummy.yaml")
-	require.Nil(t, err)
+	require.NoError(t, err)
 }
 
 func TestDummyRemoteExportWithoutUpdate(t *testing.T) {
 	client, err := NewRemoteClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	updates, err := client.RemoteExport("../testdata/remote-dummy.yaml")
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Empty(t, updates)
 }
 
 func TestDummyRemoteExportWithUpdate(t *testing.T) {
 	client, err := NewRemoteClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	updates, err := client.RemoteExport("../testdata/remote-dummy-with-update.yaml")
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.NotEmpty(t, updates)
-	require.Equal(t, updates[0].Name, "example")
-	require.Equal(t, updates[0].Version, "0.0.1")
-	require.Equal(t, updates[0].NewVersion, "1.0.0")
+	require.Equal(t, "example", updates[0].Name)
+	require.Equal(t, "0.0.1", updates[0].Version)
+	require.Equal(t, "1.0.0", updates[0].NewVersion)
 }
 
 func TestRemoteConstraint(t *testing.T) {
 	client, err := NewRemoteClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	_, err = client.RemoteCheck("../testdata/remote-constraint.yaml")
-	require.Nil(t, err)
+	require.NoError(t, err)
 }
 
 func TestUnknownFlavour(t *testing.T) {
 	client, err := NewRemoteClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	_, err = client.RemoteCheck("../testdata/unknown-upstream.yaml")
-	require.NotNil(t, err)
+	require.Error(t, err)
 }
 
 func TestCheckUpstreamVersions(t *testing.T) {
@@ -136,9 +135,9 @@ func TestCheckUpstreamVersions(t *testing.T) {
 	}
 
 	client, err := NewRemoteClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	updateInfos, err := client.CheckUpstreamVersions(deps)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	expectedUpdateInfos := []deppkg.VersionUpdateInfo{
 		{
@@ -175,7 +174,7 @@ func TestUpgrade(t *testing.T) {
 	testFile := filepath.Join(dir, "test.txt")
 
 	err := os.WriteFile(testFile, []byte("VERSION: 0.0.1\nOTHER: 0.0.1"), 0o644)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	err = os.WriteFile(filepath.Join(dir, "dependencies.yaml"), []byte(`
 dependencies:
@@ -195,19 +194,19 @@ dependencies:
     - path: test.txt
       match: OTHER
 `), 0o644)
-	require.Nil(t, err)
+	require.NoError(t, err)
 
 	client, err := NewRemoteClient()
-	require.Nil(t, err)
+	require.NoError(t, err)
 	ret, err := client.Upgrade(filepath.Join(dir, "dependencies.yaml"), dir)
 	if err != nil {
 		t.Fatalf("Upgrade failed: %v", err)
 	}
 
-	require.Equal(t, 1, len(ret))
+	require.Len(t, ret, 1)
 	require.Equal(t, "Upgraded dependency upgrade from version 0.0.1 to version 1.0.0", ret[0])
 
 	got, err := os.ReadFile(testFile)
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Equal(t, "VERSION: 1.0.0\nOTHER: 0.0.1", string(got))
 }

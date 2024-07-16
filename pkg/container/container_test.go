@@ -43,7 +43,7 @@ func TestTagsSuccessEmpty(t *testing.T) {
 	res, err := sut.Client().ListTags("honk/honk")
 
 	// Then
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Empty(t, res)
 }
 
@@ -56,7 +56,7 @@ func TestTagsFailed(t *testing.T) {
 	_, err := sut.Client().ListTags("honk/honk")
 
 	// Then
-	require.NotNil(t, err)
+	require.Error(t, err)
 }
 
 func TestTagsSuccess(t *testing.T) {
@@ -68,6 +68,6 @@ func TestTagsSuccess(t *testing.T) {
 	res, err := sut.Client().ListTags("honk/honk")
 
 	// Then
-	require.Nil(t, err)
+	require.NoError(t, err)
 	require.Len(t, res, 3)
 }

@@ -22,7 +22,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"sigs.k8s.io/zeitgeist/commands"
-	// import to link in remote functionality
+	// import to link in remote functionality.
 	_ "sigs.k8s.io/zeitgeist/remote/dependency"
 )
 

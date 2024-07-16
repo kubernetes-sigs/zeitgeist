@@ -23,10 +23,11 @@ import (
 
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
+
 	"sigs.k8s.io/zeitgeist/pkg/gitlab"
 )
 
-// GitLab upstream representation
+// GitLab upstream representation.
 type GitLab struct {
 	Base `mapstructure:",squash"`
 
@@ -49,7 +50,7 @@ type GitLab struct {
 // for the given repository (depending on the Constraints if set).
 //
 // To authenticate your requests, use the GITLAB_TOKEN environment variable.
-func (upstream GitLab) LatestVersion() (string, error) { // nolint:gocritic
+func (upstream GitLab) LatestVersion() (string, error) { //nolint:gocritic
 	log.Debug("Using GitLab flavour")
 	return latestGitLabVersion(&upstream)
 }

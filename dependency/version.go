@@ -24,21 +24,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Version is the internal representation of a Version as a string and a scheme
+// Version is the internal representation of a Version as a string and a scheme.
 type Version struct {
 	Version string
 	Scheme  VersionScheme
 }
 
-// VersionScheme informs us on how to compare two versions
+// VersionScheme informs us on how to compare two versions.
 type VersionScheme string
 
 const (
-	// Semver [Semantic versioning](https://semver.org/), default
+	// Semver [Semantic versioning](https://semver.org/), default.
 	Semver VersionScheme = "semver"
-	// Alpha Alphanumeric, will use standard string sorting
+	// Alpha Alphanumeric, will use standard string sorting.
 	Alpha VersionScheme = "alpha"
-	// Random when releases do not support sorting (e.g. hashes)
+	// Random when releases do not support sorting (e.g. hashes).
 	Random VersionScheme = "random"
 )
 
@@ -50,24 +50,24 @@ type VersionUpdateInfo struct {
 }
 
 // VersionUpdate represents the schema of the output format
-// The output format is dictated by exportOptions.outputFormat
+// The output format is dictated by exportOptions.outputFormat.
 type VersionUpdate struct {
-	Name       string `yaml:"name" json:"name"`
-	Version    string `yaml:"version" json:"version"`
-	NewVersion string `yaml:"new_version" json:"new_version"`
+	Name       string `json:"name"        yaml:"name"`
+	Version    string `json:"version"     yaml:"version"`
+	NewVersion string `json:"new_version" yaml:"new_version"`
 }
 
 // VersionSensitivity informs us on how to compare whether a version is more
 // recent than another, for example to only notify on new major versions
-// Only applicable to Semver versioning
+// Only applicable to Semver versioning.
 type VersionSensitivity string
 
 const (
-	// Patch version, e.g. 1.1.1 -> 1.1.2, default
+	// Patch version, e.g. 1.1.1 -> 1.1.2, default.
 	Patch VersionSensitivity = "patch"
-	// Minor version, e.g. 1.1.1 -> 1.2.0
+	// Minor version, e.g. 1.1.1 -> 1.2.0.
 	Minor VersionSensitivity = "minor"
-	// Major version, e.g. 1.1.1 -> 2.0.0
+	// Major version, e.g. 1.1.1 -> 2.0.0.
 	Major VersionSensitivity = "major"
 )
 
@@ -118,7 +118,7 @@ func (a Version) MoreSensitivelyRecentThan(b Version, sensitivity VersionSensiti
 	}
 }
 
-// semverCompare compares two semver versions depending on a sensitivity level
+// semverCompare compares two semver versions depending on a sensitivity level.
 func semverCompare(a, b semver.Version, sensitivity VersionSensitivity) (bool, error) {
 	switch sensitivity {
 	case Major:

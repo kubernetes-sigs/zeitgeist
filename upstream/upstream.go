@@ -29,6 +29,7 @@ import (
 
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
+
 	"sigs.k8s.io/release-utils/util"
 )
 
@@ -38,34 +39,34 @@ type Base struct {
 }
 
 // LatestVersion will always return an error.
-// Base is only used to determine which actual upstream needs to be called, so it cannot return a sensible value
+// Base is only used to determine which actual upstream needs to be called, so it cannot return a sensible value.
 func (u *Base) LatestVersion() (string, error) {
 	return "", errors.New("cannot determine latest version for Base")
 }
 
-// Flavour is an enum of all supported upstreams and their string representation
+// Flavour is an enum of all supported upstreams and their string representation.
 type Flavour string
 
 const (
-	// GithubFlavour is for Github releases
+	// GithubFlavour is for Github releases.
 	GithubFlavour Flavour = "github"
 
-	// GitLabFlavour is for GitLab releases
+	// GitLabFlavour is for GitLab releases.
 	GitLabFlavour Flavour = "gitlab"
 
-	// AMIFlavour is for Amazon Machine Images
+	// AMIFlavour is for Amazon Machine Images.
 	AMIFlavour Flavour = "ami"
 
-	// HelmFlavour is for Helm Charts
+	// HelmFlavour is for Helm Charts.
 	HelmFlavour Flavour = "helm"
 
-	// ContainerFlavour is for Container Images
+	// ContainerFlavour is for Container Images.
 	ContainerFlavour Flavour = "container"
 
-	// EKSFlavour is for Elastic Kubernetes Service
+	// EKSFlavour is for Elastic Kubernetes Service.
 	EKSFlavour Flavour = "eks"
 
-	// DummyFlavour is for testing
+	// DummyFlavour is for testing.
 	DummyFlavour Flavour = "dummy"
 
 	DefaultSemVerConstraints = ">= 0.0.0"
