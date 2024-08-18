@@ -169,6 +169,53 @@ func TestCheckUpstreamVersions(t *testing.T) {
 	}
 }
 
+func TestCheckUpstreamVersionsTolerant(t *testing.T) {
+	deps := []*deppkg.Dependency{
+		{
+			Name:        "test",
+			Version:     "0.0.1",
+			Scheme:      deppkg.Semver,
+			Sensitivity: deppkg.Patch,
+			Upstream: map[string]string{
+				"flavour": "dummy",
+				"latest":  "2.0",
+			},
+			RefPaths: []*deppkg.RefPath{
+				{
+					Path:  "test",
+					Match: "test",
+				},
+			},
+		},
+	}
+
+	client, err := NewRemoteClient()
+	require.NoError(t, err)
+	updateInfos, err := client.CheckUpstreamVersions(deps)
+	require.NoError(t, err)
+
+	expectedUpdateInfos := []deppkg.VersionUpdateInfo{
+		{
+			Name: "test",
+			Current: deppkg.Version{
+				Version: "0.0.1",
+				Scheme:  deppkg.Semver,
+			},
+			Latest: deppkg.Version{
+				Version: "2.0",
+				Scheme:  deppkg.Semver,
+			},
+			UpdateAvailable: true,
+		},
+	}
+
+	for i, updateInfo := range updateInfos {
+		if !reflect.DeepEqual(updateInfo, expectedUpdateInfos[i]) {
+			t.Errorf("checkUpstreamVersions mismatch at index %d:\ngot: %#v\nexpected: %#v", i, updateInfo, expectedUpdateInfos[i])
+		}
+	}
+}
+
 func TestUpgrade(t *testing.T) {
 	dir := t.TempDir()
 	testFile := filepath.Join(dir, "test.txt")

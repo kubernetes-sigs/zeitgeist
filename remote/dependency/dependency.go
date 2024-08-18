@@ -357,12 +357,12 @@ func (c *RemoteClient) CheckUpstreamVersions(deps []*deppkg.Dependency) ([]deppk
 		}
 
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("dependency %s: %w", dep.Name, err)
 		}
 
 		updateAvailable, err := latestVersion.MoreSensitivelyRecentThan(currentVersion, dep.Sensitivity)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("comparing dependency %s: %w", dep.Name, err)
 		}
 
 		versionUpdates = append(versionUpdates, deppkg.VersionUpdateInfo{
