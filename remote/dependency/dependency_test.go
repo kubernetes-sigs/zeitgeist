@@ -17,34 +17,34 @@ limitations under the License.
 package dependency
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/stretchr/testify/require"
 
 	deppkg "sigs.k8s.io/zeitgeist/dependency"
 )
 
-type mockedReceiveMsgs struct {
-	ec2iface.EC2API
+type mockedEc2DescribeImagesAPI struct {
 	Resp ec2.DescribeImagesOutput
 }
 
-func (m mockedReceiveMsgs) DescribeImages(_ *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
+func (m mockedEc2DescribeImagesAPI) DescribeImages(ctx context.Context, params *ec2.DescribeImagesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error) {
 	// Only need to return mocked response output
 	return &m.Resp, nil
 }
 
 func TestRemoteSuccess(t *testing.T) {
 	var client RemoteClient
-	client.AWSEC2Client = mockedReceiveMsgs{
+	client.AWSEC2Client = mockedEc2DescribeImagesAPI{
 		Resp: ec2.DescribeImagesOutput{
-			Images: []*ec2.Image{
+			Images: []types.Image{
 				{
 					CreationDate: aws.String("2019-05-10T13:17:12.000Z"),
 					ImageId:      aws.String("ami-09bbefc07310f7914"),

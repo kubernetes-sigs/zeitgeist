@@ -17,22 +17,26 @@ limitations under the License.
 package upstream
 
 import (
+	"context"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	"github.com/stretchr/testify/require"
 )
 
+/*
 type mockedReceiveMsgs struct {
-	ec2iface.EC2API
+	ec2.Client
 	Resp ec2.DescribeImagesOutput
 }
+*/
 
-func (m mockedReceiveMsgs) DescribeImages(_ *ec2.DescribeImagesInput) (*ec2.DescribeImagesOutput, error) {
-	// Only need to return mocked response output
-	return &m.Resp, nil
+type mockEc2Api func(ctx context.Context, params *ec2.DescribeImagesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error)
+
+func (m mockEc2Api) DescribeImages(ctx context.Context, params *ec2.DescribeImagesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error) {
+	return m(ctx, params, optFns...)
 }
 
 func TestGetAMI(t *testing.T) {
@@ -40,6 +44,7 @@ func TestGetAMI(t *testing.T) {
 		Name          string
 		Input         AMI
 		Resp          ec2.DescribeImagesOutput
+		Client        func(t *testing.T) mockEc2Api
 		Expected      string
 		ExpectedError bool
 	}{
@@ -49,19 +54,23 @@ func TestGetAMI(t *testing.T) {
 				Owner: "amazon",
 				Name:  "amazon-eks-node-1.13-*",
 			},
-			Resp: ec2.DescribeImagesOutput{
-				Images: []*ec2.Image{
-					{
-						CreationDate: aws.String("2019-05-10T13:17:12.000Z"),
-						ImageId:      aws.String("ami-123oldimage"),
-						Name:         aws.String("amazon-eks-node-1.13-honk"),
-					},
-					{
-						CreationDate: aws.String("2019-05-12T13:17:12.000Z"),
-						ImageId:      aws.String("ami-honk"),
-						Name:         aws.String("amazon-eks-node-1.13-old"),
-					},
-				},
+			Client: func(t *testing.T) mockEc2Api {
+				return mockEc2Api(func(ctx context.Context, params *ec2.DescribeImagesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error) {
+					return &ec2.DescribeImagesOutput{
+						Images: []types.Image{
+							{
+								CreationDate: aws.String("2019-05-10T13:17:12.000Z"),
+								ImageId:      aws.String("ami-123oldimage"),
+								Name:         aws.String("amazon-eks-node-1.13-honk"),
+							},
+							{
+								CreationDate: aws.String("2019-05-12T13:17:12.000Z"),
+								ImageId:      aws.String("ami-honk"),
+								Name:         aws.String("amazon-eks-node-1.13-old"),
+							},
+						},
+					}, nil
+				})
 			},
 			Expected:      "ami-honk",
 			ExpectedError: false,
@@ -72,8 +81,12 @@ func TestGetAMI(t *testing.T) {
 				Owner: "honk",
 				Name:  "this-ami-doesnt-exist-zeitgeist",
 			},
-			Resp: ec2.DescribeImagesOutput{
-				Images: []*ec2.Image{},
+			Client: func(t *testing.T) mockEc2Api {
+				return mockEc2Api(func(ctx context.Context, params *ec2.DescribeImagesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error) {
+					return &ec2.DescribeImagesOutput{
+						Images: []types.Image{},
+					}, nil
+				})
 			},
 			Expected:      "no AMI found for upstream this-ami-doesnt-exist-zeitgeist",
 			ExpectedError: true,
@@ -82,8 +95,7 @@ func TestGetAMI(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			tc.Input.ServiceClient = mockedReceiveMsgs{Resp: tc.Resp}
-
+			tc.Input.ServiceClient = tc.Client(t)
 			latestImage, err := tc.Input.LatestVersion()
 			if tc.ExpectedError {
 				require.Error(t, err)

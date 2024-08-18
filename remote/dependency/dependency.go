@@ -18,13 +18,14 @@ limitations under the License.
 package dependency
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/mitchellh/mapstructure"
 	log "github.com/sirupsen/logrus"
 
@@ -38,7 +39,11 @@ func init() {
 
 type RemoteClient struct {
 	LocalClient  deppkg.Client
-	AWSEC2Client ec2iface.EC2API
+	AWSEC2Client EC2DescribeImagesAPI
+}
+
+type EC2DescribeImagesAPI interface {
+	DescribeImages(ctx context.Context, params *ec2.DescribeImagesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error)
 }
 
 func NewRemoteClient() (deppkg.Client, error) {

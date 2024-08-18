@@ -17,13 +17,14 @@ limitations under the License.
 package upstream
 
 import (
+	"context"
 	"fmt"
 	"sort"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ec2"
-	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/ec2"
+	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -41,7 +42,11 @@ type AMI struct {
 	Name string
 
 	// ServiceClient is the AWS client to talk to AWS API
-	ServiceClient ec2iface.EC2API
+	ServiceClient EC2DescribeImagesAPI
+}
+
+type EC2DescribeImagesAPI interface {
+	DescribeImages(ctx context.Context, params *ec2.DescribeImagesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error)
 }
 
 // NewAWSClient return a new aws service client for ec2
@@ -50,13 +55,14 @@ type AMI struct {
 // `~/.aws/config` and `~/.aws/credentials` files, and support environment variables.
 // See AWS documentation for more details:
 // https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
-func NewAWSClient() *ec2.EC2 {
+func NewAWSClient() *ec2.Client {
 	// Create a new session based on shared / env credentials
-	s := session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-	}))
+	cfg, err := config.LoadDefaultConfig(context.TODO())
+	if err != nil {
+		log.Fatal("failed to load aws config", err)
+	}
 
-	return ec2.New(s)
+	return ec2.NewFromConfig(cfg)
 }
 
 // LatestVersion returns the latest version of an AMI.
@@ -68,19 +74,19 @@ func (upstream AMI) LatestVersion() (string, error) {
 	log.Debug("Using AMI upstream")
 
 	// Generate filters based on configuration
-	var filters []*ec2.Filter
-	filters = append(filters, &ec2.Filter{
+	var filters []types.Filter
+	filters = append(filters, types.Filter{
 		Name:   aws.String("name"),
-		Values: []*string{aws.String(upstream.Name)},
+		Values: []string{upstream.Name},
 	})
 
 	input := &ec2.DescribeImagesInput{
-		Owners:  []*string{aws.String(upstream.Owner)},
+		Owners:  []string{upstream.Owner},
 		Filters: filters,
 	}
 
 	// Do the actual API call
-	result, err := upstream.ServiceClient.DescribeImages(input)
+	result, err := upstream.ServiceClient.DescribeImages(context.TODO(), input)
 	if err != nil {
 		return "", err
 	}
@@ -89,14 +95,14 @@ func (upstream AMI) LatestVersion() (string, error) {
 
 	// Sort images by creation time, so we can return the latest
 	sort.Slice(images, func(i, j int) bool { return *images[i].CreationDate > *images[j].CreationDate })
-	log.Debugf("Matched AMIs:\n%s", images)
+	log.Debugf("Matched AMIs:\n%v", images)
 
 	if len(images) < 1 {
 		return "", fmt.Errorf("no AMI found for upstream %s", upstream.Name)
 	}
 
 	latestImage := images[0]
-	log.Debugf("Latest AMI: %s\n", latestImage)
+	log.Debugf("Latest AMI ID: %v\n", *latestImage.ImageId)
 
 	return *latestImage.ImageId, nil
 }
