@@ -57,7 +57,7 @@ type EC2DescribeImagesAPI interface {
 // https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
 func NewAWSClient() *ec2.Client {
 	// Create a new session based on shared / env credentials
-	cfg, err := config.LoadDefaultConfig(context.TODO())
+	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		log.Fatal("failed to load aws config", err)
 	}
@@ -86,7 +86,7 @@ func (upstream AMI) LatestVersion() (string, error) {
 	}
 
 	// Do the actual API call
-	result, err := upstream.ServiceClient.DescribeImages(context.TODO(), input)
+	result, err := upstream.ServiceClient.DescribeImages(context.Background(), input)
 	if err != nil {
 		return "", err
 	}
