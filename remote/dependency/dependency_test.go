@@ -35,7 +35,7 @@ type mockedEc2DescribeImagesAPI struct {
 	Resp ec2.DescribeImagesOutput
 }
 
-func (m mockedEc2DescribeImagesAPI) DescribeImages(ctx context.Context, params *ec2.DescribeImagesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error) {
+func (m mockedEc2DescribeImagesAPI) DescribeImages(_ context.Context, _ *ec2.DescribeImagesInput, _ ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error) {
 	// Only need to return mocked response output
 	return &m.Resp, nil
 }

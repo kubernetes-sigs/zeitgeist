@@ -54,8 +54,8 @@ func TestGetAMI(t *testing.T) {
 				Owner: "amazon",
 				Name:  "amazon-eks-node-1.13-*",
 			},
-			Client: func(t *testing.T) mockEc2Api {
-				return mockEc2Api(func(ctx context.Context, params *ec2.DescribeImagesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error) {
+			Client: func(_ *testing.T) mockEc2Api {
+				return mockEc2Api(func(_ context.Context, _ *ec2.DescribeImagesInput, _ ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error) {
 					return &ec2.DescribeImagesOutput{
 						Images: []types.Image{
 							{
@@ -81,8 +81,8 @@ func TestGetAMI(t *testing.T) {
 				Owner: "honk",
 				Name:  "this-ami-doesnt-exist-zeitgeist",
 			},
-			Client: func(t *testing.T) mockEc2Api {
-				return mockEc2Api(func(ctx context.Context, params *ec2.DescribeImagesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error) {
+			Client: func(_ *testing.T) mockEc2Api {
+				return mockEc2Api(func(_ context.Context, _ *ec2.DescribeImagesInput, _ ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error) {
 					return &ec2.DescribeImagesOutput{
 						Images: []types.Image{},
 					}, nil
