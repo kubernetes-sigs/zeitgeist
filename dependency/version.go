@@ -94,13 +94,13 @@ func (a Version) MoreSensitivelyRecentThan(b Version, sensitivity VersionSensiti
 
 	switch a.Scheme {
 	case Semver:
-		aSemver, err := semver.Parse(strings.TrimPrefix(a.Version, "v"))
+		aSemver, err := semver.ParseTolerant(a.Version)
 		if err != nil {
 			log.Debugf("Failed to semver-parse %s", a.Version)
 			return false, err
 		}
 
-		bSemver, err := semver.Parse(strings.TrimPrefix(b.Version, "v"))
+		bSemver, err := semver.ParseTolerant(b.Version)
 		if err != nil {
 			log.Debugf("Failed to semver-parse %s", b.Version)
 			return false, err

@@ -16,12 +16,16 @@ limitations under the License.
 
 package upstream
 
-// Dummy upstream needs no parameters and always returns a latest version of 1.0.0. Can be used for testing.
+// Dummy upstream always returns a fixed latest version, by default 1.0.0. Can be used for testing.
 type Dummy struct {
 	Base
+	Latest string
 }
 
-// LatestVersion always returns 1.0.0.
+// LatestVersion always returns a fixed version.
 func (upstream Dummy) LatestVersion() (string, error) {
+	if upstream.Latest != "" {
+		return upstream.Latest, nil
+	}
 	return "1.0.0", nil
 }
