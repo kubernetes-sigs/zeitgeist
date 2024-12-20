@@ -37,6 +37,8 @@ ifeq ($(DIFF), 1)
     GIT_TREESTATE = "dirty"
 endif
 
+GOTOOLCHAIN=auto
+
 LDFLAGS=-buildid= -X sigs.k8s.io/release-utils/version.gitVersion=$(GIT_VERSION) \
         -X sigs.k8s.io/release-utils/version.gitCommit=$(GIT_HASH) \
         -X sigs.k8s.io/release-utils/version.gitTreeState=$(GIT_TREESTATE) \
