@@ -5,7 +5,7 @@ go 1.23.4
 require (
 	github.com/aws/aws-sdk-go-v2 v1.33.0
 	github.com/aws/aws-sdk-go-v2/config v1.29.1
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.200.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.201.0
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/go-containerregistry v0.20.3
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.11.2
