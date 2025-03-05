@@ -10,7 +10,7 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/mod v0.23.0
-	golang.org/x/net v0.35.0
+	golang.org/x/net v0.36.0
 	k8s.io/apimachinery v0.32.2
 )
 
