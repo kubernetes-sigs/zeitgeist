@@ -1,7 +1,6 @@
 module sigs.k8s.io/zeitgeist/buoy
 
 go 1.23.0
-
 toolchain go1.24.1
 
 require (
@@ -13,7 +12,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/mod v0.24.0
 	golang.org/x/net v0.39.0
-	k8s.io/apimachinery v0.32.3
+	k8s.io/apimachinery v0.33.0
 )
 
 require (
