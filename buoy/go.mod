@@ -1,7 +1,8 @@
 module sigs.k8s.io/zeitgeist/buoy
 
-go 1.23.0
-toolchain go1.24.1
+go 1.24.0
+
+toolchain go1.24.2
 
 require (
 	github.com/blang/semver/v4 v4.0.0
