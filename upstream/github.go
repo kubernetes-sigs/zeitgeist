@@ -17,13 +17,14 @@ limitations under the License.
 package upstream
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
 
-	"sigs.k8s.io/release-sdk/github"
+	"github.com/google/go-github/v64/github"
 )
 
 // Github upstream representation.
@@ -64,7 +65,8 @@ func latestVersion(upstream Github) (string, error) {
 }
 
 func latestRelease(upstream Github) (string, error) {
-	client := github.New()
+	client := github.NewClient(nil)
+	ctx := context.Background()
 
 	if !strings.Contains(upstream.URL, "/") {
 		return "", fmt.Errorf(
@@ -89,7 +91,7 @@ func latestRelease(upstream Github) (string, error) {
 	repo := splitURL[1]
 
 	log.Debugf("Retrieving repository information for %s/%s...", owner, repo)
-	repoInfo, err := client.GetRepository(owner, repo)
+	repoInfo, _, err := client.Repositories.Get(ctx, owner, repo)
 	if err != nil {
 		return "", fmt.Errorf("retrieving GitHub repository: %w", err)
 	}
@@ -106,14 +108,14 @@ func latestRelease(upstream Github) (string, error) {
 	//
 	// Now the "latest" (date-wise) release is not the highest semver, and not necessarily the one we want
 	log.Debugf("Retrieving releases for %s/%s...", owner, repo)
-	releases, err := client.Releases(owner, repo, false)
+	releases, _, err := client.Repositories.ListReleases(ctx, owner, repo, nil)
 	if err != nil {
 		return "", fmt.Errorf("retrieving GitHub releases: %w", err)
 	}
 
 	// if there is no releases we will try to get the tags, the project might just use tags to release.
 	if len(releases) == 0 {
-		gitHubTags, err := client.ListTags(owner, repo)
+		gitHubTags, _, err := client.Repositories.ListTags(ctx, owner, repo, nil)
 		if err != nil {
 			return "", fmt.Errorf("retrieving GitHub tags: %w", err)
 		}
@@ -140,7 +142,8 @@ func latestRelease(upstream Github) (string, error) {
 }
 
 func latestCommit(upstream Github) (string, error) {
-	client := github.New()
+	client := github.NewClient(nil)
+	ctx := context.Background()
 
 	if !strings.Contains(upstream.URL, "/") {
 		return "", fmt.Errorf(
@@ -153,13 +156,13 @@ func latestCommit(upstream Github) (string, error) {
 	owner := splitURL[0]
 	repo := splitURL[1]
 
-	branches, err := client.ListBranches(owner, repo)
+	branches, _, err := client.Repositories.ListBranches(ctx, owner, repo, nil)
 	if err != nil {
 		return "", fmt.Errorf("retrieving GitHub branches: %w", err)
 	}
 	for _, branch := range branches {
 		if branch.GetName() == upstream.Branch {
-			return *branch.GetCommit().SHA, nil
+			return branch.GetCommit().GetSHA(), nil
 		}
 	}
 	return "", fmt.Errorf("branch '%s' not found", upstream.Branch)
