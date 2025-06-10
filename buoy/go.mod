@@ -7,7 +7,7 @@ toolchain go1.24.2
 require (
 	github.com/blang/semver/v4 v4.0.0
 	github.com/go-git/go-git-fixtures/v4 v4.3.2-0.20231010084843-55a94097c399
-	github.com/go-git/go-git/v5 v5.16.1
+	github.com/go-git/go-git/v5 v5.16.2
 	github.com/google/go-cmp v0.7.0
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
