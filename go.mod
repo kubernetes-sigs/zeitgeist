@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.5
 	github.com/aws/aws-sdk-go-v2/config v1.29.17
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.227.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.228.0
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/go-containerregistry v0.20.6
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.11.2
@@ -13,7 +13,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
-	gitlab.com/gitlab-org/api/client-go v0.130.1
+	gitlab.com/gitlab-org/api/client-go v0.131.0
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.18.3
 	sigs.k8s.io/release-sdk v0.12.3
@@ -78,7 +78,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
-	github.com/hashicorp/go-retryablehttp v0.7.7 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.8 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
