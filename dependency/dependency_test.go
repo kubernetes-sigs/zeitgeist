@@ -77,6 +77,15 @@ func TestLocalInvalid(t *testing.T) {
 	require.Contains(t, err.Error(), "compiling regex")
 }
 
+func TestLocalTypo(t *testing.T) {
+	client, err := NewLocalClient()
+	require.NoError(t, err)
+
+	err = client.LocalCheck("../testdata/local-typo.yaml", "../testdata")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "unexpected key: mathc")
+}
+
 func TestFileDoesntExist(t *testing.T) {
 	client, err := NewLocalClient()
 	require.NoError(t, err)
