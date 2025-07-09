@@ -108,11 +108,11 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 
 	// Custom validation for the Dependency type
 	if d.Name == "" {
-		return fmt.Errorf("Dependency has no `name`: %#v", d)
+		return fmt.Errorf("dependency has no `name`: %#v", d)
 	}
 
 	if d.Version == "" {
-		return fmt.Errorf("Dependency has no `version`: %#v", d)
+		return fmt.Errorf("dependency has no `version`: %#v", d)
 	}
 
 	// Default scheme to Semver if unset
@@ -120,12 +120,22 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 		d.Scheme = Semver
 	}
 
-	// Validate Scheme and return
+	// Validate Scheme
 	switch d.Scheme {
 	case Semver, Alpha, Random:
 		// All good!
 	default:
 		return fmt.Errorf("unknown version scheme: %s", d.Scheme)
+	}
+
+	// Validate RefPaths
+	for _, refPath := range d.RefPaths {
+		if refPath.Path == "" {
+			return fmt.Errorf("dependency %s is invalid: refPath is missing `path`", d.Name)
+		}
+		if refPath.Match == "" {
+			return fmt.Errorf("dependency %s is invalid: refPath is missing `match`", d.Name)
+		}
 	}
 
 	log.Debugf("Deserialised Dependency %s: %#v", d.Name, d)
@@ -141,8 +151,17 @@ func FromFile(dependencyFilePath string) (*Dependencies, error) {
 
 	dependencies := &Dependencies{}
 
-	err = yaml.Unmarshal(depFile, dependencies)
-	if err != nil {
+	decoder := yaml.NewDecoder(bytes.NewReader(depFile))
+	decoder.KnownFields(true) // Disallow unknown fields
+	if err = decoder.Decode(dependencies); err != nil {
+		if err.Error() == "EOF" {
+			return nil, fmt.Errorf("can't decode YAML from configuration file %s: %w", dependencyFilePath, err)
+		}
+		re := regexp.MustCompile(`field (.*) not found`)
+		matches := re.FindStringSubmatch(err.Error())
+		if len(matches) > 1 {
+			return nil, fmt.Errorf("unexpected key: %s", matches[1])
+		}
 		return nil, err
 	}
 
@@ -255,7 +274,7 @@ func (c *LocalClient) LocalCheck(dependencyFilePath, basePath string) error {
 //
 // Will return an error  if updating files fails.
 func (c *LocalClient) SetVersion(dependencyFilePath, basePath, dependency, version string) error {
-	externalDeps, err := fromFile(dependencyFilePath)
+	externalDeps, err := FromFile(dependencyFilePath)
 	if err != nil {
 		return err
 	}
@@ -289,7 +308,7 @@ func (c *LocalClient) SetVersion(dependencyFilePath, basePath, dependency, versi
 	}
 
 	// Update the dependencies file to reflect the upgrades
-	err = toFile(dependencyFilePath, externalDeps)
+	err = ToFile(dependencyFilePath, externalDeps)
 	if err != nil {
 		return err
 	}
@@ -369,39 +388,5 @@ func replaceInFile(basePath string, refPath *RefPath, versionUpdate *VersionUpda
 	if err != nil {
 		return fmt.Errorf("writing file: %w", err)
 	}
-	return nil
-}
-
-func fromFile(dependencyFilePath string) (*Dependencies, error) {
-	depFile, err := os.ReadFile(dependencyFilePath)
-	if err != nil {
-		return nil, err
-	}
-
-	dependencies := &Dependencies{}
-
-	err = yaml.Unmarshal(depFile, dependencies)
-	if err != nil {
-		return nil, err
-	}
-
-	return dependencies, nil
-}
-
-func toFile(dependencyFilePath string, dependencies *Dependencies) error {
-	var output bytes.Buffer
-	yamlEncoder := yaml.NewEncoder(&output)
-	yamlEncoder.SetIndent(2)
-
-	err := yamlEncoder.Encode(dependencies)
-	if err != nil {
-		return err
-	}
-
-	err = os.WriteFile(dependencyFilePath, output.Bytes(), 0o644)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
