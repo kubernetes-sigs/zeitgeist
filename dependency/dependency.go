@@ -155,7 +155,7 @@ func FromFile(dependencyFilePath string) (*Dependencies, error) {
 	decoder.KnownFields(true) // Disallow unknown fields
 	if err = decoder.Decode(dependencies); err != nil {
 		if err.Error() == "EOF" {
-			return nil, fmt.Errorf("can't decode YAML from configuration file '%s': %v", dependencyFilePath, err)
+			return nil, fmt.Errorf("can't decode YAML from configuration file %s: %w", dependencyFilePath, err)
 		}
 		re := regexp.MustCompile(`field (.*) not found`)
 		matches := re.FindStringSubmatch(err.Error())
