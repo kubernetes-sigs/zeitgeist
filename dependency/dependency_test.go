@@ -44,6 +44,23 @@ func TestLocalSuccess(t *testing.T) {
 	require.NoError(t, err)
 }
 
+func TestLocalMultipleMatches(t *testing.T) {
+	client, err := NewLocalClient()
+	require.NoError(t, err)
+
+	err = client.LocalCheck("../testdata/local-multi-in-sync.yaml", "../testdata")
+	require.NoError(t, err)
+}
+
+func TestLocalMultipleMatchesOutOfSync(t *testing.T) {
+	client, err := NewLocalClient()
+	require.NoError(t, err)
+
+	err = client.LocalCheck("../testdata/local-multi-out-of-sync.yaml", "../testdata")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "not in sync")
+}
+
 func TestRemoteUnsupported(t *testing.T) {
 	_, err := NewRemoteClient()
 	require.ErrorAs(t, err, &UnsupportedError{})
@@ -66,6 +83,7 @@ func TestLocalOutOfSync(t *testing.T) {
 
 	err = client.LocalCheck("../testdata/local-out-of-sync.yaml", "../testdata")
 	require.Error(t, err)
+	require.Contains(t, err.Error(), "not in sync")
 }
 
 func TestLocalInvalid(t *testing.T) {
@@ -168,4 +186,42 @@ dependencies:
 	got, err := os.ReadFile(testFile)
 	require.NoError(t, err)
 	require.Equal(t, "APP1_VERSION: 2.1.0\nAPP2_VERSION: 0.0.1", string(got))
+}
+func TestMultipleSetVersion(t *testing.T) {
+	dir := t.TempDir()
+	testFile := filepath.Join(dir, "test.txt")
+
+	err := os.WriteFile(testFile, []byte("APP1_VERSION: 0.0.1\nAPP2_VERSION: 0.0.1\nAPP1_VERSION: 0.0.1"), 0o644)
+	require.NoError(t, err)
+
+	err = os.WriteFile(filepath.Join(dir, "dependencies.yaml"), []byte(`
+dependencies:
+  - name: app1
+    version: 0.0.1
+    scheme: semver
+    upstream:
+      flavour: dummy
+      url: example/example
+    refPaths:
+    - path: test.txt
+      match: APP1_VERSION
+  - name: app2
+    version: 0.0.1
+    scheme: semver
+    refPaths:
+    - path: test.txt
+      match: APP2_VERSION
+`), 0o644)
+	require.NoError(t, err)
+
+	client, err := NewLocalClient()
+	require.NoError(t, err)
+	err = client.SetVersion(filepath.Join(dir, "dependencies.yaml"), dir, "app1", "2.1.0")
+	if err != nil {
+		t.Fatalf("SetVersion failed: %v", err)
+	}
+
+	got, err := os.ReadFile(testFile)
+	require.NoError(t, err)
+	require.Equal(t, "APP1_VERSION: 2.1.0\nAPP2_VERSION: 0.0.1\nAPP1_VERSION: 2.1.0", string(got))
 }

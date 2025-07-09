@@ -225,6 +225,7 @@ func (c *LocalClient) LocalCheck(dependencyFilePath, basePath string) error {
 			scanner := bufio.NewScanner(file)
 
 			var found bool
+			var wrongVersion bool
 
 			var lineNumber int
 			for scanner.Scan() {
@@ -232,6 +233,13 @@ func (c *LocalClient) LocalCheck(dependencyFilePath, basePath string) error {
 
 				line := scanner.Text()
 				if matcher.MatchString(line) {
+					found = true
+					log.Debugf(
+						"Line %d matches expected regexp %q",
+						lineNumber,
+						match,
+					)
+
 					if strings.Contains(line, dep.Version) {
 						log.Debugf(
 							"Line %d matches expected regexp %q and version %q: %s",
@@ -240,16 +248,24 @@ func (c *LocalClient) LocalCheck(dependencyFilePath, basePath string) error {
 							dep.Version,
 							line,
 						)
-
-						found = true
-						break
+					} else {
+						log.Warnf(
+							"Line %d matches expected regexp %q but version %q is not present: %s",
+							lineNumber,
+							match,
+							dep.Version,
+							line,
+						)
+						wrongVersion = true
 					}
 				}
 			}
 
 			if !found {
-				log.Debugf("Finished reading file %s, no match found.", filePath)
-
+				log.Debugf("No match found in file %s", filePath)
+				nonMatchingPaths = append(nonMatchingPaths, refPath.Path)
+			} else if wrongVersion {
+				log.Debugf("Wrong version found in file %s", filePath)
 				nonMatchingPaths = append(nonMatchingPaths, refPath.Path)
 			}
 		}
