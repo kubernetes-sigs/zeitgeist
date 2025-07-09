@@ -86,6 +86,15 @@ func TestLocalTypo(t *testing.T) {
 	require.Contains(t, err.Error(), "unexpected key: mathc")
 }
 
+func TestLocalIncompleteRefPath(t *testing.T) {
+	client, err := NewLocalClient()
+	require.NoError(t, err)
+
+	err = client.LocalCheck("../testdata/local-malformed-refpath.yaml", "../testdata")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "dependency terraform is invalid: refPath is missing `match`")
+}
+
 func TestFileDoesntExist(t *testing.T) {
 	client, err := NewLocalClient()
 	require.NoError(t, err)

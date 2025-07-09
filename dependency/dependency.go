@@ -108,11 +108,11 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 
 	// Custom validation for the Dependency type
 	if d.Name == "" {
-		return fmt.Errorf("Dependency has no `name`: %#v", d)
+		return fmt.Errorf("dependency has no `name`: %#v", d)
 	}
 
 	if d.Version == "" {
-		return fmt.Errorf("Dependency has no `version`: %#v", d)
+		return fmt.Errorf("dependency has no `version`: %#v", d)
 	}
 
 	// Default scheme to Semver if unset
@@ -120,12 +120,22 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 		d.Scheme = Semver
 	}
 
-	// Validate Scheme and return
+	// Validate Scheme
 	switch d.Scheme {
 	case Semver, Alpha, Random:
 		// All good!
 	default:
 		return fmt.Errorf("unknown version scheme: %s", d.Scheme)
+	}
+
+	// Validate RefPaths
+	for _, refPath := range d.RefPaths {
+		if refPath.Path == "" {
+			return fmt.Errorf("dependency %s is invalid: refPath is missing `path`", d.Name)
+		}
+		if refPath.Match == "" {
+			return fmt.Errorf("dependency %s is invalid: refPath is missing `match`", d.Name)
+		}
 	}
 
 	log.Debugf("Deserialised Dependency %s: %#v", d.Name, d)
