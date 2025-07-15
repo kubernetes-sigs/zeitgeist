@@ -187,6 +187,7 @@ dependencies:
 	require.NoError(t, err)
 	require.Equal(t, "APP1_VERSION: 2.1.0\nAPP2_VERSION: 0.0.1", string(got))
 }
+
 func TestMultipleSetVersion(t *testing.T) {
 	dir := t.TempDir()
 	testFile := filepath.Join(dir, "test.txt")
