@@ -30,7 +30,7 @@ import (
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
 
-	"sigs.k8s.io/release-utils/util"
+	"sigs.k8s.io/release-utils/helpers"
 )
 
 // Base only contains a flavour. "Concrete" upstreams each implement their own fields.
@@ -77,7 +77,7 @@ func selectHighestVersion(constraints string, expectedRange semver.Range, tags [
 	candidateVersionString := "" // keep the version string separately as it may contain a leading `v`
 	for _, tag := range tags {
 		// Try to match semver and range
-		version, err := util.TagStringToSemver(tag)
+		version, err := helpers.TagStringToSemver(tag)
 		if err != nil {
 			log.Debugf("Error parsing version %s (%#v) as semver, cannot validate semver constraints", tag, err)
 			continue
