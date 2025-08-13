@@ -18,7 +18,7 @@ require (
 	gitlab.com/gitlab-org/api/client-go v0.137.0
 	gopkg.in/yaml.v3 v3.0.1
 	helm.sh/helm/v3 v3.18.4
-	sigs.k8s.io/release-sdk v0.12.4-0.20250809110342-befb0e4cde00
+	sigs.k8s.io/release-sdk v0.12.4
 	sigs.k8s.io/release-utils v0.12.1
 )
 
