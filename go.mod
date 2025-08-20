@@ -7,7 +7,7 @@ toolchain go1.24.6
 require (
 	github.com/aws/aws-sdk-go-v2 v1.38.0
 	github.com/aws/aws-sdk-go-v2/config v1.31.0
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.244.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.245.0
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/go-containerregistry v0.20.6
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.11.3
@@ -17,7 +17,7 @@ require (
 	github.com/stretchr/testify v1.10.0
 	gitlab.com/gitlab-org/api/client-go v0.141.1
 	gopkg.in/yaml.v3 v3.0.1
-	helm.sh/helm/v3 v3.18.5
+	helm.sh/helm/v3 v3.18.6
 	sigs.k8s.io/release-sdk v0.12.4
 	sigs.k8s.io/release-utils v0.12.1
 )
