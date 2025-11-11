@@ -4,8 +4,8 @@ go 1.25
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.39.6
-	github.com/aws/aws-sdk-go-v2/config v1.31.17
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.264.0
+	github.com/aws/aws-sdk-go-v2/config v1.31.18
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.265.0
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/go-containerregistry v0.20.6
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.0
@@ -15,7 +15,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	gitlab.com/gitlab-org/api/client-go v0.159.0
 	gopkg.in/yaml.v3 v3.0.1
-	helm.sh/helm/v3 v3.19.0
+	helm.sh/helm/v3 v3.19.1
 	sigs.k8s.io/release-sdk v0.12.5
 	sigs.k8s.io/release-utils v0.12.2
 )
@@ -27,7 +27,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.18.21 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.18.22 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.18.13 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.4.13 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.13 // indirect
@@ -36,7 +36,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.13 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sso v1.30.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.35.5 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.39.1 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.40.0 // indirect
 	github.com/aws/smithy-go v1.23.2 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
@@ -46,7 +46,7 @@ require (
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect
 	github.com/containerd/stargz-snapshotter/estargz v0.16.3 // indirect
-	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
+	github.com/cyphar/filepath-securejoin v0.6.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/docker/cli v28.2.2+incompatible // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
@@ -123,7 +123,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/skeema/knownhosts v1.3.1 // indirect
-	github.com/spf13/pflag v1.0.9 // indirect
+	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/vbatts/tar-split v0.12.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
