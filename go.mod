@@ -11,7 +11,7 @@ require (
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.1
 	github.com/mitchellh/mapstructure v1.5.1-0.20231216201459-8508981c8b6c
 	github.com/sirupsen/logrus v1.9.3
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	gitlab.com/gitlab-org/api/client-go v1.5.0
 	gopkg.in/yaml.v3 v3.0.1
