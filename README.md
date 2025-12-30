@@ -73,22 +73,15 @@ You can also use `zeitgeist upgrade` to go ahead and upgrade your dependencies t
 
 ## Installation
 
-You will need to build Zeitgeist from source (for now at least!).
+Pre-compiled binaries are available on the Releases page.
 
-Clone the repository and run `go build` will give you the `zeitgeist` binary.
+⚠️ You probably will want to use the `zeitgeist-remote` binary to get all functionalities. The `zeitgeist` binary only supports local checking of dependencies.
 
-To build the local-only binary:
+To build zeitgeist from source:
 ```bash
 git clone https://github.com/kubernetes-sigs/zeitgeist.git
 cd zeitgeist/
-go build
-```
-
-To build a binary capable of inspecting remote upstreams:
-```bash
-git clone https://github.com/kubernetes-sigs/zeitgeist.git
-cd zeitgeist/remote/zeitgeist
-go build
+make build
 ```
 
 ## Supported upstreams
@@ -251,33 +244,16 @@ If your project is mainly written in one single language with a well-known and s
 
 ## Releasing
 
-Releases are generated with [goreleaser](https://goreleaser.com/).
+Releases are generated via Github Actions when a tag match `v.*` is pushed, see [here](./.github/workflows/release.yaml).
 
 ```bash
-git tag v0.0.0 # Use the correct version here
+git tag v0.0.0
 git push --tags
-export GPG_TTY=$(tty)
-goreleaser release --rm-dist
 ```
 
 ## Credit
 
 Zeitgeist is inspired by [Kubernetes' script to manage external dependencies](https://groups.google.com/forum/?pli=1#!topic/kubernetes-dev/cTaYyb1a18I) and extended to include checking with upstream sources to ensure dependencies are up-to-date.
-
-## To do
-
-- [x] Find a good name for the project
-- [x] Support `helm` upstream
-- [x] Support `eks` upstream
-- [x] Support `ami` upstream
-- [x] support `docker` upstream
-- [x] Cleanly separate various upstreams to make it easy to add new upstreams
-- [x] Implement non-semver support (e.g. for AMI, but also for classic releases)
-- [x] Write good docs :)
-- [x] Write good tests!
-- [x] Externalise the project into its own repo
-- [x] Generate releases
-- [x] Automate release generation from a tag
 
 ## Community, discussion, contribution, and support
 
