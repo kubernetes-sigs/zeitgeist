@@ -1,6 +1,6 @@
 module sigs.k8s.io/zeitgeist/buoy
 
-go 1.25
+go 1.25.0
 
 require (
 	github.com/blang/semver/v4 v4.0.0
@@ -9,9 +9,9 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/mod v0.31.0
+	golang.org/x/mod v0.32.0
 	golang.org/x/net v0.48.0
-	k8s.io/apimachinery v0.34.3
+	k8s.io/apimachinery v0.35.0
 )
 
 require (
