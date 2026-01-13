@@ -1,6 +1,6 @@
 module sigs.k8s.io/zeitgeist/buoy
 
-go 1.25
+go 1.25.0
 
 require (
 	github.com/blang/semver/v4 v4.0.0
@@ -9,9 +9,9 @@ require (
 	github.com/google/go-cmp v0.7.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/mod v0.31.0
-	golang.org/x/net v0.48.0
-	k8s.io/apimachinery v0.34.3
+	golang.org/x/mod v0.32.0
+	golang.org/x/net v0.49.0
+	k8s.io/apimachinery v0.35.0
 )
 
 require (
@@ -37,8 +37,8 @@ require (
 	github.com/skeema/knownhosts v1.3.1 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
-	golang.org/x/crypto v0.46.0 // indirect
-	golang.org/x/sys v0.39.0 // indirect
+	golang.org/x/crypto v0.47.0 // indirect
+	golang.org/x/sys v0.40.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
