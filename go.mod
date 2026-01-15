@@ -15,7 +15,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	gitlab.com/gitlab-org/api/client-go v1.14.0
 	gopkg.in/yaml.v3 v3.0.1
-	helm.sh/helm/v3 v3.19.4
+	helm.sh/helm/v3 v3.19.5
 	sigs.k8s.io/release-sdk v0.12.5
 	sigs.k8s.io/release-utils v0.12.2
 )
