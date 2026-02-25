@@ -31,8 +31,8 @@ github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.18 h1:xCeWVjj0ki0l3nruoy
 github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.7.18/go.mod h1:r/eLGuGCBw6l36ZRWiw6PaZwPXb6YOj+i/7MizNl5/k=
 github.com/aws/aws-sdk-go-v2/internal/ini v1.8.4 h1:WKuaxf++XKWlHWu9ECbMlha8WOEGm0OUEZqm4K/Gcfk=
 github.com/aws/aws-sdk-go-v2/internal/ini v1.8.4/go.mod h1:ZWy7j6v1vWGmPReu0iSGvRiise4YI5SkR3OHKTZ6Wuc=
-github.com/aws/aws-sdk-go-v2/service/ec2 v1.290.1 h1:iNxv8JSlaMFSo/DDDGsAPgvPuONsfNp6kyJnzjHgIQ4=
-github.com/aws/aws-sdk-go-v2/service/ec2 v1.290.1/go.mod h1:2dMnUs1QzlGzsm46i9oBHAxVHQp7b6qF7PljWcgVEVE=
+github.com/aws/aws-sdk-go-v2/service/ec2 v1.291.0 h1:E0/zdPeHKCpXVRAImhnHJYgpfZnTCjnr6i75gZIhwHs=
+github.com/aws/aws-sdk-go-v2/service/ec2 v1.291.0/go.mod h1:2dMnUs1QzlGzsm46i9oBHAxVHQp7b6qF7PljWcgVEVE=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.5 h1:CeY9LUdur+Dxoeldqoun6y4WtJ3RQtzk0JMP2gfUay0=
 github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.5/go.mod h1:AZLZf2fMaahW5s/wMRciu1sYbdsikT/UHwbUjOdEVTc=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.13.18 h1:LTRCYFlnnKFlKsyIQxKhJuDuA3ZkrDQMRYm6rXiHlLY=
@@ -182,8 +182,8 @@ github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/google/go-cmp v0.7.0 h1:wk8382ETsv4JYUZwIsn6YpYiWiBsYLSJiTsyBybVuN8=
 github.com/google/go-cmp v0.7.0/go.mod h1:pXiqmnSA92OHEEa9HXL2W4E7lf9JzCmGVUdgjX3N/iU=
-github.com/google/go-containerregistry v0.21.0 h1:ocqxUOczFwAZQBMNE7kuzfqvDe0VWoZxQMOesXreCDI=
-github.com/google/go-containerregistry v0.21.0/go.mod h1:ctO5aCaewH4AK1AumSF5DPW+0+R+d2FmylMJdp5G7p0=
+github.com/google/go-containerregistry v0.21.1 h1:sOt/o9BS2b87FnR7wxXPvRKU1XVJn2QCwOS5g8zQXlc=
+github.com/google/go-containerregistry v0.21.1/go.mod h1:ctO5aCaewH4AK1AumSF5DPW+0+R+d2FmylMJdp5G7p0=
 github.com/google/go-github/v75 v75.0.0 h1:k7q8Bvg+W5KxRl9Tjq16a9XEgVY1pwuiG5sIL7435Ic=
 github.com/google/go-github/v75 v75.0.0/go.mod h1:H3LUJEA1TCrzuUqtdAQniBNwuKiQIqdGKgBo1/M/uqI=
 github.com/google/go-querystring v1.2.0 h1:yhqkPbu2/OH+V9BfpCVPZkNmUXhb2gBxJArfhIxNtP0=
@@ -348,8 +348,8 @@ github.com/xanzy/ssh-agent v0.3.3/go.mod h1:6dzNDKs0J9rVPHPhaGCukekBHKqfl+L3KghI
 github.com/xlab/treeprint v1.2.0 h1:HzHnuAF1plUN2zGlAFHbSQP2qJ0ZAD3XF5XD7OesXRQ=
 github.com/xlab/treeprint v1.2.0/go.mod h1:gj5Gd3gPdKtR1ikdDK6fnFLdmIS0X30kTTuNd/WEJu0=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
-gitlab.com/gitlab-org/api/client-go v1.41.0 h1:qSWU5zSO9SbY7BUBIUCJ9nowN3adxdZguZWWfO8icLI=
-gitlab.com/gitlab-org/api/client-go v1.41.0/go.mod h1:xS4YrDOA5gcM+aDQ+uiQ9TparIEgfCiEzFA7TChGZPY=
+gitlab.com/gitlab-org/api/client-go v1.42.0 h1:kwikf7kEOV9k5d6b8xjrZFjoJnk3Rs1dhARpKTKnqng=
+gitlab.com/gitlab-org/api/client-go v1.42.0/go.mod h1:xS4YrDOA5gcM+aDQ+uiQ9TparIEgfCiEzFA7TChGZPY=
 go.opentelemetry.io/auto/sdk v1.1.0 h1:cH53jehLUN6UFLY71z+NDOiNJqDdPRaXzTel0sJySYA=
 go.opentelemetry.io/auto/sdk v1.1.0/go.mod h1:3wSPjt5PWp2RhlCcmmOial7AvC4DQqZb7a7wCow3W8A=
 go.opentelemetry.io/contrib/bridges/prometheus v0.57.0 h1:UW0+QyeyBVhn+COBec3nGhfnFe5lwB0ic1JBVjzhk0w=
