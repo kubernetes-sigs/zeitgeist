@@ -216,6 +216,151 @@ func TestCheckUpstreamVersionsTolerant(t *testing.T) {
 	}
 }
 
+func TestFormatVersion(t *testing.T) {
+	tests := []struct {
+		name     string
+		template string
+		version  string
+		want     string
+	}{
+		{
+			name:     "Both versions start with 'v'",
+			template: "v1.0.0",
+			version:  "v2.0.0",
+			want:     "v2.0.0",
+		},
+		{
+			name:     "Template starts with 'v', version does not",
+			template: "v1.0.0",
+			version:  "2.0.0",
+			want:     "v2.0.0",
+		},
+		{
+			name:     "Template does not start with 'v', version does",
+			template: "1.0.0",
+			version:  "v2.0.0",
+			want:     "2.0.0",
+		},
+		{
+			name:     "Neither version starts with 'v'",
+			template: "1.0.0",
+			version:  "2.0.0",
+			want:     "2.0.0",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := formatVersion(tt.template, tt.version); got != tt.want {
+				t.Errorf("formatVersion() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCheckUpstreamVersionsPreservesVersionFormat(t *testing.T) {
+	tests := []struct {
+		name           string
+		currentVersion string
+		upstreamLatest string
+		expectedLatest string
+	}{
+		{
+			name:           "no-v current, v-prefixed upstream",
+			currentVersion: "0.0.1",
+			upstreamLatest: "v1.0.0",
+			expectedLatest: "1.0.0",
+		},
+		{
+			name:           "v-prefixed current, no-v upstream",
+			currentVersion: "v0.0.1",
+			upstreamLatest: "1.0.0",
+			expectedLatest: "v1.0.0",
+		},
+		{
+			name:           "both v-prefixed",
+			currentVersion: "v0.0.1",
+			upstreamLatest: "v1.0.0",
+			expectedLatest: "v1.0.0",
+		},
+		{
+			name:           "neither v-prefixed",
+			currentVersion: "0.0.1",
+			upstreamLatest: "1.0.0",
+			expectedLatest: "1.0.0",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			deps := []*deppkg.Dependency{
+				{
+					Name:        "test",
+					Version:     tt.currentVersion,
+					Scheme:      deppkg.Semver,
+					Sensitivity: deppkg.Patch,
+					Upstream: map[string]string{
+						"flavour": "dummy",
+						"latest":  tt.upstreamLatest,
+					},
+					RefPaths: []*deppkg.RefPath{
+						{Path: "test", Match: "test"},
+					},
+				},
+			}
+
+			client, err := NewRemoteClient()
+			require.NoError(t, err)
+			updateInfos, err := client.CheckUpstreamVersions(deps)
+			require.NoError(t, err)
+			require.Len(t, updateInfos, 1)
+			require.Equal(t, tt.expectedLatest, updateInfos[0].Latest.Version)
+		})
+	}
+}
+
+func TestUpgradePreservesVersionFormat(t *testing.T) {
+	dir := t.TempDir()
+	testFile := filepath.Join(dir, "test.txt")
+
+	err := os.WriteFile(testFile, []byte("VERSION_NO_V: 0.0.1\nVERSION_V: v0.0.1"), 0o644)
+	require.NoError(t, err)
+
+	err = os.WriteFile(filepath.Join(dir, "dependencies.yaml"), []byte(`
+dependencies:
+  - name: no-v-current
+    version: 0.0.1
+    scheme: semver
+    upstream:
+      flavour: dummy
+      latest: v1.0.0
+    refPaths:
+    - path: test.txt
+      match: VERSION_NO_V
+  - name: v-current
+    version: v0.0.1
+    scheme: semver
+    upstream:
+      flavour: dummy
+      latest: 1.0.0
+    refPaths:
+    - path: test.txt
+      match: VERSION_V
+`), 0o644)
+	require.NoError(t, err)
+
+	client, err := NewRemoteClient()
+	require.NoError(t, err)
+	ret, err := client.Upgrade(filepath.Join(dir, "dependencies.yaml"), dir)
+	require.NoError(t, err)
+	require.Len(t, ret, 2)
+
+	got, err := os.ReadFile(testFile)
+	require.NoError(t, err)
+	// no-v current should strip v from upstream; v-current should add v to upstream
+	require.Equal(t, "VERSION_NO_V: 1.0.0\nVERSION_V: v1.0.0", string(got))
+}
+
 func TestUpgrade(t *testing.T) {
 	dir := t.TempDir()
 	testFile := filepath.Join(dir, "test.txt")

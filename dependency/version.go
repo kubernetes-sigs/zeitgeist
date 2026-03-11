@@ -18,7 +18,6 @@ package dependency
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
@@ -130,17 +129,4 @@ func semverCompare(a, b semver.Version, sensitivity VersionSensitivity) (bool, e
 	default:
 		return false, fmt.Errorf("unknown version sensitivity: %s", sensitivity)
 	}
-}
-
-// formatVersion preserves the string formatting from the template and ensures the version
-// uses the same style (v-prefix).
-func formatVersion(template, version string) string {
-	// Use same prefix for both versions
-	if strings.HasPrefix(template, "v") {
-		if strings.HasPrefix(version, "v") {
-			return version
-		}
-		return "v" + version
-	}
-	return strings.TrimPrefix(version, "v")
 }

@@ -365,6 +365,8 @@ func (c *RemoteClient) CheckUpstreamVersions(deps []*deppkg.Dependency) ([]deppk
 			return nil, fmt.Errorf("dependency %s: %w", dep.Name, err)
 		}
 
+		latestVersion.Version = formatVersion(dep.Version, latestVersion.Version)
+
 		updateAvailable, err := latestVersion.MoreSensitivelyRecentThan(currentVersion, dep.Sensitivity)
 		if err != nil {
 			return nil, fmt.Errorf("comparing dependency %s: %w", dep.Name, err)
@@ -379,4 +381,16 @@ func (c *RemoteClient) CheckUpstreamVersions(deps []*deppkg.Dependency) ([]deppk
 	}
 
 	return versionUpdates, nil
+}
+
+// formatVersion preserves the string formatting from the template and ensures the version
+// uses the same style (v-prefix).
+func formatVersion(template, version string) string {
+	if strings.HasPrefix(template, "v") {
+		if strings.HasPrefix(version, "v") {
+			return version
+		}
+		return "v" + version
+	}
+	return strings.TrimPrefix(version, "v")
 }
