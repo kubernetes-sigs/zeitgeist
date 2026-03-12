@@ -51,7 +51,7 @@ func runSetVersion(opts *options, args []string) error {
 		return errors.New("expected exactly two arguments: <dependency> <version>")
 	}
 
-	client, err := dependency.NewLocalClient()
+	client, err := dependency.NewLocalClient(opts.strictRefMatches)
 	if err != nil {
 		return err
 	}

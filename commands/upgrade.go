@@ -46,7 +46,7 @@ func addUpgrade(topLevel *cobra.Command) {
 // runUpgrade is the function invoked by 'addUpgrade', responsible for
 // upgrading dependencies.
 func runUpgrade(opts *options) error {
-	client, err := dependency.NewRemoteClient()
+	client, err := dependency.NewRemoteClient(opts.strictRefMatches)
 	if err != nil {
 		return err
 	}
