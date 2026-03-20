@@ -74,7 +74,7 @@ func (upstream AMI) LatestVersion() (string, error) {
 	log.Debug("Using AMI upstream")
 
 	// Generate filters based on configuration
-	var filters []types.Filter
+	filters := make([]types.Filter, 0, 1)
 	filters = append(filters, types.Filter{
 		Name:   aws.String("name"),
 		Values: []string{upstream.Name},

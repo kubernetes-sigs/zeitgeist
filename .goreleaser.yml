@@ -108,7 +108,7 @@ builds:
       - "{{ .Env.LDFLAGS }}"
 
 archives:
-  - format: binary
+  - formats: [ 'binary' ]
     name_template: "{{ .Binary }}"
     allow_different_binary_count: true
 
