@@ -5,7 +5,7 @@ go 1.25.7
 require (
 	github.com/aws/aws-sdk-go-v2 v1.41.4
 	github.com/aws/aws-sdk-go-v2/config v1.32.12
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.295.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.296.0
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/go-containerregistry v0.21.3
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.1
@@ -147,7 +147,7 @@ require (
 	gotest.tools/v3 v3.4.0 // indirect
 	k8s.io/api v0.35.1 // indirect
 	k8s.io/apiextensions-apiserver v0.35.1 // indirect
-	k8s.io/apimachinery v0.35.2 // indirect
+	k8s.io/apimachinery v0.35.3 // indirect
 	k8s.io/cli-runtime v0.35.1 // indirect
 	k8s.io/client-go v0.35.1 // indirect
 	k8s.io/component-base v0.35.1 // indirect
