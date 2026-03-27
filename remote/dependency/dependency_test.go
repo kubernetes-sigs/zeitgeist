@@ -59,7 +59,7 @@ func TestRemoteSuccess(t *testing.T) {
 }
 
 func TestDummyRemote(t *testing.T) {
-	client, err := NewRemoteClient()
+	client, err := NewRemoteClient(true)
 	require.NoError(t, err)
 
 	_, err = client.RemoteCheck("../testdata/remote-dummy.yaml")
@@ -67,7 +67,7 @@ func TestDummyRemote(t *testing.T) {
 }
 
 func TestDummyRemoteExportWithoutUpdate(t *testing.T) {
-	client, err := NewRemoteClient()
+	client, err := NewRemoteClient(true)
 	require.NoError(t, err)
 
 	updates, err := client.RemoteExport("../testdata/remote-dummy.yaml")
@@ -76,7 +76,7 @@ func TestDummyRemoteExportWithoutUpdate(t *testing.T) {
 }
 
 func TestDummyRemoteExportWithUpdate(t *testing.T) {
-	client, err := NewRemoteClient()
+	client, err := NewRemoteClient(true)
 	require.NoError(t, err)
 
 	updates, err := client.RemoteExport("../testdata/remote-dummy-with-update.yaml")
@@ -88,7 +88,7 @@ func TestDummyRemoteExportWithUpdate(t *testing.T) {
 }
 
 func TestRemoteConstraint(t *testing.T) {
-	client, err := NewRemoteClient()
+	client, err := NewRemoteClient(true)
 	require.NoError(t, err)
 
 	_, err = client.RemoteCheck("../testdata/remote-constraint.yaml")
@@ -96,7 +96,7 @@ func TestRemoteConstraint(t *testing.T) {
 }
 
 func TestUnknownFlavour(t *testing.T) {
-	client, err := NewRemoteClient()
+	client, err := NewRemoteClient(true)
 	require.NoError(t, err)
 
 	_, err = client.RemoteCheck("../testdata/unknown-upstream.yaml")
@@ -134,7 +134,7 @@ func TestCheckUpstreamVersions(t *testing.T) {
 		},
 	}
 
-	client, err := NewRemoteClient()
+	client, err := NewRemoteClient(true)
 	require.NoError(t, err)
 	updateInfos, err := client.CheckUpstreamVersions(deps)
 	require.NoError(t, err)
@@ -189,7 +189,7 @@ func TestCheckUpstreamVersionsTolerant(t *testing.T) {
 		},
 	}
 
-	client, err := NewRemoteClient()
+	client, err := NewRemoteClient(true)
 	require.NoError(t, err)
 	updateInfos, err := client.CheckUpstreamVersions(deps)
 	require.NoError(t, err)
@@ -388,7 +388,7 @@ dependencies:
 `), 0o644)
 	require.NoError(t, err)
 
-	client, err := NewRemoteClient()
+	client, err := NewRemoteClient(true)
 	require.NoError(t, err)
 	ret, err := client.Upgrade(filepath.Join(dir, "dependencies.yaml"), dir)
 	if err != nil {
