@@ -1,5 +1,5 @@
 /*
-Copyright 2024 The Kubernetes Authors.
+Copyright 2026 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,9 +32,9 @@ import (
 type SSM struct {
 	Base `mapstructure:",squash"`
 
-	// The SSM parameter name/path, e.g.:
+	// The SSM parameter path, e.g.:
 	// /aws/service/eks/optimized-ami/1.31/amazon-linux-2023/x86_64/standard/recommended/image_id
-	Name string
+	Path string
 
 	// AWS SSM client used to retrieve the parameter
 	ServiceClient SSMGetParameterAPI
@@ -44,7 +44,7 @@ type SSMGetParameterAPI interface {
 	GetParameter(ctx context.Context, params *ssm.GetParameterInput, optFns ...func(*ssm.Options)) (*ssm.GetParameterOutput, error)
 }
 
-// NewSSMClient return a new aws service client for SSM Parameter Store
+// NewSSMClient returns a new aws service client for SSM Parameter Store
 //
 // Authentication is provided by the standard AWS credentials use the standard
 // `~/.aws/config` and `~/.aws/credentials` files, and support environment variables.
@@ -63,25 +63,25 @@ func NewSSMClient() *ssm.Client {
 func (upstream SSM) LatestVersion() (string, error) {
 	log.Debug("Using SSM upstream")
 
-	if upstream.Name == "" {
-		return "", fmt.Errorf("SSM upstream requires a parameter name")
+	if upstream.Path == "" {
+		return "", fmt.Errorf("SSM upstream requires a parameter path")
 	}
 
 	input := &ssm.GetParameterInput{
-		Name: &upstream.Name,
+		Name: &upstream.Path,
 	}
 
 	result, err := upstream.ServiceClient.GetParameter(context.Background(), input)
 	if err != nil {
-		return "", fmt.Errorf("retrieving SSM parameter %q: %w", upstream.Name, err)
+		return "", fmt.Errorf("retrieving SSM parameter %q: %w", upstream.Path, err)
 	}
 
 	if result.Parameter == nil || result.Parameter.Value == nil {
-		return "", fmt.Errorf("SSM parameter %q has no value", upstream.Name)
+		return "", fmt.Errorf("SSM parameter %q has no value", upstream.Path)
 	}
 
 	value := *result.Parameter.Value
-	log.Debugf("SSM parameter %q value: %s", upstream.Name, value)
+	log.Debugf("SSM parameter %q value: %s", upstream.Path, value)
 
 	return value, nil
 }

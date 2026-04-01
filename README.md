@@ -204,7 +204,7 @@ dependencies:
   scheme: random
   upstream:
     flavour: ssm
-    name: "/aws/service/eks/optimized-ami/1.35/amazon-linux-2023/x86_64/standard/recommended/image_id"
+    path: "/aws/service/eks/optimized-ami/1.35/amazon-linux-2023/x86_64/standard/recommended/image_id"
   refPaths:
   - path: testdata/zeitgeist-example/a-config-file.yaml
     match: zeitgeist:aws-eks-ami

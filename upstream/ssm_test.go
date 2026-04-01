@@ -1,5 +1,5 @@
 /*
-Copyright 2024 The Kubernetes Authors.
+Copyright 2026 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ func TestGetSSMParameter(t *testing.T) {
 		{
 			Name: "parameter exists",
 			Input: SSM{
-				Name: "/aws/service/eks/optimized-ami/1.31/amazon-linux-2023/x86_64/standard/recommended/image_id",
+				Path: "/aws/service/eks/optimized-ami/1.31/amazon-linux-2023/x86_64/standard/recommended/image_id",
 			},
 			Client: func(_ *testing.T) mockSSMApi {
 				return mockSSMApi(func(_ context.Context, _ *ssm.GetParameterInput, _ ...func(*ssm.Options)) (*ssm.GetParameterOutput, error) {
@@ -62,7 +62,7 @@ func TestGetSSMParameter(t *testing.T) {
 		{
 			Name: "parameter does not exist",
 			Input: SSM{
-				Name: "/aws/service/eks/optimized-ami/9.99/nonexistent/recommended/image_id",
+				Path: "/aws/service/eks/optimized-ami/9.99/nonexistent/recommended/image_id",
 			},
 			Client: func(_ *testing.T) mockSSMApi {
 				return mockSSMApi(func(_ context.Context, _ *ssm.GetParameterInput, _ ...func(*ssm.Options)) (*ssm.GetParameterOutput, error) {
@@ -73,14 +73,31 @@ func TestGetSSMParameter(t *testing.T) {
 			ExpectedError: true,
 		},
 		{
-			Name:  "missing parameter name",
+			Name:  "missing parameter path",
 			Input: SSM{},
 			Client: func(_ *testing.T) mockSSMApi {
 				return mockSSMApi(func(_ context.Context, _ *ssm.GetParameterInput, _ ...func(*ssm.Options)) (*ssm.GetParameterOutput, error) {
 					return nil, nil
 				})
 			},
-			Expected:      "SSM upstream requires a parameter name",
+			Expected:      "SSM upstream requires a parameter path",
+			ExpectedError: true,
+		},
+		{
+			Name: "parameter has nil value",
+			Input: SSM{
+				Path: "/some/parameter",
+			},
+			Client: func(_ *testing.T) mockSSMApi {
+				return mockSSMApi(func(_ context.Context, _ *ssm.GetParameterInput, _ ...func(*ssm.Options)) (*ssm.GetParameterOutput, error) {
+					return &ssm.GetParameterOutput{
+						Parameter: &ssmtypes.Parameter{
+							Value: nil,
+						},
+					}, nil
+				})
+			},
+			Expected:      `SSM parameter "/some/parameter" has no value`,
 			ExpectedError: true,
 		},
 	}
@@ -102,8 +119,8 @@ func TestGetSSMParameter(t *testing.T) {
 
 func TestUnserialiseSSM(t *testing.T) {
 	validYamls := []string{
-		"flavour: ssm\nname: /aws/service/eks/optimized-ami/1.31/amazon-linux-2023/x86_64/standard/recommended/image_id",
-		"flavour: ssm\nname: /my/custom/parameter",
+		"flavour: ssm\npath: /aws/service/eks/optimized-ami/1.31/amazon-linux-2023/x86_64/standard/recommended/image_id",
+		"flavour: ssm\npath: /my/custom/parameter",
 	}
 
 	for _, valid := range validYamls {
@@ -111,5 +128,6 @@ func TestUnserialiseSSM(t *testing.T) {
 
 		err := yaml.Unmarshal([]byte(valid), &u)
 		require.NoError(t, err)
+		require.NotEmpty(t, u.Path)
 	}
 }
