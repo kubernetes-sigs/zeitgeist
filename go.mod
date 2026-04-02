@@ -6,6 +6,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.41.5
 	github.com/aws/aws-sdk-go-v2/config v1.32.13
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.296.2
+	github.com/aws/aws-sdk-go-v2/service/ssm v1.68.4
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/go-containerregistry v0.21.3
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.12.1

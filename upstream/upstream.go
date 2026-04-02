@@ -66,6 +66,9 @@ const (
 	// EKSFlavour is for Elastic Kubernetes Service.
 	EKSFlavour Flavour = "eks"
 
+	// SSMFlavour is for AWS Systems Manager Parameter Store.
+	SSMFlavour Flavour = "ssm"
+
 	// DummyFlavour is for testing.
 	DummyFlavour Flavour = "dummy"
 

@@ -40,6 +40,7 @@ func init() {
 type RemoteClient struct {
 	LocalClient  deppkg.Client
 	AWSEC2Client EC2DescribeImagesAPI
+	AWSSSMClient upstream.SSMGetParameterAPI
 }
 
 type EC2DescribeImagesAPI interface {
@@ -54,6 +55,7 @@ func NewRemoteClient() (deppkg.Client, error) {
 	return &RemoteClient{
 		LocalClient:  localClient,
 		AWSEC2Client: upstream.NewAWSClient(),
+		AWSSSMClient: upstream.NewSSMClient(),
 	}, nil
 }
 
@@ -357,6 +359,17 @@ func (c *RemoteClient) CheckUpstreamVersions(deps []*deppkg.Dependency) ([]deppk
 			}
 
 			latestVersion.Version, err = eks.LatestVersion()
+		case upstream.SSMFlavour:
+			var ssm upstream.SSM
+
+			decodeErr := mapstructure.Decode(up, &ssm)
+			if decodeErr != nil {
+				return nil, decodeErr
+			}
+
+			ssm.ServiceClient = c.AWSSSMClient
+
+			latestVersion.Version, err = ssm.LatestVersion()
 		default:
 			return nil, fmt.Errorf("unknown upstream flavour '%#v' for dependency %s", flavour, dep.Name)
 		}

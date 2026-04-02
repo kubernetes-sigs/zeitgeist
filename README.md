@@ -190,6 +190,26 @@ dependencies:
 
 It uses the standard [go AWS SDK authentication methods](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html) for authentication and authorization, so it can be used for both public & private AMIs.
 
+**SSM**
+
+The [SSM upstream](upstream/ssm.go) looks at [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) from AWS.
+
+AWS provides recommended parameters in SSM, for example for [EKS recommended AMIs](https://docs.aws.amazon.com/eks/latest/userguide/retrieve-ami-id.html).
+
+Example:
+```yaml
+dependencies:
+- name: aws-eks-ami-from-ssm
+  version: ami-0dafeb02304897431
+  scheme: random
+  upstream:
+    flavour: ssm
+    path: "/aws/service/eks/optimized-ami/1.35/amazon-linux-2023/x86_64/standard/recommended/image_id"
+  refPaths:
+  - path: testdata/zeitgeist-example/a-config-file.yaml
+    match: zeitgeist:aws-eks-ami
+```
+
 **Container**
 
 The [container upstream](upstream/container.go) talks to [OCI container registries](https://github.com/opencontainers/distribution-spec), such as Docker registries.
@@ -263,21 +283,6 @@ goreleaser release --rm-dist
 ## Credit
 
 Zeitgeist is inspired by [Kubernetes' script to manage external dependencies](https://groups.google.com/forum/?pli=1#!topic/kubernetes-dev/cTaYyb1a18I) and extended to include checking with upstream sources to ensure dependencies are up-to-date.
-
-## To do
-
-- [x] Find a good name for the project
-- [x] Support `helm` upstream
-- [x] Support `eks` upstream
-- [x] Support `ami` upstream
-- [x] support `docker` upstream
-- [x] Cleanly separate various upstreams to make it easy to add new upstreams
-- [x] Implement non-semver support (e.g. for AMI, but also for classic releases)
-- [x] Write good docs :)
-- [x] Write good tests!
-- [x] Externalise the project into its own repo
-- [x] Generate releases
-- [x] Automate release generation from a tag
 
 ## Community, discussion, contribution, and support
 
