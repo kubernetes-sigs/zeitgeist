@@ -47,8 +47,8 @@ type EC2DescribeImagesAPI interface {
 	DescribeImages(ctx context.Context, params *ec2.DescribeImagesInput, optFns ...func(*ec2.Options)) (*ec2.DescribeImagesOutput, error)
 }
 
-func NewRemoteClient() (deppkg.Client, error) {
-	localClient, err := deppkg.NewLocalClient()
+func NewRemoteClient(strictRefMatches bool) (deppkg.Client, error) {
+	localClient, err := deppkg.NewLocalClient(strictRefMatches)
 	if err != nil {
 		return nil, err
 	}
