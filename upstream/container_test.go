@@ -19,7 +19,7 @@ package upstream
 import (
 	"testing"
 
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v3"
 )
 
 func TestUnserialiseContainer(t *testing.T) {
