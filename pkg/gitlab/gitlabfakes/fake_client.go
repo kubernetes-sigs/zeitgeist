@@ -4,7 +4,7 @@ package gitlabfakes
 import (
 	"sync"
 
-	gitlaba "gitlab.com/gitlab-org/api/client-go"
+	gitlaba "gitlab.com/gitlab-org/api/client-go/v2"
 	"sigs.k8s.io/zeitgeist/pkg/gitlab"
 )
 
