@@ -21,7 +21,7 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
-	gitlab "gitlab.com/gitlab-org/api/client-go"
+	gitlab "gitlab.com/gitlab-org/api/client-go/v2"
 
 	"sigs.k8s.io/release-utils/env"
 )

@@ -22,7 +22,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	gogitlab "gitlab.com/gitlab-org/api/client-go"
+	gogitlab "gitlab.com/gitlab-org/api/client-go/v2"
 
 	"sigs.k8s.io/zeitgeist/pkg/gitlab"
 	"sigs.k8s.io/zeitgeist/pkg/gitlab/gitlabfakes"
