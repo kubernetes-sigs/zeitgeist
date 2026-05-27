@@ -26,9 +26,9 @@ import (
 
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
-	"helm.sh/helm/v3/pkg/cli"
-	"helm.sh/helm/v3/pkg/getter"
-	"helm.sh/helm/v3/pkg/repo"
+	"helm.sh/helm/v4/pkg/cli"
+	"helm.sh/helm/v4/pkg/getter"
+	repo "helm.sh/helm/v4/pkg/repo/v1"
 )
 
 // Helm upstream representation.
