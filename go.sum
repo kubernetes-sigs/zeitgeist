@@ -322,8 +322,8 @@ github.com/xanzy/ssh-agent v0.3.3/go.mod h1:6dzNDKs0J9rVPHPhaGCukekBHKqfl+L3KghI
 github.com/xlab/treeprint v1.2.0 h1:HzHnuAF1plUN2zGlAFHbSQP2qJ0ZAD3XF5XD7OesXRQ=
 github.com/xlab/treeprint v1.2.0/go.mod h1:gj5Gd3gPdKtR1ikdDK6fnFLdmIS0X30kTTuNd/WEJu0=
 github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
-gitlab.com/gitlab-org/api/client-go/v2 v2.32.0 h1:oG173HQA/FJjjoRj0H/xf6KmgNdKxLKvF1jo6JbJ5Ko=
-gitlab.com/gitlab-org/api/client-go/v2 v2.32.0/go.mod h1:0upZTKi9YMMvhavTlKJ3YgQUZE/GJkcLmXT/+6knTXU=
+gitlab.com/gitlab-org/api/client-go/v2 v2.34.0 h1:3Gv+41azLlj97fUkhkaTCnIOm45mHDwLlAcTDEwHE2s=
+gitlab.com/gitlab-org/api/client-go/v2 v2.34.0/go.mod h1:T+hA9p13Fxyh4FkVbcEy36HlAGs37QBCifhh7Zt4+dg=
 go.opentelemetry.io/auto/sdk v1.2.1 h1:jXsnJ4Lmnqd11kwkBV2LgLoFMZKizbCi5fNZ/ipaZ64=
 go.opentelemetry.io/auto/sdk v1.2.1/go.mod h1:KRTj+aOaElaLi+wW1kO/DZRXwkF4C5xPbEe3ZiIhN7Y=
 go.opentelemetry.io/contrib/bridges/prometheus v0.67.0 h1:dkBzNEAIKADEaFnuESzcXvpd09vxvDZsOjx11gjUqLk=
