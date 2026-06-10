@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/aws/aws-sdk-go-v2 v1.42.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.24
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.305.3
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.306.0
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.69.3
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/go-containerregistry v0.21.6
@@ -14,7 +14,7 @@ require (
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
-	gitlab.com/gitlab-org/api/client-go/v2 v2.36.2
+	gitlab.com/gitlab-org/api/client-go/v2 v2.36.3
 	go.yaml.in/yaml/v3 v3.0.4
 	helm.sh/helm/v4 v4.2.0
 	sigs.k8s.io/release-sdk v0.12.6
