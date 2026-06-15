@@ -14,7 +14,7 @@ require (
 	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
-	gitlab.com/gitlab-org/api/client-go/v2 v2.38.0
+	gitlab.com/gitlab-org/api/client-go/v2 v2.39.0
 	go.yaml.in/yaml/v3 v3.0.4
 	helm.sh/helm/v4 v4.2.1
 	sigs.k8s.io/release-sdk v0.12.6
@@ -145,7 +145,7 @@ require (
 	gotest.tools/v3 v3.4.0 // indirect
 	k8s.io/api v0.36.1 // indirect
 	k8s.io/apiextensions-apiserver v0.36.1 // indirect
-	k8s.io/apimachinery v0.36.1 // indirect
+	k8s.io/apimachinery v0.36.2 // indirect
 	k8s.io/cli-runtime v0.36.1 // indirect
 	k8s.io/client-go v0.36.1 // indirect
 	k8s.io/klog/v2 v2.140.0 // indirect
