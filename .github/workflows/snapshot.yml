@@ -38,7 +38,7 @@ jobs:
           install-only: true
 
       - name: Install bom
-        uses: kubernetes-sigs/release-actions/setup-bom@8753ea6bdadb814d779c6ec34eaca689dbfb492b # v0.4.3
+        uses: kubernetes-sigs/release-actions/setup-bom@c130b4494862d330a1aa4de320076c666d0708da # v0.4.4
 
       - name: Run Snapshot
         run: make snapshot
@@ -66,7 +66,7 @@ jobs:
           persist-credentials: false
 
       - name: Install tejolote
-        uses: kubernetes-sigs/release-actions/setup-tejolote@8753ea6bdadb814d779c6ec34eaca689dbfb492b # v0.4.3
+        uses: kubernetes-sigs/release-actions/setup-tejolote@c130b4494862d330a1aa4de320076c666d0708da # v0.4.4
 
       - run: |
           tejolote attest github://kubernetes-sigs/zeitgeist/"${GITHUB_RUN_ID}" --output zeitgeist.intoto.json
