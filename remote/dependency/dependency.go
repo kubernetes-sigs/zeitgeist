@@ -41,6 +41,7 @@ type RemoteClient struct {
 	LocalClient  deppkg.Client
 	AWSEC2Client EC2DescribeImagesAPI
 	AWSSSMClient upstream.SSMGetParameterAPI
+	AWSEKSClient upstream.EKSDescribeAddonVersionsAPI
 }
 
 type EC2DescribeImagesAPI interface {
@@ -56,6 +57,7 @@ func NewRemoteClient() (deppkg.Client, error) {
 		LocalClient:  localClient,
 		AWSEC2Client: upstream.NewAWSClient(),
 		AWSSSMClient: upstream.NewSSMClient(),
+		AWSEKSClient: upstream.NewEKSClient(),
 	}, nil
 }
 
@@ -359,6 +361,17 @@ func (c *RemoteClient) CheckUpstreamVersions(deps []*deppkg.Dependency) ([]deppk
 			}
 
 			latestVersion.Version, err = eks.LatestVersion()
+		case upstream.EKSAddonFlavour:
+			var eksAddon upstream.EKSAddon
+
+			decodeErr := mapstructure.Decode(up, &eksAddon)
+			if decodeErr != nil {
+				return nil, decodeErr
+			}
+
+			eksAddon.ServiceClient = c.AWSEKSClient
+
+			latestVersion.Version, err = eksAddon.LatestVersion()
 		case upstream.SSMFlavour:
 			var ssm upstream.SSM
 

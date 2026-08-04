@@ -243,6 +243,30 @@ dependencies:
     match: eks
 ```
 
+**EKS Add-ons**
+
+The [EKS Add-ons upstream](upstream/eksaddon.go) checks for updates to [EKS add-ons](https://docs.aws.amazon.com/eks/latest/userguide/eks-add-ons.html) (e.g. `vpc-cni`, `coredns`, `kube-proxy`, `aws-ebs-csi-driver`), via the Amazon EKS API.
+
+By default, only the "current" version of the add-on (AWS's recommended version for the given `kubernetesVersion`) is considered. Set `latest: true` to allow upgrading to the highest available version instead.
+
+Example:
+```yaml
+dependencies:
+- name: vpc-cni
+  version: v1.15.1-eksbuild.1
+  upstream:
+    flavour: eks-addon
+    addonName: vpc-cni        # matches the Amazon EKS API name, get all available addons with `aws eks describe-addon-versions --query 'addons[].addonName'`
+    kubernetesVersion: "1.31" # restrict to versions compatible with this Kubernetes version; also required to unambiguously resolve the "current" default version
+    constraints: "< 2.0.0"    # optional: semver constraints, e.g. < 2.0.0
+    latest: false             # optional: set to true to track the highest available version instead of AWS's "current" default
+  refPaths:
+  - path: testdata/zeitgeist-example/a-config-file.yaml
+    match: vpc-cni
+```
+
+It uses the standard [go AWS SDK authentication methods](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html) for authentication and authorization.
+
 ## Supported version schemes
 
 Zeitgeist supports several version schemes:
