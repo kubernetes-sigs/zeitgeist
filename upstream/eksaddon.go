@@ -35,7 +35,7 @@ type EKSAddon struct {
 	Base `mapstructure:",squash"`
 
 	// The name of the add-on from the Amazon EKS API, e.g. vpc-cni, coredns, kube-proxy, aws-ebs-csi-driver
-	// To retrieve the foll list of addons, run:
+	// To retrieve the full list of addons, run:
 	//   aws eks describe-addon-versions --query 'addons[].addonName'
 	AddonName string `yaml:"addonName"`
 
@@ -63,7 +63,7 @@ type EKSDescribeAddonVersionsAPI interface {
 // Authentication is provided by the standard AWS credentials use the standard
 // `~/.aws/config` and `~/.aws/credentials` files, and support environment variables.
 // See AWS documentation for more details:
-// https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
+// https://docs.aws.amazon.com/sdk-for-go/v2/developer-guide/configure-gosdk.html
 func NewEKSClient() *eks.Client {
 	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {

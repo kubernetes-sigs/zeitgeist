@@ -54,7 +54,7 @@ type EC2DescribeImagesAPI interface {
 // Authentication is provided by the standard AWS credentials use the standard
 // `~/.aws/config` and `~/.aws/credentials` files, and support environment variables.
 // See AWS documentation for more details:
-// https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/sessions.html
+// https://docs.aws.amazon.com/sdk-for-go/v2/developer-guide/configure-gosdk.html
 func NewAWSClient() *ec2.Client {
 	// Create a new session based on shared / env credentials
 	cfg, err := config.LoadDefaultConfig(context.Background())

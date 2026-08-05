@@ -181,7 +181,7 @@ dependencies:
     match: zeitgeist:aws-eks-ami
 ```
 
-It uses the standard [go AWS SDK authentication methods](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html) for authentication and authorization, so it can be used for both public & private AMIs.
+It uses the standard [go AWS SDK authentication methods](https://docs.aws.amazon.com/sdk-for-go/v2/developer-guide/configure-gosdk.html) for authentication and authorization, so it can be used for both public & private AMIs.
 
 **SSM**
 
@@ -265,7 +265,7 @@ dependencies:
     match: vpc-cni
 ```
 
-It uses the standard [go AWS SDK authentication methods](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html) for authentication and authorization.
+It uses the standard [go AWS SDK authentication methods](https://docs.aws.amazon.com/sdk-for-go/v2/developer-guide/configure-gosdk.html) for authentication and authorization.
 
 ## Supported version schemes
 
