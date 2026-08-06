@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
 	ekstypes "github.com/aws/aws-sdk-go-v2/service/eks/types"
+	"github.com/mitchellh/mapstructure"
 	"github.com/stretchr/testify/require"
 	"go.yaml.in/yaml/v3"
 )
@@ -246,5 +247,32 @@ func TestUnserialiseEKSAddon(t *testing.T) {
 		err := yaml.Unmarshal([]byte(valid), &u)
 		require.NoError(t, err)
 		require.NotEmpty(t, u.AddonName)
+	}
+}
+
+func TestUnserialiseEKSAddonFromMap(t *testing.T) {
+	validMaps := []map[string]interface{}{
+		{
+			"flavour":           "eks-addon",
+			"addonName":         "vpc-cni",
+		},
+		{
+			"flavour":           "eks-addon",
+			"addonName":         "vpc-cni",
+			"kubernetesVersion": "1.31",
+			"constraints": "< 2.0.0",
+		},
+		{
+			"flavour":           "eks-addon",
+			"addonName":         "vpc-cni",
+			"latest": true,
+		},
+	}
+
+	for _, valid := range validMaps {
+		var u EKSAddon
+
+		require.NoError(t, mapstructure.Decode(valid, &u))
+		require.Equal(t, "vpc-cni", u.AddonName)
 	}
 }
