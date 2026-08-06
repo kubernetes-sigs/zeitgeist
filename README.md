@@ -257,9 +257,14 @@ dependencies:
   upstream:
     flavour: eks-addon
     addonName: vpc-cni        # matches the Amazon EKS API name, get all available addons with `aws eks describe-addon-versions --query 'addons[].addonName'`
-    kubernetesVersion: "1.31" # restrict to versions compatible with this Kubernetes version; also required to unambiguously resolve the "current" default version
-    constraints: "< 2.0.0"    # optional: semver constraints, e.g. < 2.0.0
-    latest: false             # optional: set to true to track the highest available version instead of AWS's "current" default
+    latest: false             # optional: set to true to track the highest available version. Default is to use AWS's "current" version
+    kubernetesVersion: "1.31" # optional: restrict to versions compatible with this Kubernetes version
+                              # required to unambiguously resolve the "current" default version when latest=false
+    constraints: "< 1.16.0-0" # optional: semver constraints
+    # important note on constraints: add-ons are always versioned with a `-eksbuild.N` suffix, which makes them
+    # pre-releases from a semver point of view. For example, version `1.15.1-eksbuild.1` _would pass_
+    # `constraint: "<1.15.1"`. Instead, you will want to use a constraint that includes the pre-release, such as
+    # `constraint: "<1.15.1-0`.
   refPaths:
   - path: testdata/zeitgeist-example/a-config-file.yaml
     match: vpc-cni
