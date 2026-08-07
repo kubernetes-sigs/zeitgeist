@@ -181,7 +181,7 @@ dependencies:
     match: zeitgeist:aws-eks-ami
 ```
 
-It uses the standard [go AWS SDK authentication methods](https://docs.aws.amazon.com/sdk-for-go/v1/developer-guide/configuring-sdk.html) for authentication and authorization, so it can be used for both public & private AMIs.
+It uses the standard [go AWS SDK authentication methods](https://docs.aws.amazon.com/sdk-for-go/v2/developer-guide/configure-gosdk.html) for authentication and authorization, so it can be used for both public & private AMIs.
 
 **SSM**
 
@@ -242,6 +242,35 @@ dependencies:
   - path: testdata/zeitgeist-example/a-config-file.yaml
     match: eks
 ```
+
+**EKS Add-ons**
+
+The [EKS Add-ons upstream](upstream/eksaddon.go) checks for updates to [EKS add-ons](https://docs.aws.amazon.com/eks/latest/userguide/eks-add-ons.html) (e.g. `vpc-cni`, `coredns`, `kube-proxy`, `aws-ebs-csi-driver`), via the Amazon EKS API.
+
+By default, only the "current" version of the add-on (AWS's recommended version for the given `kubernetesVersion`) is considered. Set `latest: true` to allow upgrading to the highest available version instead.
+
+Example:
+```yaml
+dependencies:
+- name: vpc-cni
+  version: v1.15.1-eksbuild.1
+  upstream:
+    flavour: eks-addon
+    addonName: vpc-cni        # matches the Amazon EKS API name, get all available addons with `aws eks describe-addon-versions --query 'addons[].addonName'`
+    latest: false             # optional: set to true to track the highest available version. Default is to use AWS's "current" version
+    kubernetesVersion: "1.31" # optional: restrict to versions compatible with this Kubernetes version
+                              # required to unambiguously resolve the "current" default version when latest=false
+    constraints: "< 1.16.0-0" # optional: semver constraints
+    # important note on constraints: add-ons are always versioned with a `-eksbuild.N` suffix, which makes them
+    # pre-releases from a semver point of view. For example, version `1.15.1-eksbuild.1` _would pass_
+    # `constraint: "<1.15.1"`. Instead, you will want to use a constraint that includes the pre-release, such as
+    # `constraint: "<1.15.1-0`.
+  refPaths:
+  - path: testdata/zeitgeist-example/a-config-file.yaml
+    match: vpc-cni
+```
+
+It uses the standard [go AWS SDK authentication methods](https://docs.aws.amazon.com/sdk-for-go/v2/developer-guide/configure-gosdk.html) for authentication and authorization.
 
 ## Supported version schemes
 
