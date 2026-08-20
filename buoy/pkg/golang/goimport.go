@@ -94,6 +94,9 @@ func GetMetaImport(url string) (*MetaImport, error) {
 	}
 
 	f := strings.Fields(content)
+	if len(f) < 3 {
+		return nil, fmt.Errorf("go-import meta tag has %d fields, want a prefix, a vcs and a repo root: %q", len(f), content)
+	}
 
 	return &MetaImport{
 		Prefix:   f[0],
