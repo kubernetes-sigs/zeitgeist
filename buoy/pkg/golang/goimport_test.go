@@ -193,7 +193,7 @@ func TestGetMetaImport_ShortGoImport(t *testing.T) {
 			defer ts.Close()
 
 			_, err := GetMetaImport(ts.URL)
-			require.Error(t, err)
+			require.ErrorContains(t, err, "fields")
 		})
 	}
 }
