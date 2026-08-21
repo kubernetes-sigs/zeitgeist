@@ -175,3 +175,25 @@ func TestGetMetaImport_MissingGoImport(t *testing.T) {
 	_, err := GetMetaImport(ts.URL)
 	require.Error(t, err)
 }
+
+func TestGetMetaImport_ShortGoImport(t *testing.T) {
+	tests := map[string]string{
+		"prefix only":     "tableflip.dev/buoy",
+		"no repo root":    "tableflip.dev/buoy git",
+		"empty content":   "",
+		"only whitespace": "   ",
+	}
+
+	for name, content := range tests {
+		t.Run(name, func(t *testing.T) {
+			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				// nolint: errcheck
+				w.Write([]byte(`<html><head><meta name="go-import" content="` + content + `"></head></html>`))
+			}))
+			defer ts.Close()
+
+			_, err := GetMetaImport(ts.URL)
+			require.ErrorContains(t, err, "fields")
+		})
+	}
+}
