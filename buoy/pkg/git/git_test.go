@@ -27,7 +27,8 @@ import (
 
 func TestGetRepo_BasicOne(t *testing.T) {
 	f := fixtures.Basic().One()
-	repoURL := f.DotGit().Root()
+	// GetRepo needs a real on-disk path; the fixtures default is an in-memory FS.
+	repoURL := f.DotGit(fixtures.WithTargetDir(t.TempDir)).Root()
 
 	r, err := GetRepo("foo", repoURL)
 	require.NoError(t, err)
