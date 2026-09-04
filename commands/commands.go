@@ -74,6 +74,13 @@ func New(opts Options, zeitVersionType ZeitgeistType) *cobra.Command {
 		"the logging verbosity, either "+log.LevelNames(),
 	)
 
+	cmd.PersistentFlags().BoolVar(
+		&rootOpts.strictRefMatches,
+		"strict-ref-matches",
+		true,
+		"if true (default), ALL lines matching a refPath's match regexp must contain the expected version; if false, AT LEAST ONE matching line must contain the version",
+	)
+
 	AddCommands(cmd)
 	cmd.AddCommand(version.WithFont("shadow"))
 	return cmd
