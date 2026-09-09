@@ -51,9 +51,9 @@ func runValidate(opts *options) error {
 		err    error
 	)
 	if opts.localOnly {
-		client, err = dependency.NewLocalClient()
+		client, err = dependency.NewLocalClient(opts.strictRefMatches)
 	} else {
-		client, err = dependency.NewRemoteClient()
+		client, err = dependency.NewRemoteClient(opts.strictRefMatches)
 	}
 	if err != nil {
 		return fmt.Errorf("constructing client: %w", err)
