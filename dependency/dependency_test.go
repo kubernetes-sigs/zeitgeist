@@ -26,7 +26,7 @@ import (
 )
 
 func TestUnsupported(t *testing.T) {
-	client, err := NewLocalClient()
+	client, err := NewLocalClient(true)
 	require.NoError(t, err)
 	_, err = client.RemoteCheck("")
 	require.ErrorAs(t, err, &UnsupportedError{})
@@ -37,7 +37,7 @@ func TestUnsupported(t *testing.T) {
 }
 
 func TestLocalSuccess(t *testing.T) {
-	client, err := NewLocalClient()
+	client, err := NewLocalClient(true)
 	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/local.yaml", "../testdata")
@@ -45,7 +45,7 @@ func TestLocalSuccess(t *testing.T) {
 }
 
 func TestLocalMultipleMatches(t *testing.T) {
-	client, err := NewLocalClient()
+	client, err := NewLocalClient(true)
 	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/local-multi-in-sync.yaml", "../testdata")
@@ -53,7 +53,7 @@ func TestLocalMultipleMatches(t *testing.T) {
 }
 
 func TestLocalMultipleMatchesOutOfSync(t *testing.T) {
-	client, err := NewLocalClient()
+	client, err := NewLocalClient(true)
 	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/local-multi-out-of-sync.yaml", "../testdata")
@@ -61,13 +61,24 @@ func TestLocalMultipleMatchesOutOfSync(t *testing.T) {
 	require.Contains(t, err.Error(), "not in sync")
 }
 
+// TestLocalMultipleMatchesOutOfSyncNonStrict verifies that with strict=false,
+// a file where at least one matching line contains the correct version passes,
+// even if other matching lines do not contain the version.
+func TestLocalMultipleMatchesOutOfSyncNonStrict(t *testing.T) {
+	client, err := NewLocalClient(false)
+	require.NoError(t, err)
+
+	err = client.LocalCheck("../testdata/local-multi-out-of-sync.yaml", "../testdata")
+	require.NoError(t, err)
+}
+
 func TestRemoteUnsupported(t *testing.T) {
-	_, err := NewRemoteClient()
+	_, err := NewRemoteClient(true)
 	require.ErrorAs(t, err, &UnsupportedError{})
 }
 
 func TestBrokenFile(t *testing.T) {
-	client, err := NewLocalClient()
+	client, err := NewLocalClient(true)
 	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/does-not-exist", "../testdata")
@@ -78,7 +89,7 @@ func TestBrokenFile(t *testing.T) {
 }
 
 func TestLocalOutOfSync(t *testing.T) {
-	client, err := NewLocalClient()
+	client, err := NewLocalClient(true)
 	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/local-out-of-sync.yaml", "../testdata")
@@ -87,7 +98,7 @@ func TestLocalOutOfSync(t *testing.T) {
 }
 
 func TestLocalInvalid(t *testing.T) {
-	client, err := NewLocalClient()
+	client, err := NewLocalClient(true)
 	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/local-invalid.yaml", "../testdata")
@@ -96,7 +107,7 @@ func TestLocalInvalid(t *testing.T) {
 }
 
 func TestLocalTypo(t *testing.T) {
-	client, err := NewLocalClient()
+	client, err := NewLocalClient(true)
 	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/local-typo.yaml", "../testdata")
@@ -105,7 +116,7 @@ func TestLocalTypo(t *testing.T) {
 }
 
 func TestLocalIncompleteRefPath(t *testing.T) {
-	client, err := NewLocalClient()
+	client, err := NewLocalClient(true)
 	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/local-malformed-refpath.yaml", "../testdata")
@@ -114,7 +125,7 @@ func TestLocalIncompleteRefPath(t *testing.T) {
 }
 
 func TestFileDoesntExist(t *testing.T) {
-	client, err := NewLocalClient()
+	client, err := NewLocalClient(true)
 	require.NoError(t, err)
 
 	err = client.LocalCheck("../testdata/local-no-file.yaml", "../testdata")
@@ -176,7 +187,7 @@ dependencies:
 `), 0o644)
 	require.NoError(t, err)
 
-	client, err := NewLocalClient()
+	client, err := NewLocalClient(true)
 	require.NoError(t, err)
 	err = client.SetVersion(filepath.Join(dir, "dependencies.yaml"), dir, "app1", "2.1.0")
 	if err != nil {
@@ -215,7 +226,7 @@ dependencies:
 `), 0o644)
 	require.NoError(t, err)
 
-	client, err := NewLocalClient()
+	client, err := NewLocalClient(true)
 	require.NoError(t, err)
 	err = client.SetVersion(filepath.Join(dir, "dependencies.yaml"), dir, "app1", "2.1.0")
 	if err != nil {
