@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.78.1
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/go-containerregistry v0.22.1
-	github.com/maxbrunsfeld/counterfeiter/v6 v6.13.0
+	github.com/maxbrunsfeld/counterfeiter/v6 v6.14.0
 	github.com/mitchellh/mapstructure v1.5.1-0.20231216201459-8508981c8b6c
 	github.com/sirupsen/logrus v1.10.2
 	github.com/spf13/cobra v1.10.2
