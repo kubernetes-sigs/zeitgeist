@@ -401,4 +401,54 @@ dependencies:
 	got, err := os.ReadFile(testFile)
 	require.NoError(t, err)
 	require.Equal(t, "VERSION: 1.0.0\nOTHER: 0.0.1", string(got))
+
+	deps, err := deppkg.FromFile(filepath.Join(dir, "dependencies.yaml"))
+	require.NoError(t, err)
+	require.Len(t, deps.Dependencies, 2, "dependencies without an upstream must be kept")
+}
+
+func TestUpgradeSkipsUnsupportedScheme(t *testing.T) {
+	dir := t.TempDir()
+	testFile := filepath.Join(dir, "test.txt")
+
+	err := os.WriteFile(testFile, []byte("VERSION: 0.0.1\nCHART: abc123"), 0o644)
+	require.NoError(t, err)
+
+	err = os.WriteFile(filepath.Join(dir, "dependencies.yaml"), []byte(`
+dependencies:
+  - name: upgrade
+    version: 0.0.1
+    scheme: semver
+    upstream:
+      flavour: dummy
+    refPaths:
+    - path: test.txt
+      match: VERSION
+  - name: random-chart
+    version: abc123
+    scheme: random
+    upstream:
+      flavour: helm
+      repo: https://example.com/charts
+      chart: random-chart
+    refPaths:
+    - path: test.txt
+      match: CHART
+`), 0o644)
+	require.NoError(t, err)
+
+	client, err := NewRemoteClient()
+	require.NoError(t, err)
+	ret, err := client.Upgrade(filepath.Join(dir, "dependencies.yaml"), dir)
+	require.NoError(t, err)
+	require.Equal(t, []string{"Upgraded dependency upgrade from version 0.0.1 to version 1.0.0"}, ret)
+
+	got, err := os.ReadFile(testFile)
+	require.NoError(t, err)
+	require.Equal(t, "VERSION: 1.0.0\nCHART: abc123", string(got))
+
+	deps, err := deppkg.FromFile(filepath.Join(dir, "dependencies.yaml"))
+	require.NoError(t, err)
+	require.Len(t, deps.Dependencies, 2, "skipped dependencies must be kept")
+	require.Equal(t, "abc123", deps.Dependencies[1].Version)
 }

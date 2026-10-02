@@ -23,7 +23,9 @@ import (
 
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
+	gogitlab "gitlab.com/gitlab-org/api/client-go/v2"
 
+	"sigs.k8s.io/zeitgeist/dependency"
 	"sigs.k8s.io/zeitgeist/pkg/gitlab"
 )
 
@@ -44,6 +46,10 @@ type GitLab struct {
 	// If branch is specified, the version should be a commit SHA
 	// Will look for new commits on the branch
 	Branch string
+
+	// Version scheme of the dependency, used to order releases.
+	// Set from the dependency itself rather than from the upstream configuration.
+	Scheme dependency.VersionScheme `mapstructure:"-"`
 }
 
 // LatestVersion returns the latest non-draft, non-prerelease GitLab Release
@@ -110,6 +116,11 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 		return "", fmt.Errorf("retrieving GitLab releases: %w", err)
 	}
 
+	if upstream.Scheme == dependency.Random {
+		// Tags have no release dates, so unlike other schemes we don't fall back to them
+		return mostRecentGitLabRelease(releases)
+	}
+
 	if len(releases) == 0 {
 		gitLabTags, err := client.ListTags(owner, repo)
 		if err != nil {
@@ -123,13 +134,40 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 		for _, release := range releases {
 			if release.TagName == "" {
 				log.Debug("Skipping release without TagName")
+				continue
 			}
 
 			tags = append(tags, release.TagName)
 		}
 	}
 
+	if upstream.Scheme == dependency.Alpha {
+		return highestAlphanumericVersion(tags)
+	}
 	return selectHighestVersion(upstream.Constraints, expectedRange, tags)
+}
+
+// mostRecentGitLabRelease returns the tag of the most recently released release,
+// ignoring upcoming releases (scheduled with a future release date).
+func mostRecentGitLabRelease(releases []*gogitlab.Release) (string, error) {
+	var newest *gogitlab.Release
+	for _, release := range releases {
+		if release.TagName == "" || release.ReleasedAt == nil {
+			continue
+		}
+		if release.UpcomingRelease {
+			log.Debugf("Skipping upcoming release: %s", release.TagName)
+			continue
+		}
+		if newest == nil || release.ReleasedAt.After(*newest.ReleasedAt) {
+			newest = release
+		}
+	}
+
+	if newest == nil {
+		return "", errors.New("no potential version found")
+	}
+	return newest.TagName, nil
 }
 
 func latestGitlabCommit(upstream *GitLab) (string, error) {
