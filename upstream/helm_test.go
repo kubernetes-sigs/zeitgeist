@@ -25,6 +25,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"go.yaml.in/yaml/v3"
+
+	"sigs.k8s.io/zeitgeist/dependency"
 )
 
 func TestUnserialiseHelm(t *testing.T) {
@@ -227,4 +229,40 @@ func TestHelmHappyPathWithPrelease(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, latestVersion)
 	require.Equal(t, "0.1.0", latestVersion)
+}
+
+func TestHelmAlphaScheme(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(helmHandler))
+	defer server.Close()
+
+	h := Helm{
+		Repo:   server.URL,
+		Chart:  "dependency-alpha",
+		Scheme: dependency.Alpha,
+	}
+
+	latestVersion, err := h.LatestVersion()
+	require.NoError(t, err)
+	// 2026-09-28-587f406 is annotated as a prerelease
+	require.Equal(t, "2026-09-21-68cd3e0", latestVersion)
+}
+
+func TestHelmSemverSchemeSkipsNonSemver(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(helmHandler))
+	defer server.Close()
+
+	h := Helm{
+		Repo:  server.URL,
+		Chart: "dependency-alpha",
+	}
+
+	_, err := h.LatestVersion()
+	require.Error(t, err)
+}
+
+func TestHelmRandomSchemeUnsupported(t *testing.T) {
+	h := Helm{Scheme: dependency.Random}
+
+	_, err := h.LatestVersion()
+	require.ErrorIs(t, err, ErrUnsupportedScheme)
 }
