@@ -186,11 +186,16 @@ func ToFile(dependencyFilePath string, dependencies *Dependencies) error {
 	return nil
 }
 
-type LocalClient struct{}
+type LocalClient struct {
+	// StrictRefMatches controls whether ALL lines matching a refPath's match regexp must contain
+	// the version (true), or whether AT LEAST ONE matching line must contain the version (false).
+	// Defaults to true. Set to false to preserve the behaviour from before bd27f1b.
+	StrictRefMatches bool
+}
 
-// NewClient returns all clients that can be used to the validation.
-func NewLocalClient() (Client, error) {
-	return &LocalClient{}, nil
+// NewLocalClient returns a client for local dependency checks.
+func NewLocalClient(strictRefMatches bool) (Client, error) {
+	return &LocalClient{StrictRefMatches: strictRefMatches}, nil
 }
 
 // LocalCheck checks whether dependencies are in-sync locally
@@ -224,7 +229,10 @@ func (c *LocalClient) LocalCheck(dependencyFilePath, basePath string) error {
 			}
 			scanner := bufio.NewScanner(file)
 
+			strict := c.StrictRefMatches
+
 			var found bool
+			var versionFound bool
 			var wrongVersion bool
 
 			var lineNumber int
@@ -232,40 +240,47 @@ func (c *LocalClient) LocalCheck(dependencyFilePath, basePath string) error {
 				lineNumber++
 
 				line := scanner.Text()
-				if matcher.MatchString(line) {
-					found = true
+				if !matcher.MatchString(line) {
+					continue
+				}
+
+				found = true
+				log.Debugf(
+					"Line %d matches expected regexp %q",
+					lineNumber,
+					match,
+				)
+
+				if strings.Contains(line, dep.Version) {
+					versionFound = true
 					log.Debugf(
-						"Line %d matches expected regexp %q",
+						"Line %d matches expected regexp %q and version %q: %s",
 						lineNumber,
 						match,
+						dep.Version,
+						line,
 					)
-
-					if strings.Contains(line, dep.Version) {
-						log.Debugf(
-							"Line %d matches expected regexp %q and version %q: %s",
-							lineNumber,
-							match,
-							dep.Version,
-							line,
-						)
-					} else {
-						log.Warnf(
-							"Line %d matches expected regexp %q but version %q is not present: %s",
-							lineNumber,
-							match,
-							dep.Version,
-							line,
-						)
-						wrongVersion = true
-					}
+				} else {
+					log.Warnf(
+						"Line %d matches expected regexp %q but version %q is not present: %s",
+						lineNumber,
+						match,
+						dep.Version,
+						line,
+					)
+					wrongVersion = strict
 				}
 			}
 
-			if !found {
+			switch {
+			case !found:
 				log.Debugf("No match found in file %s", filePath)
 				nonMatchingPaths = append(nonMatchingPaths, refPath.Path)
-			} else if wrongVersion {
+			case wrongVersion:
 				log.Debugf("Wrong version found in file %s", filePath)
+				nonMatchingPaths = append(nonMatchingPaths, refPath.Path)
+			case !strict && !versionFound:
+				log.Debugf("No line with correct version found in file %s", filePath)
 				nonMatchingPaths = append(nonMatchingPaths, refPath.Path)
 			}
 		}
@@ -348,7 +363,7 @@ func (c *LocalClient) CheckUpstreamVersions(deps []*Dependency) ([]VersionUpdate
 	return nil, UnsupportedError{"CheckUpstreamVersions is not supported by the local client"}
 }
 
-var NewRemoteClient = func() (Client, error) {
+var NewRemoteClient = func(_ bool) (Client, error) {
 	return nil, UnsupportedError{"remote upstream functionality is not supported by this command; use sigs.k8s.io/zeitgeist/remote/zeitgeist"}
 }
 
