@@ -22,6 +22,8 @@ import (
 	"github.com/blang/semver/v4"
 	"github.com/stretchr/testify/require"
 	"go.yaml.in/yaml/v3"
+
+	"sigs.k8s.io/zeitgeist/dependency"
 )
 
 func TestUnserialiseGithub(t *testing.T) {
@@ -153,4 +155,9 @@ func TestSelectHighestVersionUnorderedWithConstraints(t *testing.T) {
 	v, err := selectHighestVersion(gh.Constraints, expectedRange, tags)
 	require.NoError(t, err)
 	require.Equal(t, "v1.29.2", v)
+}
+
+func TestGithubRandomSchemeUnsupported(t *testing.T) {
+	_, err := Github{URL: "owner/repo", Scheme: dependency.Random}.LatestVersion()
+	require.ErrorIs(t, err, ErrUnsupportedScheme)
 }

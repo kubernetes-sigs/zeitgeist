@@ -21,6 +21,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"go.yaml.in/yaml/v3"
+
+	"sigs.k8s.io/zeitgeist/dependency"
 )
 
 func TestUnserialiseGitLab(t *testing.T) {
@@ -35,4 +37,9 @@ func TestUnserialiseGitLab(t *testing.T) {
 		err := yaml.Unmarshal([]byte(valid), &u)
 		require.NoError(t, err)
 	}
+}
+
+func TestGitLabRandomSchemeUnsupported(t *testing.T) {
+	_, err := GitLab{URL: "owner/repo", Scheme: dependency.Random}.LatestVersion()
+	require.ErrorIs(t, err, ErrUnsupportedScheme)
 }

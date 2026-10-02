@@ -26,6 +26,7 @@ package upstream
 
 import (
 	"errors"
+	"slices"
 
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
@@ -77,6 +78,22 @@ const (
 
 	DefaultSemVerConstraints = ">= 0.0.0"
 )
+
+// ErrUnsupportedScheme is returned when an upstream cannot determine the latest
+// version for the dependency's version scheme.
+var ErrUnsupportedScheme = errors.New(
+	"cannot determine the latest version for the random version scheme, as upstream versions have no ordering",
+)
+
+func highestAlphanumericVersion(versions []string) (string, error) {
+	if len(versions) == 0 {
+		return "", errors.New("no potential version found")
+	}
+
+	highest := slices.Max(versions)
+	log.Debugf("Found latest alphanumeric version: %s", highest)
+	return highest, nil
+}
 
 func selectHighestVersion(constraints string, expectedRange semver.Range, tags []string) (string, error) {
 	var candidateVersion semver.Version

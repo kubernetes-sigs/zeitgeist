@@ -24,6 +24,7 @@ import (
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
 
+	"sigs.k8s.io/zeitgeist/dependency"
 	"sigs.k8s.io/zeitgeist/pkg/gitlab"
 )
 
@@ -44,6 +45,10 @@ type GitLab struct {
 	// If branch is specified, the version should be a commit SHA
 	// Will look for new commits on the branch
 	Branch string
+
+	// Version scheme of the dependency, used to order releases.
+	// Set from the dependency itself rather than from the upstream configuration.
+	Scheme dependency.VersionScheme `mapstructure:"-"`
 }
 
 // LatestVersion returns the latest non-draft, non-prerelease GitLab Release
@@ -63,6 +68,10 @@ func latestGitLabVersion(upstream *GitLab) (string, error) {
 }
 
 func latestGitLabRelease(upstream *GitLab) (string, error) {
+	if upstream.Scheme == dependency.Random {
+		return "", ErrUnsupportedScheme
+	}
+
 	var client *gitlab.GitLab
 	if upstream.Server == "" {
 		client = gitlab.New()
@@ -129,6 +138,9 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 		}
 	}
 
+	if upstream.Scheme == dependency.Alpha {
+		return highestAlphanumericVersion(tags)
+	}
 	return selectHighestVersion(upstream.Constraints, expectedRange, tags)
 }
 
