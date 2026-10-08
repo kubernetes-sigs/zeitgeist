@@ -25,7 +25,8 @@ import (
 
 type options struct {
 	// configuration options
-	localOnly bool
+	localOnly        bool
+	strictRefMatches bool
 
 	// path options
 	basePath   string
