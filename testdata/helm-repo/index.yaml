@@ -118,4 +118,34 @@ entries:
     urls:
     - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-three-0.1.0/dependency-three-0.1.0.tgz
     version: 0.1.0
+  dependency-alpha:
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    name: dependency-alpha
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-alpha-2026-09-14-587f406/dependency-alpha-2026-09-14-587f406.tgz
+    version: 2026-09-14-587f406
+  - apiVersion: v2
+    appVersion: "1.0"
+    annotations:
+      artifacthub.io/prerelease: "true"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    name: dependency-alpha
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-alpha-2026-09-28-587f406/dependency-alpha-2026-09-28-587f406.tgz
+    version: 2026-09-28-587f406
+  - apiVersion: v2
+    appVersion: "1.0"
+    created: "2021-01-01T00:00:00Z"
+    description: A Helm chart for Kubernetes
+    digest: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    name: dependency-alpha
+    urls:
+    - https://github.com/kubernetes-sigs/zeitgeist/releases/download/dependency-alpha-2026-09-21-68cd3e0/dependency-alpha-2026-09-21-68cd3e0.tgz
+    version: 2026-09-21-68cd3e0
 generated: "2021-01-01T00:00:00Z"
