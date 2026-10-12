@@ -3,11 +3,11 @@ module sigs.k8s.io/zeitgeist
 go 1.26.0
 
 require (
-	github.com/aws/aws-sdk-go-v2 v1.47.1
-	github.com/aws/aws-sdk-go-v2/config v1.33.6
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.338.1
-	github.com/aws/aws-sdk-go-v2/service/eks v1.102.0
-	github.com/aws/aws-sdk-go-v2/service/ssm v1.79.0
+	github.com/aws/aws-sdk-go-v2 v1.47.2
+	github.com/aws/aws-sdk-go-v2/config v1.33.8
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.338.3
+	github.com/aws/aws-sdk-go-v2/service/eks v1.104.0
+	github.com/aws/aws-sdk-go-v2/service/ssm v1.79.2
 	github.com/blang/semver/v4 v4.0.0
 	github.com/google/go-containerregistry v0.22.1
 	github.com/maxbrunsfeld/counterfeiter/v6 v6.14.0
@@ -28,18 +28,18 @@ require (
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.4.1 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.20.6 // indirect
-	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.20.1 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.4 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.8.4 // indirect
-	github.com/aws/aws-sdk-go-v2/internal/v4a v1.5.4 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.19 // indirect
-	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.14.4 // indirect
-	github.com/aws/aws-sdk-go-v2/service/signin v1.10.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sso v1.38.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.43.1 // indirect
-	github.com/aws/aws-sdk-go-v2/service/sts v1.51.1 // indirect
-	github.com/aws/smithy-go v1.28.1 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.20.8 // indirect
+	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.20.2 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.5 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.8.5 // indirect
+	github.com/aws/aws-sdk-go-v2/internal/v4a v1.5.5 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.13.20 // indirect
+	github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.14.5 // indirect
+	github.com/aws/aws-sdk-go-v2/service/signin v1.10.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sso v1.38.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.43.3 // indirect
+	github.com/aws/aws-sdk-go-v2/service/sts v1.51.3 // indirect
+	github.com/aws/smithy-go v1.28.4 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clipperhouse/displaywidth v0.10.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.6.0 // indirect
@@ -130,7 +130,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	golang.org/x/crypto v0.57.0 // indirect
 	golang.org/x/mod v0.41.0 // indirect
-	golang.org/x/net v0.59.0 // indirect
+	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect
 	golang.org/x/sys v0.48.0 // indirect
