@@ -24,6 +24,7 @@ import (
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
 
+	"sigs.k8s.io/zeitgeist/dependency"
 	"sigs.k8s.io/zeitgeist/pkg/container"
 )
 
@@ -35,34 +36,43 @@ type Container struct {
 	// Optional: semver constraints, e.g. < 2.0.0
 	// Will have no effect if the dependency does not follow Semver
 	Constraints string
+	// Version scheme of the dependency, used to order tags.
+	// Set from the dependency itself rather than from the upstream configuration.
+	Scheme dependency.VersionScheme `mapstructure:"-"`
 }
 
 // LatestVersion returns the latest tag for the given repository
 // (depending on the Constraints if set).
 func (upstream Container) LatestVersion() (string, error) {
 	log.Debug("Using Container flavour")
-	return highestSemanticImageTag(&upstream)
+
+	if upstream.Scheme == dependency.Random {
+		return "", ErrUnsupportedScheme
+	}
+
+	log.Debugf("Retrieving tags for %s...", upstream.Registry)
+	tags, err := container.New().ListTags(upstream.Registry)
+	if err != nil {
+		return "", fmt.Errorf("retrieving Container tags: %w", err)
+	}
+	log.Debugf("Found %d tags for %s...", len(tags), upstream.Registry)
+
+	if upstream.Scheme == dependency.Alpha {
+		return highestAlphanumericVersion(tags)
+	}
+	return highestSemverTag(upstream.Constraints, tags)
 }
 
-func highestSemanticImageTag(upstream *Container) (string, error) {
-	client := container.New()
-
-	semverConstraints := upstream.Constraints
+func highestSemverTag(constraints string, tags []string) (string, error) {
+	semverConstraints := constraints
 	if semverConstraints == "" {
 		// If no range is passed, just use the broadest possible range
 		semverConstraints = DefaultSemVerConstraints
 	}
 	expectedRange, err := semver.ParseRange(semverConstraints)
 	if err != nil {
-		return "", fmt.Errorf("invalid semver constraints range: %v: %w", upstream.Constraints, err)
+		return "", fmt.Errorf("invalid semver constraints range: %v: %w", constraints, err)
 	}
-
-	log.Debugf("Retrieving tags for %s...", upstream.Registry)
-	tags, err := client.ListTags(upstream.Registry)
-	if err != nil {
-		return "", fmt.Errorf("retrieving Container tags: %w", err)
-	}
-	log.Debugf("Found %d tags for %s...", len(tags), upstream.Registry)
 
 	// parse semvers first so we can safely sort
 	type semverWithOrig struct {
@@ -97,7 +107,7 @@ func highestSemanticImageTag(upstream *Container) (string, error) {
 	// find first version matching constraints
 	for _, version := range versions {
 		if !expectedRange(version.parsed) {
-			log.Debugf("Skipping release not matching range constraints (%s): %s", upstream.Constraints, version.parsed.String())
+			log.Debugf("Skipping release not matching range constraints (%s): %s", constraints, version.parsed.String())
 			continue
 		}
 		log.Debugf("Found latest matching tag: %s", version.orig)

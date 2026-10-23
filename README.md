@@ -279,6 +279,10 @@ Zeitgeist supports several version schemes:
 - `alpha`: alphanumeric ordering. A newer version is considered an update if it's alphanumerically higher, e.g. "release-d" is higher "release-c" but "release-b-update-1" wouldn't be higher than "release-c".
 - `random`: any newer version is considered an update. Useful for UUID or hash-based versioning.
 
+Not all upstreams support all schemes. For example, AMIs have a very specific naming scheme of `ami-$id` where the id is random: they cannot be `semver`, and `alpha` doesn't make sense as the random cannot be sorted.
+
+`github`, `gitlab`, `helm` and `container` upstreams fully support `semver` and `alpha`. These upstreams cannot determine a latest version for `random`, as they do not expose creation dates (at least not with the library we're currently using!).
+
 See the [full documentation](https://godoc.org/sigs.k8s.io/zeitgeist/dependencies#Dependency) to see configuration options.
 
 ## When is Zeitgeist _not_ suggested
