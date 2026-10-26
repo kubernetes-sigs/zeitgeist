@@ -24,6 +24,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"sigs.k8s.io/release-sdk/github"
+
+	"sigs.k8s.io/zeitgeist/dependency"
 )
 
 // Github upstream representation.
@@ -40,6 +42,10 @@ type Github struct {
 	// If branch is specified, the version should be a commit SHA
 	// Will look for new commits on the branch
 	Branch string
+
+	// Version scheme of the dependency, used to order releases.
+	// Set from the dependency itself rather than from the upstream configuration.
+	Scheme dependency.VersionScheme `mapstructure:"-"`
 }
 
 // LatestVersion returns the latest non-draft, non-prerelease Github Release
@@ -51,19 +57,23 @@ type Github struct {
 // strict: https://developer.github.com/v3/#rate-limiting
 //
 // To authenticate your requests, use the GITHUB_ACCESS_TOKEN environment variable.
-func (upstream Github) LatestVersion() (string, error) {
+func (upstream Github) LatestVersion() (string, error) { //nolint:gocritic
 	log.Debug("Using GitHub flavour")
-	return latestVersion(upstream)
+	return latestVersion(&upstream)
 }
 
-func latestVersion(upstream Github) (string, error) {
+func latestVersion(upstream *Github) (string, error) {
 	if upstream.Branch == "" {
 		return latestRelease(upstream)
 	}
 	return latestCommit(upstream)
 }
 
-func latestRelease(upstream Github) (string, error) {
+func latestRelease(upstream *Github) (string, error) {
+	if upstream.Scheme == dependency.Random {
+		return "", ErrUnsupportedScheme
+	}
+
 	client := github.New()
 
 	if !strings.Contains(upstream.URL, "/") {
@@ -136,10 +146,13 @@ func latestRelease(upstream Github) (string, error) {
 		}
 	}
 
+	if upstream.Scheme == dependency.Alpha {
+		return highestAlphanumericVersion(tags)
+	}
 	return selectHighestVersion(upstream.Constraints, expectedRange, tags)
 }
 
-func latestCommit(upstream Github) (string, error) {
+func latestCommit(upstream *Github) (string, error) {
 	client := github.New()
 
 	if !strings.Contains(upstream.URL, "/") {
