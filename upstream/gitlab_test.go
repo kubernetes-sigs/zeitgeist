@@ -55,12 +55,27 @@ func TestMostRecentGitLabRelease(t *testing.T) {
 		{TagName: "release-undated"},
 	}
 
-	latest, err := mostRecentGitLabRelease(releases)
+	matchAll, err := versionFilter("")
+	require.NoError(t, err)
+	latest, err := mostRecentGitLabRelease(releases, matchAll)
 	require.NoError(t, err)
 	require.Equal(t, "release-ccc", latest)
+
+	notCCC, err := versionFilter("^release-(aaa|zzz)$")
+	require.NoError(t, err)
+	latest, err = mostRecentGitLabRelease(releases, notCCC)
+	require.NoError(t, err)
+	require.Equal(t, "release-aaa", latest)
+
+	matchNone, err := versionFilter("^nothing$")
+	require.NoError(t, err)
+	_, err = mostRecentGitLabRelease(releases, matchNone)
+	require.Error(t, err)
 }
 
 func TestMostRecentGitLabReleaseNoReleases(t *testing.T) {
-	_, err := mostRecentGitLabRelease(nil)
+	matchAll, err := versionFilter("")
+	require.NoError(t, err)
+	_, err = mostRecentGitLabRelease(nil, matchAll)
 	require.Error(t, err)
 }

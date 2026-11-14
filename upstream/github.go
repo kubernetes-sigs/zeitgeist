@@ -41,6 +41,10 @@ type Github struct {
 	// Will have no effect if the dependency does not follow Semver
 	Constraints string
 
+	// Optional: regexp that release (or tag) names must match, e.g. ^release-
+	// Only for the alpha and random schemes, use Constraints for semver
+	Filter string
+
 	// If branch is specified, the version should be a commit SHA
 	// Will look for new commits on the branch
 	Branch string
@@ -92,6 +96,11 @@ func latestRelease(upstream *Github) (string, error) {
 		return "", fmt.Errorf("invalid semver constraints range: %#v: %w", upstream.Constraints, err)
 	}
 
+	matchesFilter, err := versionFilter(upstream.Filter)
+	if err != nil {
+		return "", err
+	}
+
 	splitURL := strings.Split(upstream.URL, "/")
 	owner := splitURL[0]
 	repo := splitURL[1]
@@ -136,6 +145,10 @@ func latestRelease(upstream *Github) (string, error) {
 		}
 
 		for _, tag := range gitHubTags {
+			if !matchesFilter(tag.GetName()) {
+				log.Debugf("Skipping tag not matching filter (%s): %s", upstream.Filter, tag.GetName())
+				continue
+			}
 			tags = append(tags, tag.GetName())
 		}
 	} else {
@@ -147,6 +160,11 @@ func latestRelease(upstream *Github) (string, error) {
 
 			if release.Draft != nil && *release.Draft {
 				log.Debugf("Skipping draft release: %s\n", release.GetTagName())
+				continue
+			}
+
+			if !matchesFilter(release.GetTagName()) {
+				log.Debugf("Skipping release not matching filter (%s): %s", upstream.Filter, release.GetTagName())
 				continue
 			}
 

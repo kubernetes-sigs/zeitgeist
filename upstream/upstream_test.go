@@ -34,3 +34,18 @@ func TestBaseLatestVersion(t *testing.T) {
 	_, err = u.LatestVersion()
 	require.Error(t, err)
 }
+
+func TestVersionFilter(t *testing.T) {
+	matchAll, err := versionFilter("")
+	require.NoError(t, err)
+	require.True(t, matchAll("anything"))
+
+	alpine, err := versionFilter("-alpine$")
+	require.NoError(t, err)
+	require.True(t, alpine("1.2.3-alpine"))
+	require.False(t, alpine("1.2.3-alpine-slim"))
+	require.False(t, alpine("1.2.3"))
+
+	_, err = versionFilter("(unclosed")
+	require.Error(t, err)
+}

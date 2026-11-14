@@ -19,6 +19,7 @@ package upstream
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 
 	"github.com/blang/semver/v4"
@@ -36,6 +37,9 @@ type Container struct {
 	// Optional: semver constraints, e.g. < 2.0.0
 	// Will have no effect if the dependency does not follow Semver
 	Constraints string
+	// Optional: regexp that tags must match, e.g. -alpine$
+	// Only for the alpha scheme, use Constraints for semver
+	Filter string
 	// Version scheme of the dependency, used to order tags.
 	// Set from the dependency itself rather than from the upstream configuration.
 	Scheme dependency.VersionScheme `mapstructure:"-"`
@@ -50,12 +54,19 @@ func (upstream Container) LatestVersion() (string, error) {
 		return "", ErrUnsupportedScheme
 	}
 
+	matchesFilter, err := versionFilter(upstream.Filter)
+	if err != nil {
+		return "", err
+	}
+
 	log.Debugf("Retrieving tags for %s...", upstream.Registry)
 	tags, err := container.New().ListTags(upstream.Registry)
 	if err != nil {
 		return "", fmt.Errorf("retrieving Container tags: %w", err)
 	}
 	log.Debugf("Found %d tags for %s...", len(tags), upstream.Registry)
+
+	tags = slices.DeleteFunc(tags, func(tag string) bool { return !matchesFilter(tag) })
 
 	if upstream.Scheme == dependency.Alpha {
 		return highestAlphanumericVersion(tags)

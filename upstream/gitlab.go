@@ -43,6 +43,10 @@ type GitLab struct {
 	// Will have no effect if the dependency does not follow Semver
 	Constraints string
 
+	// Optional: regexp that release (or tag) names must match, e.g. ^release-
+	// Only for the alpha and random schemes, use Constraints for semver
+	Filter string
+
 	// If branch is specified, the version should be a commit SHA
 	// Will look for new commits on the branch
 	Branch string
@@ -99,6 +103,11 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 		return "", fmt.Errorf("invalid semver constraints range: %#v: %w", upstream.Constraints, err)
 	}
 
+	matchesFilter, err := versionFilter(upstream.Filter)
+	if err != nil {
+		return "", err
+	}
+
 	splitURL := strings.Split(upstream.URL, "/")
 	owner := splitURL[0]
 	repo := strings.Join(splitURL[1:], "/")
@@ -118,7 +127,7 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 
 	if upstream.Scheme == dependency.Random {
 		// Tags have no release dates, so unlike other schemes we don't fall back to them
-		return mostRecentGitLabRelease(releases)
+		return mostRecentGitLabRelease(releases, matchesFilter)
 	}
 
 	if len(releases) == 0 {
@@ -128,12 +137,21 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 		}
 
 		for _, tag := range gitLabTags {
+			if !matchesFilter(tag.Name) {
+				log.Debugf("Skipping tag not matching filter (%s): %s", upstream.Filter, tag.Name)
+				continue
+			}
 			tags = append(tags, tag.Name)
 		}
 	} else {
 		for _, release := range releases {
 			if release.TagName == "" {
 				log.Debug("Skipping release without TagName")
+				continue
+			}
+
+			if !matchesFilter(release.TagName) {
+				log.Debugf("Skipping release not matching filter (%s): %s", upstream.Filter, release.TagName)
 				continue
 			}
 
@@ -147,12 +165,16 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 	return selectHighestVersion(upstream.Constraints, expectedRange, tags)
 }
 
-// mostRecentGitLabRelease returns the tag of the most recently released release,
+// mostRecentGitLabRelease returns the tag of the most recently released release matching the filter,
 // ignoring upcoming releases (scheduled with a future release date).
-func mostRecentGitLabRelease(releases []*gogitlab.Release) (string, error) {
+func mostRecentGitLabRelease(releases []*gogitlab.Release, matchesFilter func(string) bool) (string, error) {
 	var newest *gogitlab.Release
 	for _, release := range releases {
 		if release.TagName == "" || release.ReleasedAt == nil {
+			continue
+		}
+		if !matchesFilter(release.TagName) {
+			log.Debugf("Skipping release not matching filter: %s", release.TagName)
 			continue
 		}
 		if release.UpcomingRelease {

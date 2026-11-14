@@ -287,6 +287,23 @@ Not all upstreams support all schemes! For example, AMIs have a very specific na
 
 `helm` only supports `semver`, as [Helm requires chart versions to be semver](https://helm.sh/docs/topics/charts/). Short versions such as `1.2` or `v1.2` are accepted.
 
+### Filtering versions
+
+With the `alpha` and `random` schemes, the `github`, `gitlab` and `container` upstreams accept an optional `filter`: a [Go regular expression](https://pkg.go.dev/regexp/syntax) that release or tag names must match to be considered. The match is unanchored, so use `^` and `$` to match whole names.
+
+```yaml
+dependencies:
+- name: my-app
+  version: release-2026-09-21
+  scheme: alpha
+  upstream:
+    flavour: github
+    url: my-org/my-app
+    filter: ^release-
+```
+
+`filter` is not supported with `semver`. Use `constraints` instead.
+
 See the [full documentation](https://godoc.org/sigs.k8s.io/zeitgeist/dependencies#Dependency) to see configuration options.
 
 ## When is Zeitgeist _not_ suggested
