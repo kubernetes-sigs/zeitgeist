@@ -19,7 +19,6 @@ package dependency
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -384,10 +383,6 @@ func (c *RemoteClient) CheckUpstreamVersions(deps []*deppkg.Dependency) ([]deppk
 			return nil, fmt.Errorf("unknown upstream flavour '%#v' for dependency %s", flavour, dep.Name)
 		}
 
-		if errors.Is(err, upstream.ErrUnsupportedScheme) {
-			log.Warnf("Skipping dependency %s: %v", dep.Name, err)
-			continue
-		}
 		if err != nil {
 			return nil, fmt.Errorf("dependency %s: %w", dep.Name, err)
 		}

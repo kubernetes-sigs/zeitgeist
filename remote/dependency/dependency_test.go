@@ -29,6 +29,7 @@ import (
 	"github.com/stretchr/testify/require"
 
 	deppkg "sigs.k8s.io/zeitgeist/dependency"
+	"sigs.k8s.io/zeitgeist/upstream"
 )
 
 type mockedEc2DescribeImagesAPI struct {
@@ -407,7 +408,7 @@ dependencies:
 	require.Len(t, deps.Dependencies, 2, "dependencies without an upstream must be kept")
 }
 
-func TestUpgradeSkipsUnsupportedScheme(t *testing.T) {
+func TestUpgradeFailsOnUnsupportedScheme(t *testing.T) {
 	dir := t.TempDir()
 	testFile := filepath.Join(dir, "test.txt")
 
@@ -439,16 +440,16 @@ dependencies:
 
 	client, err := NewRemoteClient()
 	require.NoError(t, err)
-	ret, err := client.Upgrade(filepath.Join(dir, "dependencies.yaml"), dir)
-	require.NoError(t, err)
-	require.Equal(t, []string{"Upgraded dependency upgrade from version 0.0.1 to version 1.0.0"}, ret)
+	_, err = client.Upgrade(filepath.Join(dir, "dependencies.yaml"), dir)
+	require.ErrorIs(t, err, upstream.ErrUnsupportedScheme)
+	require.ErrorContains(t, err, "random-chart")
 
 	got, err := os.ReadFile(testFile)
 	require.NoError(t, err)
-	require.Equal(t, "VERSION: 1.0.0\nCHART: abc123", string(got))
+	require.Equal(t, "VERSION: 0.0.1\nCHART: abc123", string(got), "no dependency must be upgraded")
 
 	deps, err := deppkg.FromFile(filepath.Join(dir, "dependencies.yaml"))
 	require.NoError(t, err)
-	require.Len(t, deps.Dependencies, 2, "skipped dependencies must be kept")
+	require.Equal(t, "0.0.1", deps.Dependencies[0].Version)
 	require.Equal(t, "abc123", deps.Dependencies[1].Version)
 }
