@@ -17,13 +17,17 @@ limitations under the License.
 package upstream
 
 import (
+	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
 
 	"sigs.k8s.io/release-sdk/github"
+
+	"sigs.k8s.io/zeitgeist/dependency"
 )
 
 // Github upstream representation.
@@ -37,9 +41,17 @@ type Github struct {
 	// Will have no effect if the dependency does not follow Semver
 	Constraints string
 
+	// Optional: regexp that release (or tag) names must match, e.g. ^release-
+	// Only for the alpha and random schemes, use Constraints for semver
+	Filter string
+
 	// If branch is specified, the version should be a commit SHA
 	// Will look for new commits on the branch
 	Branch string
+
+	// Version scheme of the dependency, used to order releases.
+	// Set from the dependency itself rather than from the upstream configuration.
+	Scheme dependency.VersionScheme `mapstructure:"-"`
 }
 
 // LatestVersion returns the latest non-draft, non-prerelease Github Release
@@ -51,19 +63,19 @@ type Github struct {
 // strict: https://developer.github.com/v3/#rate-limiting
 //
 // To authenticate your requests, use the GITHUB_ACCESS_TOKEN environment variable.
-func (upstream Github) LatestVersion() (string, error) {
+func (upstream Github) LatestVersion() (string, error) { //nolint:gocritic
 	log.Debug("Using GitHub flavour")
-	return latestVersion(upstream)
+	return latestVersion(&upstream)
 }
 
-func latestVersion(upstream Github) (string, error) {
+func latestVersion(upstream *Github) (string, error) {
 	if upstream.Branch == "" {
 		return latestRelease(upstream)
 	}
 	return latestCommit(upstream)
 }
 
-func latestRelease(upstream Github) (string, error) {
+func latestRelease(upstream *Github) (string, error) {
 	client := github.New()
 
 	if !strings.Contains(upstream.URL, "/") {
@@ -84,6 +96,11 @@ func latestRelease(upstream Github) (string, error) {
 		return "", fmt.Errorf("invalid semver constraints range: %#v: %w", upstream.Constraints, err)
 	}
 
+	matchesFilter, err := versionFilter(upstream.Filter)
+	if err != nil {
+		return "", err
+	}
+
 	splitURL := strings.Split(upstream.URL, "/")
 	owner := splitURL[0]
 	repo := splitURL[1]
@@ -99,6 +116,8 @@ func latestRelease(upstream Github) (string, error) {
 	}
 
 	var tags []string
+	newestRelease := ""
+	var newestReleaseTime time.Time
 	// We'll need to fetch all releases, as Github doesn't provide sorting options.
 	// If we don't do that, we risk running into the case where for example:
 	// - Version 1.0.0 and 2.0.0 exist
@@ -111,20 +130,32 @@ func latestRelease(upstream Github) (string, error) {
 		return "", fmt.Errorf("retrieving GitHub releases: %w", err)
 	}
 
-	// if there is no releases we will try to get the tags, the project might just use tags to release.
+	// if there is no releases we will try to get the tags, the project might just use tags to release
 	if len(releases) == 0 {
+		// tags don't have release times, so we cannot use them for `random` (date-based) scheme
+		if upstream.Scheme == dependency.Random {
+			return "", fmt.Errorf(
+				"no releases found for github repo: %s",
+				upstream.URL,
+			)
+		}
 		gitHubTags, err := client.ListTags(owner, repo)
 		if err != nil {
 			return "", fmt.Errorf("retrieving GitHub tags: %w", err)
 		}
 
 		for _, tag := range gitHubTags {
+			if !matchesFilter(tag.GetName()) {
+				log.Debugf("Skipping tag not matching filter (%s): %s", upstream.Filter, tag.GetName())
+				continue
+			}
 			tags = append(tags, tag.GetName())
 		}
 	} else {
 		for _, release := range releases {
 			if release.TagName == nil {
 				log.Debug("Skipping release without TagName")
+				continue
 			}
 
 			if release.Draft != nil && *release.Draft {
@@ -132,14 +163,34 @@ func latestRelease(upstream Github) (string, error) {
 				continue
 			}
 
+			if !matchesFilter(release.GetTagName()) {
+				log.Debugf("Skipping release not matching filter (%s): %s", upstream.Filter, release.GetTagName())
+				continue
+			}
+
 			tags = append(tags, release.GetTagName())
+
+			if publishedAt := release.GetPublishedAt().Time; publishedAt.After(newestReleaseTime) {
+				newestReleaseTime = publishedAt
+				newestRelease = release.GetTagName()
+			}
 		}
 	}
 
-	return selectHighestVersion(upstream.Constraints, expectedRange, tags)
+	switch upstream.Scheme {
+	case dependency.Random:
+		if newestRelease == "" {
+			return "", errors.New("no potential version found")
+		}
+		return newestRelease, nil
+	case dependency.Alpha:
+		return highestAlphanumericVersion(tags)
+	default:
+		return selectHighestVersion(upstream.Constraints, expectedRange, tags)
+	}
 }
 
-func latestCommit(upstream Github) (string, error) {
+func latestCommit(upstream *Github) (string, error) {
 	client := github.New()
 
 	if !strings.Contains(upstream.URL, "/") {

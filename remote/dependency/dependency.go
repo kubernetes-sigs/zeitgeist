@@ -123,7 +123,6 @@ func (c *RemoteClient) Upgrade(dependencyFilePath, basePath string) ([]string, e
 	}
 
 	upgrades := make([]string, 0)
-	upgradedDependencies := make([]*deppkg.Dependency, 0)
 
 	versionUpdateInfos, err := c.CheckUpstreamVersions(externalDeps.Dependencies)
 	if err != nil {
@@ -143,10 +142,6 @@ func (c *RemoteClient) Upgrade(dependencyFilePath, basePath string) ([]string, e
 			}
 
 			dependency.Version = vu.Latest.Version
-			upgradedDependencies = append(
-				upgradedDependencies,
-				dependency,
-			)
 
 			upgrades = append(
 				upgrades,
@@ -158,11 +153,6 @@ func (c *RemoteClient) Upgrade(dependencyFilePath, basePath string) ([]string, e
 				),
 			)
 		} else {
-			upgradedDependencies = append(
-				upgradedDependencies,
-				dependency,
-			)
-
 			log.Debugf(
 				"No update available for dependency %s: %s (latest: %s)\n",
 				vu.Name,
@@ -173,9 +163,7 @@ func (c *RemoteClient) Upgrade(dependencyFilePath, basePath string) ([]string, e
 	}
 
 	// Update the dependencies file to reflect the upgrades
-	err = deppkg.ToFile(dependencyFilePath, &deppkg.Dependencies{
-		Dependencies: upgradedDependencies,
-	})
+	err = deppkg.ToFile(dependencyFilePath, externalDeps)
 	if err != nil {
 		return nil, err
 	}
@@ -312,6 +300,8 @@ func (c *RemoteClient) CheckUpstreamVersions(deps []*deppkg.Dependency) ([]deppk
 				return nil, decodeErr
 			}
 
+			gh.Scheme = dep.Scheme
+
 			latestVersion.Version, err = gh.LatestVersion()
 		case upstream.GitLabFlavour:
 			var gl upstream.GitLab
@@ -321,6 +311,8 @@ func (c *RemoteClient) CheckUpstreamVersions(deps []*deppkg.Dependency) ([]deppk
 				return nil, decodeErr
 			}
 
+			gl.Scheme = dep.Scheme
+
 			latestVersion.Version, err = gl.LatestVersion()
 		case upstream.HelmFlavour:
 			var h upstream.Helm
@@ -329,6 +321,8 @@ func (c *RemoteClient) CheckUpstreamVersions(deps []*deppkg.Dependency) ([]deppk
 			if decodeErr != nil {
 				return nil, decodeErr
 			}
+
+			h.Scheme = dep.Scheme
 
 			latestVersion.Version, err = h.LatestVersion()
 		case upstream.AMIFlavour:
@@ -350,6 +344,8 @@ func (c *RemoteClient) CheckUpstreamVersions(deps []*deppkg.Dependency) ([]deppk
 				log.Debug("errr decoding")
 				return nil, decodeErr
 			}
+
+			ct.Scheme = dep.Scheme
 
 			latestVersion.Version, err = ct.LatestVersion()
 		case upstream.EKSFlavour:
