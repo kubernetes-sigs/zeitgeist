@@ -277,7 +277,32 @@ It uses the standard [go AWS SDK authentication methods](https://docs.aws.amazon
 Zeitgeist supports several version schemes:
 - `semver`: [SemVer](https://semver.org/) v2, default
 - `alpha`: alphanumeric ordering. A newer version is considered an update if it's alphanumerically higher, e.g. "release-d" is higher "release-c" but "release-b-update-1" wouldn't be higher than "release-c".
-- `random`: any newer version is considered an update. Useful for UUID or hash-based versioning.
+- `random`: any more recent version is considered an update. Useful for UUID or hash-based versioning.
+
+Not all upstreams support all schemes! For example, AMIs have a very specific naming scheme of `ami-$id` where the id is random: they cannot be `semver`, and `alpha` doesn't make sense as the random id cannot be sorted.
+
+`github`, `gitlab` and `container` upstreams fully support `semver` and `alpha`. `github` and `gitlab` also support `random`, using the most recently published release (tags alone are not enough, as they have no release date).
+
+`container` cannot support `random`: the registry API doesn't expose image push dates that would allow us to get the latest release. Image creation dates are not reliable, as they're often made to a fixed date by reproducible builds.
+
+`helm` only supports `semver`, as [Helm requires chart versions to be semver](https://helm.sh/docs/topics/charts/). Short versions such as `1.2` or `v1.2` are accepted.
+
+### Filtering versions
+
+With the `alpha` and `random` schemes, the `github`, `gitlab` and `container` upstreams accept an optional `filter`: a [Go regular expression](https://pkg.go.dev/regexp/syntax) that release or tag names must match to be considered. The match is unanchored, so use `^` and `$` to match whole names.
+
+```yaml
+dependencies:
+- name: my-app
+  version: release-2026-09-21
+  scheme: alpha
+  upstream:
+    flavour: github
+    url: my-org/my-app
+    filter: ^release-
+```
+
+`filter` is not supported with `semver`. Use `constraints` instead.
 
 See the [full documentation](https://godoc.org/sigs.k8s.io/zeitgeist/dependencies#Dependency) to see configuration options.
 

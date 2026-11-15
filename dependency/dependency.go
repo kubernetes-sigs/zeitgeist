@@ -128,6 +128,19 @@ func (decoded *Dependency) UnmarshalYAML(unmarshal func(interface{}) error) erro
 		return fmt.Errorf("unknown version scheme: %s", d.Scheme)
 	}
 
+	// Validate upstream filter
+	if filter := d.Upstream["filter"]; filter != "" {
+		if d.Scheme == Semver {
+			return fmt.Errorf(
+				"dependency %s is invalid: upstream `filter` is not supported for the semver scheme, use `constraints` instead",
+				d.Name,
+			)
+		}
+		if _, err := regexp.Compile(filter); err != nil {
+			return fmt.Errorf("dependency %s is invalid: upstream `filter` is not a valid regexp: %w", d.Name, err)
+		}
+	}
+
 	// Validate RefPaths
 	for _, refPath := range d.RefPaths {
 		if refPath.Path == "" {

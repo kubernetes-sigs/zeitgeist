@@ -23,7 +23,9 @@ import (
 
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
+	gogitlab "gitlab.com/gitlab-org/api/client-go/v2"
 
+	"sigs.k8s.io/zeitgeist/dependency"
 	"sigs.k8s.io/zeitgeist/pkg/gitlab"
 )
 
@@ -41,9 +43,17 @@ type GitLab struct {
 	// Will have no effect if the dependency does not follow Semver
 	Constraints string
 
+	// Optional: regexp that release (or tag) names must match, e.g. ^release-
+	// Only for the alpha and random schemes, use Constraints for semver
+	Filter string
+
 	// If branch is specified, the version should be a commit SHA
 	// Will look for new commits on the branch
 	Branch string
+
+	// Version scheme of the dependency, used to order releases.
+	// Set from the dependency itself rather than from the upstream configuration.
+	Scheme dependency.VersionScheme `mapstructure:"-"`
 }
 
 // LatestVersion returns the latest non-draft, non-prerelease GitLab Release
@@ -93,6 +103,11 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 		return "", fmt.Errorf("invalid semver constraints range: %#v: %w", upstream.Constraints, err)
 	}
 
+	matchesFilter, err := versionFilter(upstream.Filter)
+	if err != nil {
+		return "", err
+	}
+
 	splitURL := strings.Split(upstream.URL, "/")
 	owner := splitURL[0]
 	repo := strings.Join(splitURL[1:], "/")
@@ -110,6 +125,11 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 		return "", fmt.Errorf("retrieving GitLab releases: %w", err)
 	}
 
+	if upstream.Scheme == dependency.Random {
+		// Tags have no release dates, so unlike other schemes we don't fall back to them
+		return mostRecentGitLabRelease(releases, matchesFilter)
+	}
+
 	if len(releases) == 0 {
 		gitLabTags, err := client.ListTags(owner, repo)
 		if err != nil {
@@ -117,19 +137,59 @@ func latestGitLabRelease(upstream *GitLab) (string, error) {
 		}
 
 		for _, tag := range gitLabTags {
+			if !matchesFilter(tag.Name) {
+				log.Debugf("Skipping tag not matching filter (%s): %s", upstream.Filter, tag.Name)
+				continue
+			}
 			tags = append(tags, tag.Name)
 		}
 	} else {
 		for _, release := range releases {
 			if release.TagName == "" {
 				log.Debug("Skipping release without TagName")
+				continue
+			}
+
+			if !matchesFilter(release.TagName) {
+				log.Debugf("Skipping release not matching filter (%s): %s", upstream.Filter, release.TagName)
+				continue
 			}
 
 			tags = append(tags, release.TagName)
 		}
 	}
 
+	if upstream.Scheme == dependency.Alpha {
+		return highestAlphanumericVersion(tags)
+	}
 	return selectHighestVersion(upstream.Constraints, expectedRange, tags)
+}
+
+// mostRecentGitLabRelease returns the tag of the most recently released release matching the filter,
+// ignoring upcoming releases (scheduled with a future release date).
+func mostRecentGitLabRelease(releases []*gogitlab.Release, matchesFilter func(string) bool) (string, error) {
+	var newest *gogitlab.Release
+	for _, release := range releases {
+		if release.TagName == "" || release.ReleasedAt == nil {
+			continue
+		}
+		if !matchesFilter(release.TagName) {
+			log.Debugf("Skipping release not matching filter: %s", release.TagName)
+			continue
+		}
+		if release.UpcomingRelease {
+			log.Debugf("Skipping upcoming release: %s", release.TagName)
+			continue
+		}
+		if newest == nil || release.ReleasedAt.After(*newest.ReleasedAt) {
+			newest = release
+		}
+	}
+
+	if newest == nil {
+		return "", errors.New("no potential version found")
+	}
+	return newest.TagName, nil
 }
 
 func latestGitlabCommit(upstream *GitLab) (string, error) {

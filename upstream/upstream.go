@@ -26,6 +26,9 @@ package upstream
 
 import (
 	"errors"
+	"fmt"
+	"regexp"
+	"slices"
 
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
@@ -77,6 +80,33 @@ const (
 
 	DefaultSemVerConstraints = ">= 0.0.0"
 )
+
+// ErrUnsupportedScheme is returned when an upstream cannot determine the latest
+// version for the dependency's version scheme.
+var ErrUnsupportedScheme = errors.New("upstream does not support this version scheme")
+
+// versionFilter returns a function reporting whether a tag or release name matches
+// the filter regexp. An empty filter matches every name.
+func versionFilter(filter string) (func(string) bool, error) {
+	if filter == "" {
+		return func(string) bool { return true }, nil
+	}
+	re, err := regexp.Compile(filter)
+	if err != nil {
+		return nil, fmt.Errorf("invalid filter %q: %w", filter, err)
+	}
+	return re.MatchString, nil
+}
+
+func highestAlphanumericVersion(versions []string) (string, error) {
+	if len(versions) == 0 {
+		return "", errors.New("no potential version found")
+	}
+
+	highest := slices.Max(versions)
+	log.Debugf("Found latest alphanumeric version: %s", highest)
+	return highest, nil
+}
 
 func selectHighestVersion(constraints string, expectedRange semver.Range, tags []string) (string, error) {
 	var candidateVersion semver.Version

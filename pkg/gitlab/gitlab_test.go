@@ -240,3 +240,69 @@ func TestListTags(t *testing.T) {
 	require.Equal(t, tag2, res[1].Name)
 	require.Equal(t, tag3, res[2].Name)
 }
+
+func TestReleasesPaginated(t *testing.T) {
+	// Given
+	sut, client := newSUT()
+	client.ListReleasesReturnsOnCall(0, []*gogitlab.Release{{TagName: "v3"}, {TagName: "v2"}}, &gogitlab.Response{NextPage: 2}, nil)
+	client.ListReleasesReturnsOnCall(1, []*gogitlab.Release{{TagName: "v1"}}, &gogitlab.Response{NextPage: 0}, nil)
+
+	// When
+	res, err := sut.Releases("owner", "repo")
+
+	// Then
+	require.NoError(t, err)
+	require.Len(t, res, 3)
+	require.Equal(t, "v1", res[2].TagName)
+	require.Equal(t, 2, client.ListReleasesCallCount())
+
+	_, _, firstOpts := client.ListReleasesArgsForCall(0)
+	require.Equal(t, int64(1), firstOpts.Page)
+	require.Equal(t, int64(100), firstOpts.PerPage)
+	_, _, secondOpts := client.ListReleasesArgsForCall(1)
+	require.Equal(t, int64(2), secondOpts.Page)
+}
+
+func TestReleasesPaginatedFailure(t *testing.T) {
+	// Given
+	sut, client := newSUT()
+	client.ListReleasesReturnsOnCall(0, []*gogitlab.Release{{TagName: "v2"}}, &gogitlab.Response{NextPage: 2}, nil)
+	client.ListReleasesReturnsOnCall(1, nil, nil, errors.New("error"))
+
+	// When
+	res, err := sut.Releases("owner", "repo")
+
+	// Then
+	require.Error(t, err)
+	require.Nil(t, res)
+}
+
+func TestListTagsPaginated(t *testing.T) {
+	// Given
+	sut, client := newSUT()
+	client.ListTagsReturnsOnCall(0, []*gogitlab.Tag{{Name: "v2"}}, &gogitlab.Response{NextPage: 2}, nil)
+	client.ListTagsReturnsOnCall(1, []*gogitlab.Tag{{Name: "v1"}}, &gogitlab.Response{}, nil)
+
+	// When
+	res, err := sut.ListTags("owner", "repo")
+
+	// Then
+	require.NoError(t, err)
+	require.Len(t, res, 2)
+	require.Equal(t, 2, client.ListTagsCallCount())
+}
+
+func TestBranchesPaginated(t *testing.T) {
+	// Given
+	sut, client := newSUT()
+	client.ListBranchesReturnsOnCall(0, []*gogitlab.Branch{{Name: "main"}}, &gogitlab.Response{NextPage: 2}, nil)
+	client.ListBranchesReturnsOnCall(1, []*gogitlab.Branch{{Name: "release-1"}}, &gogitlab.Response{}, nil)
+
+	// When
+	res, err := sut.Branches("owner", "repo")
+
+	// Then
+	require.NoError(t, err)
+	require.Len(t, res, 2)
+	require.Equal(t, 2, client.ListBranchesCallCount())
+}

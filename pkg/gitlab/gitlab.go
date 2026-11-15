@@ -32,6 +32,8 @@ const (
 	// PrivateTokenEnvKey is the private GitLab token environment variable key.
 	PrivateTokenEnvKey = "GITLAB_PRIVATE_TOKEN"
 	apiVersionPath     = "api/v4/"
+	// perPage is the maximum page size allowed by the GitLab API.
+	perPage = 100
 )
 
 // GitLab is a wrapper around GitLab related functionality.
@@ -142,10 +144,30 @@ func (g *GitLab) Client() Client {
 	return g.client
 }
 
+// allPages calls list for every page of results, and returns the items of all pages.
+func allPages[T any](list func(gitlab.ListOptions) ([]T, *gitlab.Response, error)) ([]T, error) {
+	opts := gitlab.ListOptions{PerPage: perPage, Page: 1}
+	var all []T
+	for {
+		items, resp, err := list(opts)
+		if err != nil {
+			return nil, err
+		}
+		all = append(all, items...)
+
+		if resp == nil || resp.NextPage == 0 {
+			return all, nil
+		}
+		opts.Page = resp.NextPage
+	}
+}
+
 // Releases returns a list of GitLab releases for the provided `owner` and
 // `repo`.
 func (g *GitLab) Releases(owner, repo string) ([]*gitlab.Release, error) {
-	allReleases, _, err := g.client.ListReleases(owner, repo, nil)
+	allReleases, err := allPages(func(opts gitlab.ListOptions) ([]*gitlab.Release, *gitlab.Response, error) {
+		return g.client.ListReleases(owner, repo, &gitlab.ListReleasesOptions{ListOptions: opts})
+	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve GitLab releases for %s/%s: %w", owner, repo, err)
 	}
@@ -154,7 +176,9 @@ func (g *GitLab) Releases(owner, repo string) ([]*gitlab.Release, error) {
 }
 
 func (g *GitLab) Branches(owner, repo string) ([]*gitlab.Branch, error) {
-	branches, _, err := g.client.ListBranches(owner, repo, nil)
+	branches, err := allPages(func(opts gitlab.ListOptions) ([]*gitlab.Branch, *gitlab.Response, error) {
+		return g.client.ListBranches(owner, repo, &gitlab.ListBranchesOptions{ListOptions: opts})
+	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve GitLab releases for %s/%s: %w", owner, repo, err)
 	}
@@ -189,9 +213,9 @@ func (g *GitLab) GetRepository(owner, repo string) (*gitlab.Project, error) {
 // ListTags returns a list of GitLab tags for the provided `owner` and
 // `repo`.
 func (g *GitLab) ListTags(owner, repo string) ([]*gitlab.Tag, error) {
-	opt := &gitlab.ListTagsOptions{}
-
-	tags, _, err := g.client.ListTags(owner, repo, opt)
+	tags, err := allPages(func(opts gitlab.ListOptions) ([]*gitlab.Tag, *gitlab.Response, error) {
+		return g.client.ListTags(owner, repo, &gitlab.ListTagsOptions{ListOptions: opts})
+	})
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve GitLab tags for %s/%s: %w", owner, repo, err)
 	}

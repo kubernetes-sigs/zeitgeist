@@ -139,6 +139,8 @@ func TestDeserialising(t *testing.T) {
 	validYamls := []string{
 		"name: test\nversion: 1.0.0",
 		"name: test\nversion: 100",
+		"name: test\nversion: abc\nscheme: alpha\nupstream:\n  flavour: github\n  url: a/b\n  filter: ^release-",
+		"name: test\nversion: abc\nscheme: random\nupstream:\n  flavour: gitlab\n  url: a/b\n  filter: ^release-",
 	}
 
 	for _, valid := range validYamls {
@@ -146,6 +148,23 @@ func TestDeserialising(t *testing.T) {
 
 		err := yaml.Unmarshal([]byte(valid), &d)
 		require.NoError(t, err)
+	}
+}
+
+func TestDeserialisingInvalidFilter(t *testing.T) {
+	invalidYamls := map[string]string{
+		"semver":         "name: test\nversion: 1.0.0\nscheme: semver\nupstream:\n  flavour: github\n  url: a/b\n  filter: ^v1",
+		"default semver": "name: test\nversion: 1.0.0\nupstream:\n  flavour: github\n  url: a/b\n  filter: ^v1",
+		// helm only supports semver, so a filter is never valid
+		"helm":           "name: test\nversion: 1.0.0\nupstream:\n  flavour: helm\n  repo: https://example.com\n  chart: c\n  filter: ^1",
+		"invalid regexp": "name: test\nversion: abc\nscheme: alpha\nupstream:\n  flavour: github\n  url: a/b\n  filter: (unclosed",
+	}
+
+	for name, invalid := range invalidYamls {
+		var d Dependency
+
+		err := yaml.Unmarshal([]byte(invalid), &d)
+		require.ErrorContains(t, err, "upstream `filter`", name)
 	}
 }
 

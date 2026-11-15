@@ -22,13 +22,14 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/blang/semver/v4"
 	log "github.com/sirupsen/logrus"
 	"helm.sh/helm/v4/pkg/cli"
 	"helm.sh/helm/v4/pkg/getter"
 	repo "helm.sh/helm/v4/pkg/repo/v1"
+
+	"sigs.k8s.io/zeitgeist/dependency"
 )
 
 // Helm upstream representation.
@@ -44,6 +45,10 @@ type Helm struct {
 	// Optional: semver constraints, e.g. < 2.0.0
 	// Will have no effect if the dependency does not follow Semver
 	Constraints string
+
+	// Version scheme of the dependency, used to order chart versions.
+	// Set from the dependency itself rather than from the upstream configuration.
+	Scheme dependency.VersionScheme `mapstructure:"-"`
 }
 
 // LatestVersion returns the latest non-draft, non-prerelease Helm Release
@@ -54,6 +59,11 @@ func (upstream Helm) LatestVersion() (string, error) {
 }
 
 func latestChartVersion(upstream Helm) (string, error) {
+	// Helm requires chart versions to be SemVer, cf https://helm.sh/docs/topics/charts/
+	if upstream.Scheme != "" && upstream.Scheme != dependency.Semver {
+		return "", fmt.Errorf("%w: helm chart versions are semver, got scheme %q", ErrUnsupportedScheme, upstream.Scheme)
+	}
+
 	// Sanity checking
 	if upstream.Repo == "" {
 		return "", errors.New("invalid helm upstream: missing repo argument")
@@ -129,32 +139,38 @@ func latestChartVersion(upstream Helm) (string, error) {
 		return "", fmt.Errorf("no chart for %s found in repository %s", upstream.Chart, upstream.Repo)
 	}
 
-	// Iterate over versions and get the first newer version
-	// (Or the first version that matches our semver constraints, if defined)
-	// Versions are already ordered, cf https://github.com/helm/helm/blob/6a3daaa7aa5b89a150042cadcbe869b477bb62a1/pkg/repo/index.go#L344
+	stableVersions := make([]string, 0, len(chartVersions))
 	for _, chartVersion := range chartVersions {
-		chartVersionStr := strings.TrimPrefix(chartVersion.Version, "v")
-
 		prerelease, err := strconv.ParseBool(chartVersion.Annotations["artifacthub.io/prerelease"])
 		if err == nil && prerelease {
-			log.Debugf("Skipping annotated prerelease: %s\n", chartVersionStr)
+			log.Debugf("Skipping annotated prerelease: %s\n", chartVersion.Version)
+			continue
+		}
+		stableVersions = append(stableVersions, chartVersion.Version)
+	}
+
+	// Versions are already ordered, so the first one matching is the latest,
+	// cf https://github.com/helm/helm/blob/6a3daaa7aa5b89a150042cadcbe869b477bb62a1/pkg/repo/index.go#L344
+	for _, stableVersion := range stableVersions {
+		version, err := semver.ParseTolerant(stableVersion)
+		if err != nil {
+			log.Debugf("Error parsing version %s (%#v) as semver, skipping", stableVersion, err)
+			continue
+		}
+		if len(version.Pre) > 0 {
+			log.Debugf("Skipping semver prerelease: %s\n", stableVersion)
+			continue
+		}
+		if useSemverConstraints && !expectedRange(version) {
+			log.Debugf("Skipping release not matching range constraints (%s): %s\n", upstream.Constraints, stableVersion)
 			continue
 		}
 
-		version, err := semver.Parse(chartVersionStr)
-		if err != nil { //nolint:gocritic
-			log.Debugf("Error parsing version %s (%#v) as semver, cannot validate semver constraints", chartVersionStr, err)
-		} else if len(version.Pre) > 0 {
-			log.Debugf("Skipping semver prerelease: %s\n", chartVersionStr)
-			continue
-		} else if useSemverConstraints && !expectedRange(version) {
-			log.Debugf("Skipping release not matching range constraints (%s): %s\n", upstream.Constraints, chartVersionStr)
-			continue
-		}
+		log.Debugf("Found latest matching release: %s\n", stableVersion)
 
-		log.Debugf("Found latest matching release: %s\n", chartVersionStr)
-
-		return chartVersionStr, nil
+		// Return the version as published rather than the coerced one (e.g. "1.2", not "1.2.0"),
+		// so it matches the chart version in the repository
+		return stableVersion, nil
 	}
 
 	// No latest version found – no versions? Only prereleases?
