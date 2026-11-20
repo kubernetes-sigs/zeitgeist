@@ -4,8 +4,8 @@ go 1.27.0
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.48.0
-	github.com/aws/aws-sdk-go-v2/config v1.33.18
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.347.0
+	github.com/aws/aws-sdk-go-v2/config v1.33.19
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.348.0
 	github.com/aws/aws-sdk-go-v2/service/eks v1.105.6
 	github.com/aws/aws-sdk-go-v2/service/ssm v1.83.0
 	github.com/blang/semver/v4 v4.0.0
@@ -28,7 +28,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.4.1 // indirect
-	github.com/aws/aws-sdk-go-v2/credentials v1.21.0 // indirect
+	github.com/aws/aws-sdk-go-v2/credentials v1.21.1 // indirect
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.20.9 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/configsources v1.5.12 // indirect
 	github.com/aws/aws-sdk-go-v2/internal/endpoints/v2 v2.8.12 // indirect
